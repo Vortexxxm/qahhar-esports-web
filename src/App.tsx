@@ -12,6 +12,8 @@ import Leaderboard from "./pages/Leaderboard";
 import JoinUs from "./pages/JoinUs";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
 
@@ -33,6 +35,8 @@ const App = () => (
               <Route path="/join-us" element={<JoinUs />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy" element={<Privacy />} />
               <Route path="/admin" element={<AdminPanel />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
