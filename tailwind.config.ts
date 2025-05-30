@@ -73,6 +73,11 @@ export default {
 					accent: '#ffcc00',
 					dark: '#0a0a0a',
 					darker: '#050505',
+				},
+				's3m': {
+					red: '#DC143C',
+					'red-dark': '#B91C1C',
+					'red-light': '#EF4444',
 				}
 			},
 			borderRadius: {
@@ -99,10 +104,10 @@ export default {
 				},
 				'glow': {
 					'0%, 100%': {
-						boxShadow: '0 0 5px #ff0066, 0 0 10px #ff0066, 0 0 15px #ff0066'
+						boxShadow: '0 0 5px #DC143C, 0 0 10px #DC143C, 0 0 15px #DC143C'
 					},
 					'50%': {
-						boxShadow: '0 0 10px #ff0066, 0 0 20px #ff0066, 0 0 30px #ff0066'
+						boxShadow: '0 0 10px #DC143C, 0 0 20px #DC143C, 0 0 30px #DC143C'
 					}
 				},
 				'float': {

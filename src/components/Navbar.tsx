@@ -24,13 +24,12 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="gaming-gradient w-10 h-10 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">S3M</span>
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-gaming-primary to-gaming-secondary bg-clip-text text-transparent">
-              S3M E-Sports
-            </span>
+          <Link to="/" className="flex items-center space-x-4">
+            <img 
+              src="/lovable-uploads/876694d5-ec41-469d-9b93-b1c067364893.png" 
+              alt="S3M E-Sports Logo" 
+              className="h-12 w-auto"
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -39,15 +38,15 @@ const Navbar = () => {
               <Link
                 key={item.href}
                 to={item.href}
-                className={`relative px-3 py-2 text-sm font-medium transition-colors hover:text-gaming-primary ${
+                className={`relative px-3 py-2 text-sm font-medium transition-colors hover:text-s3m-red ${
                   isActive(item.href)
-                    ? "text-gaming-primary"
+                    ? "text-s3m-red"
                     : "text-white/80"
                 }`}
               >
                 {item.label}
                 {isActive(item.href) && (
-                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-gaming-primary to-gaming-secondary" />
+                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-s3m-red to-red-600" />
                 )}
               </Link>
             ))}
@@ -74,7 +73,7 @@ const Navbar = () => {
                 </Button>
               </Link>
               <Link to="/signup">
-                <Button className="gaming-gradient hover:opacity-90">
+                <Button className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-s3m-red text-white">
                   انشاء حساب
                 </Button>
               </Link>
@@ -104,9 +103,9 @@ const Navbar = () => {
                 <Link
                   key={item.href}
                   to={item.href}
-                  className={`px-3 py-2 text-sm font-medium transition-colors hover:text-gaming-primary ${
+                  className={`px-3 py-2 text-sm font-medium transition-colors hover:text-s3m-red ${
                     isActive(item.href)
-                      ? "text-gaming-primary"
+                      ? "text-s3m-red"
                       : "text-white/80"
                   }`}
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -121,7 +120,7 @@ const Navbar = () => {
                   </Button>
                 </Link>
                 <Link to="/signup" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button className="w-full gaming-gradient hover:opacity-90">
+                  <Button className="w-full bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-s3m-red text-white">
                     انشاء حساب
                   </Button>
                 </Link>

@@ -14,7 +14,7 @@
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 346 77% 49.8%;
+    --primary: 220 14% 56%;
     --primary-foreground: 355.7 100% 97.3%;
 
     --secondary: 240 3.7% 15.9%;
@@ -31,18 +31,18 @@
 
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 346 77% 49.8%;
+    --ring: 220 14% 56%;
 
     --radius: 0.5rem;
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 346 77% 49.8%;
+    --sidebar-primary: 220 14% 56%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 346 77% 49.8%;
+    --sidebar-ring: 220 14% 56%;
   }
 
   .light {
@@ -55,7 +55,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
-    --primary: 346 77% 49.8%;
+    --primary: 220 14% 56%;
     --primary-foreground: 355.7 100% 97.3%;
 
     --secondary: 240 4.8% 95.9%;
@@ -72,7 +72,7 @@
 
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 346 77% 49.8%;
+    --ring: 220 14% 56%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -81,7 +81,7 @@
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 346 77% 49.8%;
+    --sidebar-ring: 220 14% 56%;
   }
 }
 
@@ -95,19 +95,19 @@
     direction: rtl;
   }
 
-  /* Gaming UI Styles */
+  /* Gaming UI Styles with S3M Colors */
   .gaming-gradient {
-    background: linear-gradient(135deg, #ff0066 0%, #6600ff 50%, #00ffff 100%);
+    background: linear-gradient(135deg, #DC143C 0%, #B91C1C 50%, #991B1B 100%);
   }
 
   .gaming-card {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(220, 20, 60, 0.05);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(220, 20, 60, 0.1);
   }
 
   .gaming-glow {
-    box-shadow: 0 0 20px rgba(255, 0, 102, 0.3);
+    box-shadow: 0 0 20px rgba(220, 20, 60, 0.3);
   }
 
   /* RTL Specific Styles */
@@ -116,7 +116,7 @@
     text-align: right;
   }
 
-  /* Scrollbar Styling */
+  /* Scrollbar Styling with S3M Colors */
   ::-webkit-scrollbar {
     width: 8px;
   }
@@ -126,23 +126,23 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #ff0066, #6600ff);
+    background: linear-gradient(180deg, #DC143C, #B91C1C);
     border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, #ff0066, #00ffff);
+    background: linear-gradient(180deg, #DC143C, #991B1B);
   }
 }
 
-/* Custom Animation Classes */
+/* Custom Animation Classes with S3M Colors */
 @layer utilities {
   .text-glow {
     text-shadow: 0 0 10px currentColor;
   }
 
   .border-glow {
-    border-color: #ff0066;
-    box-shadow: 0 0 10px rgba(255, 0, 102, 0.5);
+    border-color: #DC143C;
+    box-shadow: 0 0 10px rgba(220, 20, 60, 0.5);
   }
 }
