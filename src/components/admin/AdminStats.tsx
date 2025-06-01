@@ -30,7 +30,7 @@ const AdminStats = ({ totalUsers, activeUsers, adminCount, averagePoints }: Admi
               <stat.icon className={`h-8 w-8 ${stat.color}`} />
             </div>
           </CardContent>
-        </div>
+        </Card>
       ))}
     </div>
   );
