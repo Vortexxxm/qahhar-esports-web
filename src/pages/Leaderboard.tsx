@@ -16,6 +16,7 @@ type LeaderboardEntry = {
   deaths: number;
   games_played: number;
   rank_position: number;
+  visible_in_leaderboard: boolean;
   profiles: {
     username: string;
     avatar_url: string | null;
@@ -26,10 +27,11 @@ const Leaderboard = () => {
   const { data: leaderboard, isLoading, refetch } = useQuery({
     queryKey: ['leaderboard'],
     queryFn: async () => {
-      // Get leaderboard scores
+      // Get only visible leaderboard scores
       const { data: scoresData, error: scoresError } = await supabase
         .from('leaderboard_scores')
         .select('*')
+        .eq('visible_in_leaderboard', true)
         .order('rank_position', { ascending: true });
 
       if (scoresError) throw scoresError;

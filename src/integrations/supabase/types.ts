@@ -59,6 +59,7 @@ export type Database = {
           points: number
           rank_position: number | null
           user_id: string
+          visible_in_leaderboard: boolean
           wins: number
         }
         Insert: {
@@ -71,6 +72,7 @@ export type Database = {
           points?: number
           rank_position?: number | null
           user_id: string
+          visible_in_leaderboard?: boolean
           wins?: number
         }
         Update: {
@@ -83,6 +85,7 @@ export type Database = {
           points?: number
           rank_position?: number | null
           user_id?: string
+          visible_in_leaderboard?: boolean
           wins?: number
         }
         Relationships: []

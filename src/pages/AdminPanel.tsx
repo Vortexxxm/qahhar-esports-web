@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect, useState } from "react";
@@ -133,6 +132,40 @@ const AdminPanel = () => {
     },
   });
 
+  const toggleVisibilityMutation = useMutation({
+    mutationFn: async ({ userId, visibility }: { userId: string; visibility: boolean }) => {
+      const { error } = await supabase
+        .from('leaderboard_scores')
+        .update({ 
+          visible_in_leaderboard: visibility,
+          last_updated: new Date().toISOString()
+        })
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      // Update rankings if making visible
+      if (visibility) {
+        await supabase.rpc('update_leaderboard_rankings');
+      }
+    },
+    onSuccess: (_, { visibility }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
+      toast({
+        title: "تم التحديث",
+        description: visibility ? "تم إظهار اللاعب في المتصدرين" : "تم إخفاء اللاعب من المتصدرين",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAddPoints = (userId: string, points: number) => {
     updatePointsMutation.mutate({ userId, points });
   };
@@ -140,6 +173,10 @@ const AdminPanel = () => {
   const handleToggleUserRole = (userId: string, currentRole: string) => {
     const newRole: "admin" | "moderator" | "user" = currentRole === 'admin' ? 'user' : 'admin';
     updateUserRoleMutation.mutate({ userId, newRole });
+  };
+
+  const handleToggleVisibility = (userId: string, currentVisibility: boolean) => {
+    toggleVisibilityMutation.mutate({ userId, visibility: !currentVisibility });
   };
 
   if (loading || usersLoading) {
@@ -210,6 +247,7 @@ const AdminPanel = () => {
                   currentUserId={user?.id || ''}
                   onEditPlayer={setEditingPlayer}
                   onToggleRole={handleToggleUserRole}
+                  onToggleVisibility={handleToggleVisibility}
                 />
               </CardContent>
             </Card>

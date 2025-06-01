@@ -5,10 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Edit, Save, X } from "lucide-react";
+import { Edit, Save, X, Eye, EyeOff } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type PlayerData = {
@@ -34,6 +35,7 @@ const PlayerEditor = ({ player, onClose }: PlayerEditorProps) => {
     kills: player.leaderboard_scores?.kills || 0,
     deaths: player.leaderboard_scores?.deaths || 0,
     games_played: player.leaderboard_scores?.games_played || 0,
+    visible_in_leaderboard: player.leaderboard_scores?.visible_in_leaderboard || false,
   });
 
   const updatePlayerMutation = useMutation({
@@ -57,6 +59,7 @@ const PlayerEditor = ({ player, onClose }: PlayerEditorProps) => {
           kills: data.kills,
           deaths: data.deaths,
           games_played: data.games_played,
+          visible_in_leaderboard: data.visible_in_leaderboard,
           last_updated: new Date().toISOString()
         })
         .eq('user_id', player.id);
@@ -202,20 +205,40 @@ const PlayerEditor = ({ player, onClose }: PlayerEditorProps) => {
           </div>
         </div>
 
-        <div className="bg-black/20 p-4 rounded-lg">
-          <h4 className="text-white font-semibold mb-2">معاينة الإحصائيات</h4>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-white/60">نسبة K/D:</span>
-              <span className="text-s3m-red font-bold ml-2">
-                {getKDRatio(editData.kills, editData.deaths)}
-              </span>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-black/20 rounded-lg">
+            <div className="flex items-center space-x-3">
+              {editData.visible_in_leaderboard ? (
+                <Eye className="h-5 w-5 text-green-400" />
+              ) : (
+                <EyeOff className="h-5 w-5 text-red-400" />
+              )}
+              <div>
+                <Label className="text-white">أظهر في المتصدرين</Label>
+                <p className="text-sm text-white/60">هل يظهر هذا اللاعب في قائمة المتصدرين؟</p>
+              </div>
             </div>
-            <div>
-              <span className="text-white/60">معدل الفوز:</span>
-              <span className="text-s3m-red font-bold ml-2">
-                {editData.games_played > 0 ? ((editData.wins / editData.games_played) * 100).toFixed(1) : '0.0'}%
-              </span>
+            <Switch
+              checked={editData.visible_in_leaderboard}
+              onCheckedChange={(checked) => setEditData(prev => ({ ...prev, visible_in_leaderboard: checked }))}
+            />
+          </div>
+
+          <div className="bg-black/20 p-4 rounded-lg">
+            <h4 className="text-white font-semibold mb-2">معاينة الإحصائيات</h4>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-white/60">نسبة K/D:</span>
+                <span className="text-s3m-red font-bold ml-2">
+                  {getKDRatio(editData.kills, editData.deaths)}
+                </span>
+              </div>
+              <div>
+                <span className="text-white/60">معدل الفوز:</span>
+                <span className="text-s3m-red font-bold ml-2">
+                  {editData.games_played > 0 ? ((editData.wins / editData.games_played) * 100).toFixed(1) : '0.0'}%
+                </span>
+              </div>
             </div>
           </div>
         </div>
