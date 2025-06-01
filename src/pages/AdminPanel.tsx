@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +13,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, Trophy, Settings, Plus, Edit, Trash2, UserCheck, UserX } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import PlayerEditor from "@/components/PlayerEditor";
 
 type UserWithProfile = {
   id: string;
@@ -30,6 +30,7 @@ const AdminPanel = () => {
   const queryClient = useQueryClient();
   const [pointsToAdd, setPointsToAdd] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("");
+  const [editingPlayer, setEditingPlayer] = useState<UserWithProfile | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || userRole !== 'admin')) {
@@ -160,6 +161,19 @@ const AdminPanel = () => {
     { title: "متوسط النقاط", value: users?.length ? Math.round(users.reduce((sum, u) => sum + (u.leaderboard_scores?.points || 0), 0) / users.length).toString() : "0", icon: Settings, color: "text-purple-400" },
   ];
 
+  if (editingPlayer) {
+    return (
+      <div className="min-h-screen py-12">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <PlayerEditor 
+            player={editingPlayer} 
+            onClose={() => setEditingPlayer(null)}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen py-12">
       <div className="container mx-auto px-4">
@@ -245,6 +259,14 @@ const AdminPanel = () => {
                           </td>
                           <td className="py-4">
                             <div className="flex items-center space-x-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setEditingPlayer(userData)}
+                                className="border-s3m-red/30"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
