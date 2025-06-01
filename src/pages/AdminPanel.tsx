@@ -12,6 +12,7 @@ import AdminStats from "@/components/admin/AdminStats";
 import UsersTable from "@/components/admin/UsersTable";
 import PointsManager from "@/components/admin/PointsManager";
 import TopPlayers from "@/components/admin/TopPlayers";
+import JoinRequests from "@/components/admin/JoinRequests";
 
 type UserWithProfile = {
   id: string;
@@ -226,8 +227,11 @@ const AdminPanel = () => {
           averagePoints={averagePoints}
         />
 
-        <Tabs defaultValue="users" className="space-y-6">
+        <Tabs defaultValue="requests" className="space-y-6">
           <TabsList className="bg-black/20 border border-s3m-red/20">
+            <TabsTrigger value="requests" className="data-[state=active]:bg-s3m-red">
+              طلبات الانضمام
+            </TabsTrigger>
             <TabsTrigger value="users" className="data-[state=active]:bg-s3m-red">
               إدارة الأعضاء
             </TabsTrigger>
@@ -235,6 +239,17 @@ const AdminPanel = () => {
               إدارة النقاط
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="requests">
+            <Card className="gaming-card">
+              <CardHeader>
+                <CardTitle className="text-s3m-red">طلبات الانضمام</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <JoinRequests />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="users">
             <Card className="gaming-card">
