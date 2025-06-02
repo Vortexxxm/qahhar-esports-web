@@ -20,6 +20,7 @@ import Tournaments from "./pages/Tournaments";
 import NotFound from "./pages/NotFound";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,6 +52,7 @@ const App = () => (
               <Route path="/profile" element={<Profile />} />
               <Route path="/news" element={<News />} />
               <Route path="/tournaments" element={<Tournaments />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="*" element={<NotFound />} />
