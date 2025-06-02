@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect, useState } from "react";
@@ -194,8 +195,8 @@ const AdminPanel = () => {
 
   if (editingPlayer) {
     return (
-      <div className="min-h-screen py-12">
-        <div className="container mx-auto px-4 max-w-4xl">
+      <div className="min-h-screen py-6 px-4">
+        <div className="container mx-auto max-w-4xl">
           <PlayerEditor 
             player={editingPlayer} 
             onClose={() => setEditingPlayer(null)}
@@ -211,13 +212,13 @@ const AdminPanel = () => {
   const averagePoints = users?.length ? Math.round(users.reduce((sum, u) => sum + (u.leaderboard_scores?.points || 0), 0) / users.length) : 0;
 
   return (
-    <div className="min-h-screen py-12">
-      <div className="container mx-auto px-4">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-s3m-red to-red-600 bg-clip-text text-transparent">
+    <div className="min-h-screen py-6 px-4">
+      <div className="container mx-auto max-w-7xl">
+        <div className="mb-6">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-s3m-red to-red-600 bg-clip-text text-transparent">
             لوحة الإدارة
           </h1>
-          <p className="text-white/70">إدارة أعضاء الفريق والنقاط والإحصائيات</p>
+          <p className="text-white/70 text-sm md:text-base">إدارة أعضاء الفريق والنقاط والإحصائيات</p>
         </div>
 
         <AdminStats 
@@ -227,25 +228,25 @@ const AdminPanel = () => {
           averagePoints={averagePoints}
         />
 
-        <Tabs defaultValue="requests" className="space-y-6">
-          <TabsList className="bg-black/20 border border-s3m-red/20">
-            <TabsTrigger value="requests" className="data-[state=active]:bg-s3m-red">
+        <Tabs defaultValue="requests" className="space-y-4">
+          <TabsList className="bg-black/20 border border-s3m-red/20 w-full md:w-auto">
+            <TabsTrigger value="requests" className="data-[state=active]:bg-s3m-red text-xs md:text-sm">
               طلبات الانضمام
             </TabsTrigger>
-            <TabsTrigger value="users" className="data-[state=active]:bg-s3m-red">
+            <TabsTrigger value="users" className="data-[state=active]:bg-s3m-red text-xs md:text-sm">
               إدارة الأعضاء
             </TabsTrigger>
-            <TabsTrigger value="points" className="data-[state=active]:bg-s3m-red">
+            <TabsTrigger value="points" className="data-[state=active]:bg-s3m-red text-xs md:text-sm">
               إدارة النقاط
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="requests">
             <Card className="gaming-card">
-              <CardHeader>
-                <CardTitle className="text-s3m-red">طلبات الانضمام</CardTitle>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-s3m-red text-lg md:text-xl">طلبات الانضمام</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-3 md:p-6">
                 <JoinRequests />
               </CardContent>
             </Card>
@@ -253,10 +254,10 @@ const AdminPanel = () => {
 
           <TabsContent value="users">
             <Card className="gaming-card">
-              <CardHeader>
-                <CardTitle className="text-s3m-red">قائمة الأعضاء</CardTitle>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-s3m-red text-lg md:text-xl">قائمة الأعضاء</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-3 md:p-6">
                 <UsersTable 
                   users={users || []}
                   currentUserId={user?.id || ''}
@@ -269,7 +270,7 @@ const AdminPanel = () => {
           </TabsContent>
 
           <TabsContent value="points">
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid gap-4 lg:grid-cols-2">
               <PointsManager 
                 users={users || []}
                 onAddPoints={handleAddPoints}
