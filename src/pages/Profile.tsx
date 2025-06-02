@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Trophy, Target, Users, Gamepad2, Edit, Phone, User, Mail } from "lucide-react";
+import { Loader2, Trophy, Target, Users, Gamepad2, Edit, Phone, User, Mail, Upload } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const Profile = () => {
@@ -20,6 +20,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     full_name: "",
     username: "",
@@ -101,6 +102,72 @@ const Profile = () => {
     },
   });
 
+  const uploadAvatarMutation = useMutation({
+    mutationFn: async (file: File) => {
+      if (!user?.id) throw new Error('User not found');
+      
+      setUploading(true);
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      // Upload the file
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      // Update the profile with the new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      return publicUrl;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      toast({
+        title: "تم تحديث الصورة",
+        description: "تم رفع صورتك الشخصية بنجاح",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ في رفع الصورة",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      setUploading(false);
+    }
+  });
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+        toast({
+          title: "حجم الملف كبير",
+          description: "يجب أن يكون حجم الصورة أقل من 2 ميجابايت",
+          variant: "destructive",
+        });
+        return;
+      }
+      uploadAvatarMutation.mutate(file);
+    }
+  };
+
   const handleSave = () => {
     updateProfileMutation.mutate(formData);
   };
@@ -143,12 +210,29 @@ const Profile = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/20 to-red-600/20" />
             <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
               <div className="flex items-end space-x-6">
-                <Avatar className="w-24 h-24 border-4 border-white shadow-xl">
-                  <AvatarImage src={profile.avatar_url || ""} />
-                  <AvatarFallback className="bg-s3m-red text-white text-2xl">
-                    {(profile.username || 'U').slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="relative">
+                  <Avatar className="w-24 h-24 border-4 border-white shadow-xl">
+                    <AvatarImage src={profile.avatar_url || ""} />
+                    <AvatarFallback className="bg-s3m-red text-white text-2xl">
+                      {(profile.username || 'U').slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <label htmlFor="avatar-upload" className="absolute -bottom-2 -right-2 bg-s3m-red rounded-full p-2 cursor-pointer hover:bg-red-600 transition-colors">
+                    {uploading ? (
+                      <Loader2 className="h-4 w-4 text-white animate-spin" />
+                    ) : (
+                      <Upload className="h-4 w-4 text-white" />
+                    )}
+                  </label>
+                  <input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileUpload}
+                    disabled={uploading}
+                  />
+                </div>
                 <div className="text-white mb-2">
                   <h1 className="text-3xl font-bold mb-1">{profile.username}</h1>
                   <p className="text-lg opacity-90">{profile.full_name}</p>
