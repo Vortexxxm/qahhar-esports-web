@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, User, LogOut, Settings, News, Trophy } from "lucide-react";
+import { Menu, X, User, LogOut, Settings, Newspaper, Trophy } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -50,7 +49,7 @@ const Navbar = () => {
     { name: "الرئيسية", href: "/" },
     { name: "من نحن", href: "/about" },
     { name: "المتصدرين", href: "/leaderboard" },
-    { name: "الأخبار", href: "/news", icon: News },
+    { name: "الأخبار", href: "/news", icon: Newspaper },
     { name: "البطولات", href: "/tournaments", icon: Trophy },
     { name: "انضم إلينا", href: "/join-us" },
   ];
