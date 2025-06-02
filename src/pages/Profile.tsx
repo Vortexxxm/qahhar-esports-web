@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Trophy, Target, Users, GameController, Edit, Phone, User, Mail } from "lucide-react";
+import { Loader2, Trophy, Target, Users, Gamepad2, Edit, Phone, User, Mail } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const Profile = () => {
@@ -190,7 +190,7 @@ const Profile = () => {
               
               <Card className="gaming-card text-center">
                 <CardContent className="p-4">
-                  <GameController className="h-8 w-8 text-blue-500 mx-auto mb-2" />
+                  <Gamepad2 className="h-8 w-8 text-blue-500 mx-auto mb-2" />
                   <p className="text-2xl font-bold text-white">{stats.games_played}</p>
                   <p className="text-sm text-white/60">الألعاب</p>
                 </CardContent>
@@ -315,7 +315,7 @@ const Profile = () => {
                     <Separator className="bg-white/10" />
                     
                     <div className="flex items-center space-x-3">
-                      <GameController className="h-5 w-5 text-s3m-red" />
+                      <Gamepad2 className="h-5 w-5 text-s3m-red" />
                       <div>
                         <p className="text-white/60 text-sm">معرف اللعبة</p>
                         <p className="text-white">{profile.game_id || 'غير محدد'}</p>
