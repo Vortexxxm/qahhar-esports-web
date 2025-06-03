@@ -42,7 +42,6 @@ const Profile = () => {
       
       console.log('Fetching profile data for user:', user.id);
       
-      // Get profile data with better error handling
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -51,7 +50,6 @@ const Profile = () => {
         
       if (profileError) {
         console.error('Profile error:', profileError);
-        // If profile doesn't exist, create it
         if (profileError.code === 'PGRST116') {
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
@@ -72,7 +70,6 @@ const Profile = () => {
         throw profileError;
       }
       
-      // Get stats data
       const { data: statsData, error: statsError } = await supabase
         .from('leaderboard_scores')
         .select('*')
@@ -96,7 +93,6 @@ const Profile = () => {
     refetchOnWindowFocus: false,
   });
   
-  // Set up real-time subscription for profile updates
   useEffect(() => {
     if (!user?.id) return;
 
@@ -186,19 +182,16 @@ const Profile = () => {
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       const filePath = `avatars/${fileName}`;
 
-      // Upload the file
       const { error: uploadError } = await supabase.storage
-        .from('avatars')
+        .from('images')
         .upload(filePath, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
-      // Get the public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
+        .from('images')
         .getPublicUrl(filePath);
 
-      // Update the profile with the new avatar URL
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ 
@@ -233,7 +226,7 @@ const Profile = () => {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+      if (file.size > 2 * 1024 * 1024) {
         toast({
           title: "حجم الملف كبير",
           description: "يجب أن يكون حجم الصورة أقل من 2 ميجابايت",
@@ -261,7 +254,7 @@ const Profile = () => {
 
   if (loading || profileLoading) {
     return (
-      <div className="min-h-screen py-12 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-s3m-red" />
       </div>
     );
@@ -270,7 +263,7 @@ const Profile = () => {
   if (profileError) {
     console.error('Profile error:', profileError);
     return (
-      <div className="min-h-screen py-12 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center text-white">
           <p>حدث خطأ في تحميل بيانات الملف الشخصي</p>
           <Button 
@@ -286,7 +279,7 @@ const Profile = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen py-12 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center text-white">
           <p>لا يمكن تحميل بيانات الملف الشخصي</p>
           <Button 
@@ -300,7 +293,6 @@ const Profile = () => {
     );
   }
 
-  // Provide default values for profile and stats
   const profile = profileData?.profile || {
     username: user?.email?.split('@')[0] || 'مستخدم',
     full_name: '',
@@ -321,23 +313,23 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header with Background Image - Full Width */}
-        <div className="relative mb-8">
+    <div className="min-h-screen w-full">
+      <div className="w-full max-w-none mx-auto px-4 py-8">
+        {/* Header Section */}
+        <div className="relative w-full mb-8">
           <div 
-            className="h-48 sm:h-64 rounded-xl bg-cover bg-center relative overflow-hidden"
+            className="h-64 w-full rounded-xl bg-cover bg-center relative overflow-hidden"
             style={{
               backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1920&q=80')`
             }}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/30 to-red-600/30" />
-            <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-              <div className="flex flex-col sm:flex-row sm:items-end space-y-4 sm:space-y-0 sm:space-x-6">
+            <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
+              <div className="flex items-end space-x-6 space-x-reverse">
                 <div className="relative">
-                  <Avatar className="w-20 h-20 sm:w-24 sm:h-24 border-4 border-white shadow-xl">
+                  <Avatar className="w-24 h-24 border-4 border-white shadow-xl">
                     <AvatarImage src={profile.avatar_url || ""} />
-                    <AvatarFallback className="bg-s3m-red text-white text-xl sm:text-2xl">
+                    <AvatarFallback className="bg-s3m-red text-white text-2xl">
                       {(profile.username || profile.full_name || 'U').slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -358,10 +350,10 @@ const Profile = () => {
                   />
                 </div>
                 <div className="text-white">
-                  <h1 className="text-2xl sm:text-3xl font-bold mb-1">
+                  <h1 className="text-3xl font-bold mb-1">
                     {profile.username || 'مستخدم'}
                   </h1>
-                  <p className="text-base sm:text-lg opacity-90">
+                  <p className="text-lg opacity-90">
                     {profile.full_name || 'مرحباً بك'}
                   </p>
                   <Badge className="bg-gradient-to-r from-s3m-red to-red-600 mt-2">
@@ -406,39 +398,39 @@ const Profile = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
           {/* Stats Cards */}
           <div className="lg:col-span-2 space-y-6">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="gaming-card text-center">
                 <CardContent className="p-4">
-                  <Trophy className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500 mx-auto mb-2" />
-                  <p className="text-xl sm:text-2xl font-bold text-white">{stats.wins || 0}</p>
-                  <p className="text-xs sm:text-sm text-white/60">الانتصارات</p>
+                  <Trophy className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-white">{stats.wins || 0}</p>
+                  <p className="text-sm text-white/60">الانتصارات</p>
                 </CardContent>
               </Card>
               
               <Card className="gaming-card text-center">
                 <CardContent className="p-4">
-                  <Target className="h-6 w-6 sm:h-8 sm:w-8 text-red-500 mx-auto mb-2" />
-                  <p className="text-xl sm:text-2xl font-bold text-white">{getKDRatio(stats.kills || 0, stats.deaths || 0)}</p>
-                  <p className="text-xs sm:text-sm text-white/60">نسبة K/D</p>
+                  <Target className="h-8 w-8 text-red-500 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-white">{getKDRatio(stats.kills || 0, stats.deaths || 0)}</p>
+                  <p className="text-sm text-white/60">نسبة K/D</p>
                 </CardContent>
               </Card>
               
               <Card className="gaming-card text-center">
                 <CardContent className="p-4">
-                  <Gamepad2 className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500 mx-auto mb-2" />
-                  <p className="text-xl sm:text-2xl font-bold text-white">{stats.games_played || 0}</p>
-                  <p className="text-xs sm:text-sm text-white/60">الألعاب</p>
+                  <Gamepad2 className="h-8 w-8 text-blue-500 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-white">{stats.games_played || 0}</p>
+                  <p className="text-sm text-white/60">الألعاب</p>
                 </CardContent>
               </Card>
               
               <Card className="gaming-card text-center">
                 <CardContent className="p-4">
-                  <Users className="h-6 w-6 sm:h-8 sm:w-8 text-green-500 mx-auto mb-2" />
-                  <p className="text-xl sm:text-2xl font-bold text-white">{getWinRate(stats.wins || 0, stats.games_played || 0)}</p>
-                  <p className="text-xs sm:text-sm text-white/60">معدل الفوز</p>
+                  <Users className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-white">{getWinRate(stats.wins || 0, stats.games_played || 0)}</p>
+                  <p className="text-sm text-white/60">معدل الفوز</p>
                 </CardContent>
               </Card>
             </div>

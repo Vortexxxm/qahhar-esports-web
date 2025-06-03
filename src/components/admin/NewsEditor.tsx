@@ -32,6 +32,7 @@ const NewsEditor = ({ news, onClose }: NewsEditorProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -47,13 +48,13 @@ const NewsEditor = ({ news, onClose }: NewsEditorProps) => {
         content: news.content || "",
         image_url: news.image_url || ""
       });
+      setImagePreview(news.image_url);
     }
   }, [news]);
 
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       if (news?.id) {
-        // Update existing news
         const { error } = await supabase
           .from('news')
           .update({
@@ -67,7 +68,6 @@ const NewsEditor = ({ news, onClose }: NewsEditorProps) => {
 
         if (error) throw error;
       } else {
-        // Create new news
         const { error } = await supabase
           .from('news')
           .insert({
@@ -114,21 +114,26 @@ const NewsEditor = ({ news, onClose }: NewsEditorProps) => {
     setUploading(true);
 
     try {
+      // Create a preview URL for immediate display
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
       const filePath = `news-images/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('news-images')
+        .from('images')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('news-images')
+        .from('images')
         .getPublicUrl(filePath);
 
       setFormData(prev => ({ ...prev, image_url: publicUrl }));
+      setImagePreview(publicUrl);
 
       toast({
         title: "تم رفع الصورة",
@@ -140,6 +145,7 @@ const NewsEditor = ({ news, onClose }: NewsEditorProps) => {
         description: error.message,
         variant: "destructive",
       });
+      setImagePreview(null);
     } finally {
       setUploading(false);
     }
@@ -237,10 +243,11 @@ const NewsEditor = ({ news, onClose }: NewsEditorProps) => {
                 <span className="text-green-400 text-sm">تم رفع الصورة بنجاح</span>
               )}
             </div>
-            {formData.image_url && (
+            {imagePreview && (
               <div className="mt-4">
+                <p className="text-white/60 text-sm mb-2">معاينة الصورة:</p>
                 <img 
-                  src={formData.image_url} 
+                  src={imagePreview} 
                   alt="معاينة الصورة"
                   className="w-full max-w-md rounded-lg"
                 />
