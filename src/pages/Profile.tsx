@@ -190,8 +190,20 @@ const Profile = () => {
     );
   }
 
-  if (!user || !profileData) {
-    return null;
+  if (!user || !profileData?.profile || !profileData?.stats) {
+    return (
+      <div className="min-h-screen py-12 flex items-center justify-center">
+        <div className="text-center text-white">
+          <p>لا يمكن تحميل بيانات الملف الشخصي</p>
+          <Button 
+            onClick={() => navigate('/login')} 
+            className="mt-4 bg-gradient-to-r from-s3m-red to-red-600"
+          >
+            تسجيل الدخول
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   const { profile, stats } = profileData;
@@ -212,9 +224,9 @@ const Profile = () => {
               <div className="flex items-end space-x-6">
                 <div className="relative">
                   <Avatar className="w-24 h-24 border-4 border-white shadow-xl">
-                    <AvatarImage src={profile.avatar_url || ""} />
+                    <AvatarImage src={profile?.avatar_url || ""} />
                     <AvatarFallback className="bg-s3m-red text-white text-2xl">
-                      {(profile.username || 'U').slice(0, 2).toUpperCase()}
+                      {(profile?.username || 'U').slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <label htmlFor="avatar-upload" className="absolute -bottom-2 -right-2 bg-s3m-red rounded-full p-2 cursor-pointer hover:bg-red-600 transition-colors">
@@ -234,10 +246,10 @@ const Profile = () => {
                   />
                 </div>
                 <div className="text-white mb-2">
-                  <h1 className="text-3xl font-bold mb-1">{profile.username}</h1>
-                  <p className="text-lg opacity-90">{profile.full_name}</p>
+                  <h1 className="text-3xl font-bold mb-1">{profile?.username || 'مستخدم'}</h1>
+                  <p className="text-lg opacity-90">{profile?.full_name || ''}</p>
                   <Badge className="bg-gradient-to-r from-s3m-red to-red-600 mt-2">
-                    {stats.points.toLocaleString()} نقطة
+                    {stats?.points?.toLocaleString() || 0} نقطة
                   </Badge>
                 </div>
               </div>
@@ -259,7 +271,7 @@ const Profile = () => {
               <Card className="gaming-card text-center">
                 <CardContent className="p-4">
                   <Trophy className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-white">{stats.wins}</p>
+                  <p className="text-2xl font-bold text-white">{stats?.wins || 0}</p>
                   <p className="text-sm text-white/60">الانتصارات</p>
                 </CardContent>
               </Card>
@@ -267,7 +279,7 @@ const Profile = () => {
               <Card className="gaming-card text-center">
                 <CardContent className="p-4">
                   <Target className="h-8 w-8 text-red-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-white">{getKDRatio(stats.kills, stats.deaths)}</p>
+                  <p className="text-2xl font-bold text-white">{getKDRatio(stats?.kills || 0, stats?.deaths || 0)}</p>
                   <p className="text-sm text-white/60">نسبة K/D</p>
                 </CardContent>
               </Card>
@@ -275,7 +287,7 @@ const Profile = () => {
               <Card className="gaming-card text-center">
                 <CardContent className="p-4">
                   <Gamepad2 className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-white">{stats.games_played}</p>
+                  <p className="text-2xl font-bold text-white">{stats?.games_played || 0}</p>
                   <p className="text-sm text-white/60">الألعاب</p>
                 </CardContent>
               </Card>
@@ -283,7 +295,7 @@ const Profile = () => {
               <Card className="gaming-card text-center">
                 <CardContent className="p-4">
                   <Users className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-white">{getWinRate(stats.wins, stats.games_played)}</p>
+                  <p className="text-2xl font-bold text-white">{getWinRate(stats?.wins || 0, stats?.games_played || 0)}</p>
                   <p className="text-sm text-white/60">معدل الفوز</p>
                 </CardContent>
               </Card>
@@ -299,29 +311,29 @@ const Profile = () => {
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <span className="text-white/80">إجمالي النقاط:</span>
-                      <span className="text-s3m-red font-bold">{stats.points.toLocaleString()}</span>
+                      <span className="text-s3m-red font-bold">{stats?.points?.toLocaleString() || 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/80">الانتصارات:</span>
-                      <span className="text-white font-bold">{stats.wins}</span>
+                      <span className="text-white font-bold">{stats?.wins || 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/80">الهزائم:</span>
-                      <span className="text-white font-bold">{stats.losses}</span>
+                      <span className="text-white font-bold">{stats?.losses || 0}</span>
                     </div>
                   </div>
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <span className="text-white/80">القتلات:</span>
-                      <span className="text-white font-bold">{stats.kills}</span>
+                      <span className="text-white font-bold">{stats?.kills || 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/80">الوفيات:</span>
-                      <span className="text-white font-bold">{stats.deaths}</span>
+                      <span className="text-white font-bold">{stats?.deaths || 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/80">الترتيب:</span>
-                      <span className="text-s3m-red font-bold">#{stats.rank_position || 'غير محدد'}</span>
+                      <span className="text-s3m-red font-bold">#{stats?.rank_position || 'غير محدد'}</span>
                     </div>
                   </div>
                 </div>
@@ -392,7 +404,7 @@ const Profile = () => {
                       <User className="h-5 w-5 text-s3m-red" />
                       <div>
                         <p className="text-white/60 text-sm">اسم المستخدم</p>
-                        <p className="text-white">{profile.username}</p>
+                        <p className="text-white">{profile?.username || 'غير محدد'}</p>
                       </div>
                     </div>
                     
@@ -402,7 +414,7 @@ const Profile = () => {
                       <Gamepad2 className="h-5 w-5 text-s3m-red" />
                       <div>
                         <p className="text-white/60 text-sm">معرف اللعبة</p>
-                        <p className="text-white">{profile.game_id || 'غير محدد'}</p>
+                        <p className="text-white">{profile?.game_id || 'غير محدد'}</p>
                       </div>
                     </div>
                     
@@ -412,7 +424,7 @@ const Profile = () => {
                       <Phone className="h-5 w-5 text-s3m-red" />
                       <div>
                         <p className="text-white/60 text-sm">رقم الهاتف</p>
-                        <p className="text-white">{profile.phone_number || 'غير محدد'}</p>
+                        <p className="text-white">{profile?.phone_number || 'غير محدد'}</p>
                       </div>
                     </div>
                     
@@ -422,11 +434,11 @@ const Profile = () => {
                       <Mail className="h-5 w-5 text-s3m-red" />
                       <div>
                         <p className="text-white/60 text-sm">البريد الإلكتروني</p>
-                        <p className="text-white">{user.email}</p>
+                        <p className="text-white">{user?.email || 'غير محدد'}</p>
                       </div>
                     </div>
                     
-                    {profile.bio && (
+                    {profile?.bio && (
                       <>
                         <Separator className="bg-white/10" />
                         <div>
