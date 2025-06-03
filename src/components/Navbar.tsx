@@ -184,7 +184,7 @@ const Navbar = () => {
                 
                 {userRole === 'admin' && (
                   <Link to="/admin">
-                    <Button variant="outline" size="sm" className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white">
+                    <Button variant="outline\" size="sm\" className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white">
                       <Settings className="h-4 w-4 ml-2" />
                       لوحة الإدارة
                     </Button>
