@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect, useState } from "react";
@@ -14,6 +13,7 @@ import UsersTable from "@/components/admin/UsersTable";
 import PointsManager from "@/components/admin/PointsManager";
 import TopPlayers from "@/components/admin/TopPlayers";
 import JoinRequests from "@/components/admin/JoinRequests";
+import TournamentRegistrations from "@/components/admin/TournamentRegistrations";
 
 type UserWithProfile = {
   id: string;
@@ -233,6 +233,9 @@ const AdminPanel = () => {
             <TabsTrigger value="requests" className="data-[state=active]:bg-s3m-red text-xs md:text-sm">
               طلبات الانضمام
             </TabsTrigger>
+            <TabsTrigger value="tournaments" className="data-[state=active]:bg-s3m-red text-xs md:text-sm">
+              طلبات البطولات
+            </TabsTrigger>
             <TabsTrigger value="users" className="data-[state=active]:bg-s3m-red text-xs md:text-sm">
               إدارة الأعضاء
             </TabsTrigger>
@@ -248,6 +251,17 @@ const AdminPanel = () => {
               </CardHeader>
               <CardContent className="p-3 md:p-6">
                 <JoinRequests />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="tournaments">
+            <Card className="gaming-card">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-s3m-red text-lg md:text-xl">طلبات المشاركة في البطولات</CardTitle>
+              </CardHeader>
+              <CardContent className="p-3 md:p-6">
+                <TournamentRegistrations />
               </CardContent>
             </Card>
           </TabsContent>

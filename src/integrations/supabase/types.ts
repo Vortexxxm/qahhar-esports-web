@@ -174,6 +174,36 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          read: boolean | null
+          title: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          read?: boolean | null
+          title: string
+          type?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          read?: boolean | null
+          title?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -216,7 +246,9 @@ export type Database = {
           contact_phone: string
           created_at: string
           id: string
+          image_url: string | null
           leader_id: string | null
+          notes: string | null
           player_1_id: string
           player_1_name: string
           player_2_id: string | null
@@ -228,13 +260,16 @@ export type Database = {
           status: string
           team_name: string
           tournament_id: string | null
+          updated_at: string | null
         }
         Insert: {
           contact_email: string
           contact_phone: string
           created_at?: string
           id?: string
+          image_url?: string | null
           leader_id?: string | null
+          notes?: string | null
           player_1_id: string
           player_1_name: string
           player_2_id?: string | null
@@ -246,13 +281,16 @@ export type Database = {
           status?: string
           team_name: string
           tournament_id?: string | null
+          updated_at?: string | null
         }
         Update: {
           contact_email?: string
           contact_phone?: string
           created_at?: string
           id?: string
+          image_url?: string | null
           leader_id?: string | null
+          notes?: string | null
           player_1_id?: string
           player_1_name?: string
           player_2_id?: string | null
@@ -264,6 +302,7 @@ export type Database = {
           status?: string
           team_name?: string
           tournament_id?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {

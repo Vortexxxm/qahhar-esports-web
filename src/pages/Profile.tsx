@@ -35,26 +35,39 @@ const Profile = () => {
     }
   }, [user, loading, navigate]);
 
-  const { data: profileData, isLoading: profileLoading } = useQuery({
+  const { data: profileData, isLoading: profileLoading, error: profileError } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
       
+      console.log('Fetching profile data for user:', user.id);
+      
+      // Get profile data
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
         
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Profile error:', profileError);
+        throw profileError;
+      }
       
+      // Get stats data
       const { data: statsData, error: statsError } = await supabase
         .from('leaderboard_scores')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
         
-      if (statsError) throw statsError;
+      if (statsError) {
+        console.error('Stats error:', statsError);
+        throw statsError;
+      }
+      
+      console.log('Profile data:', profileData);
+      console.log('Stats data:', statsData);
       
       return {
         profile: profileData,
@@ -190,7 +203,24 @@ const Profile = () => {
     );
   }
 
-  if (!user || !profileData?.profile || !profileData?.stats) {
+  if (profileError) {
+    console.error('Profile error:', profileError);
+    return (
+      <div className="min-h-screen py-12 flex items-center justify-center">
+        <div className="text-center text-white">
+          <p>حدث خطأ في تحميل بيانات الملف الشخصي</p>
+          <Button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 bg-gradient-to-r from-s3m-red to-red-600"
+          >
+            إعادة المحاولة
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
     return (
       <div className="min-h-screen py-12 flex items-center justify-center">
         <div className="text-center text-white">
@@ -206,7 +236,25 @@ const Profile = () => {
     );
   }
 
-  const { profile, stats } = profileData;
+  // Provide default values for profile and stats
+  const profile = profileData?.profile || {
+    username: 'مستخدم جديد',
+    full_name: '',
+    game_id: '',
+    bio: '',
+    phone_number: '',
+    avatar_url: null
+  };
+
+  const stats = profileData?.stats || {
+    points: 0,
+    wins: 0,
+    losses: 0,
+    kills: 0,
+    deaths: 0,
+    games_played: 0,
+    rank_position: null
+  };
 
   return (
     <div className="min-h-screen py-12">
@@ -224,9 +272,9 @@ const Profile = () => {
               <div className="flex items-end space-x-6">
                 <div className="relative">
                   <Avatar className="w-24 h-24 border-4 border-white shadow-xl">
-                    <AvatarImage src={profile?.avatar_url || ""} />
+                    <AvatarImage src={profile.avatar_url || ""} />
                     <AvatarFallback className="bg-s3m-red text-white text-2xl">
-                      {(profile?.username || 'U').slice(0, 2).toUpperCase()}
+                      {(profile.username || 'U').slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <label htmlFor="avatar-upload" className="absolute -bottom-2 -right-2 bg-s3m-red rounded-full p-2 cursor-pointer hover:bg-red-600 transition-colors">
@@ -246,10 +294,10 @@ const Profile = () => {
                   />
                 </div>
                 <div className="text-white mb-2">
-                  <h1 className="text-3xl font-bold mb-1">{profile?.username || 'مستخدم'}</h1>
-                  <p className="text-lg opacity-90">{profile?.full_name || ''}</p>
+                  <h1 className="text-3xl font-bold mb-1">{profile.username || 'مستخدم'}</h1>
+                  <p className="text-lg opacity-90">{profile.full_name || ''}</p>
                   <Badge className="bg-gradient-to-r from-s3m-red to-red-600 mt-2">
-                    {stats?.points?.toLocaleString() || 0} نقطة
+                    {stats.points?.toLocaleString() || 0} نقطة
                   </Badge>
                 </div>
               </div>
@@ -271,7 +319,7 @@ const Profile = () => {
               <Card className="gaming-card text-center">
                 <CardContent className="p-4">
                   <Trophy className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-white">{stats?.wins || 0}</p>
+                  <p className="text-2xl font-bold text-white">{stats.wins || 0}</p>
                   <p className="text-sm text-white/60">الانتصارات</p>
                 </CardContent>
               </Card>
@@ -279,7 +327,7 @@ const Profile = () => {
               <Card className="gaming-card text-center">
                 <CardContent className="p-4">
                   <Target className="h-8 w-8 text-red-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-white">{getKDRatio(stats?.kills || 0, stats?.deaths || 0)}</p>
+                  <p className="text-2xl font-bold text-white">{getKDRatio(stats.kills || 0, stats.deaths || 0)}</p>
                   <p className="text-sm text-white/60">نسبة K/D</p>
                 </CardContent>
               </Card>
@@ -287,7 +335,7 @@ const Profile = () => {
               <Card className="gaming-card text-center">
                 <CardContent className="p-4">
                   <Gamepad2 className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-white">{stats?.games_played || 0}</p>
+                  <p className="text-2xl font-bold text-white">{stats.games_played || 0}</p>
                   <p className="text-sm text-white/60">الألعاب</p>
                 </CardContent>
               </Card>
@@ -295,7 +343,7 @@ const Profile = () => {
               <Card className="gaming-card text-center">
                 <CardContent className="p-4">
                   <Users className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-white">{getWinRate(stats?.wins || 0, stats?.games_played || 0)}</p>
+                  <p className="text-2xl font-bold text-white">{getWinRate(stats.wins || 0, stats.games_played || 0)}</p>
                   <p className="text-sm text-white/60">معدل الفوز</p>
                 </CardContent>
               </Card>
@@ -311,29 +359,29 @@ const Profile = () => {
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <span className="text-white/80">إجمالي النقاط:</span>
-                      <span className="text-s3m-red font-bold">{stats?.points?.toLocaleString() || 0}</span>
+                      <span className="text-s3m-red font-bold">{stats.points?.toLocaleString() || 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/80">الانتصارات:</span>
-                      <span className="text-white font-bold">{stats?.wins || 0}</span>
+                      <span className="text-white font-bold">{stats.wins || 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/80">الهزائم:</span>
-                      <span className="text-white font-bold">{stats?.losses || 0}</span>
+                      <span className="text-white font-bold">{stats.losses || 0}</span>
                     </div>
                   </div>
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <span className="text-white/80">القتلات:</span>
-                      <span className="text-white font-bold">{stats?.kills || 0}</span>
+                      <span className="text-white font-bold">{stats.kills || 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/80">الوفيات:</span>
-                      <span className="text-white font-bold">{stats?.deaths || 0}</span>
+                      <span className="text-white font-bold">{stats.deaths || 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/80">الترتيب:</span>
-                      <span className="text-s3m-red font-bold">#{stats?.rank_position || 'غير محدد'}</span>
+                      <span className="text-s3m-red font-bold">#{stats.rank_position || 'غير محدد'}</span>
                     </div>
                   </div>
                 </div>
@@ -404,7 +452,7 @@ const Profile = () => {
                       <User className="h-5 w-5 text-s3m-red" />
                       <div>
                         <p className="text-white/60 text-sm">اسم المستخدم</p>
-                        <p className="text-white">{profile?.username || 'غير محدد'}</p>
+                        <p className="text-white">{profile.username || 'غير محدد'}</p>
                       </div>
                     </div>
                     
@@ -414,7 +462,7 @@ const Profile = () => {
                       <Gamepad2 className="h-5 w-5 text-s3m-red" />
                       <div>
                         <p className="text-white/60 text-sm">معرف اللعبة</p>
-                        <p className="text-white">{profile?.game_id || 'غير محدد'}</p>
+                        <p className="text-white">{profile.game_id || 'غير محدد'}</p>
                       </div>
                     </div>
                     
@@ -424,7 +472,7 @@ const Profile = () => {
                       <Phone className="h-5 w-5 text-s3m-red" />
                       <div>
                         <p className="text-white/60 text-sm">رقم الهاتف</p>
-                        <p className="text-white">{profile?.phone_number || 'غير محدد'}</p>
+                        <p className="text-white">{profile.phone_number || 'غير محدد'}</p>
                       </div>
                     </div>
                     
@@ -438,7 +486,7 @@ const Profile = () => {
                       </div>
                     </div>
                     
-                    {profile?.bio && (
+                    {profile.bio && (
                       <>
                         <Separator className="bg-white/10" />
                         <div>
