@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/sheet";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import NotificationsPopover from "./NotificationsPopover";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -179,6 +180,8 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <div className="flex items-center space-x-4">
+                <NotificationsPopover />
+                
                 {userRole === 'admin' && (
                   <Link to="/admin">
                     <Button variant="outline" size="sm" className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white">
