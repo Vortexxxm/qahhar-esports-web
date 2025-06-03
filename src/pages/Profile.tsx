@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Trophy, Target, Users, Gamepad2, Edit, Phone, User, Mail, Upload } from "lucide-react";
+import { Loader2, Trophy, Target, Users, Gamepad2, Edit, Phone, User, Mail, Upload, Save, X } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const Profile = () => {
@@ -42,15 +42,33 @@ const Profile = () => {
       
       console.log('Fetching profile data for user:', user.id);
       
-      // Get profile data
+      // Get profile data with better error handling
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .maybeSingle();
+        .single();
         
       if (profileError) {
         console.error('Profile error:', profileError);
+        // If profile doesn't exist, create it
+        if (profileError.code === 'PGRST116') {
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              id: user.id,
+              username: user.email?.split('@')[0] || 'مستخدم',
+              full_name: '',
+              game_id: '',
+              bio: '',
+              phone_number: ''
+            })
+            .select()
+            .single();
+          
+          if (createError) throw createError;
+          return { profile: newProfile, stats: null };
+        }
         throw profileError;
       }
       
@@ -75,7 +93,47 @@ const Profile = () => {
       };
     },
     enabled: !!user?.id,
+    refetchOnWindowFocus: false,
   });
+  
+  // Set up real-time subscription for profile updates
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('profile-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Profile updated:', payload);
+          queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'leaderboard_scores',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Stats updated:', payload);
+          queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, queryClient]);
   
   useEffect(() => {
     if (profileData?.profile) {
@@ -93,7 +151,10 @@ const Profile = () => {
     mutationFn: async (data: typeof formData) => {
       const { error } = await supabase
         .from('profiles')
-        .update(data)
+        .update({
+          ...data,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', user?.id);
 
       if (error) throw error;
@@ -122,7 +183,7 @@ const Profile = () => {
       setUploading(true);
       
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}.${fileExt}`;
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       const filePath = `avatars/${fileName}`;
 
       // Upload the file
@@ -140,7 +201,10 @@ const Profile = () => {
       // Update the profile with the new avatar URL
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ avatar_url: publicUrl })
+        .update({ 
+          avatar_url: publicUrl,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', user.id);
 
       if (updateError) throw updateError;
@@ -238,7 +302,7 @@ const Profile = () => {
 
   // Provide default values for profile and stats
   const profile = profileData?.profile || {
-    username: 'مستخدم جديد',
+    username: user?.email?.split('@')[0] || 'مستخدم',
     full_name: '',
     game_id: '',
     bio: '',
@@ -257,24 +321,24 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen py-12">
-      <div className="container mx-auto px-4 max-w-6xl">
-        {/* Header with Background Image */}
+    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header with Background Image - Full Width */}
         <div className="relative mb-8">
           <div 
-            className="h-64 rounded-lg bg-cover bg-center relative overflow-hidden"
+            className="h-48 sm:h-64 rounded-xl bg-cover bg-center relative overflow-hidden"
             style={{
               backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1920&q=80')`
             }}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/20 to-red-600/20" />
-            <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
-              <div className="flex items-end space-x-6">
+            <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/30 to-red-600/30" />
+            <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-end space-y-4 sm:space-y-0 sm:space-x-6">
                 <div className="relative">
-                  <Avatar className="w-24 h-24 border-4 border-white shadow-xl">
+                  <Avatar className="w-20 h-20 sm:w-24 sm:h-24 border-4 border-white shadow-xl">
                     <AvatarImage src={profile.avatar_url || ""} />
-                    <AvatarFallback className="bg-s3m-red text-white text-2xl">
-                      {(profile.username || 'U').slice(0, 2).toUpperCase()}
+                    <AvatarFallback className="bg-s3m-red text-white text-xl sm:text-2xl">
+                      {(profile.username || profile.full_name || 'U').slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <label htmlFor="avatar-upload" className="absolute -bottom-2 -right-2 bg-s3m-red rounded-full p-2 cursor-pointer hover:bg-red-600 transition-colors">
@@ -293,58 +357,88 @@ const Profile = () => {
                     disabled={uploading}
                   />
                 </div>
-                <div className="text-white mb-2">
-                  <h1 className="text-3xl font-bold mb-1">{profile.username || 'مستخدم'}</h1>
-                  <p className="text-lg opacity-90">{profile.full_name || ''}</p>
+                <div className="text-white">
+                  <h1 className="text-2xl sm:text-3xl font-bold mb-1">
+                    {profile.username || 'مستخدم'}
+                  </h1>
+                  <p className="text-base sm:text-lg opacity-90">
+                    {profile.full_name || 'مرحباً بك'}
+                  </p>
                   <Badge className="bg-gradient-to-r from-s3m-red to-red-600 mt-2">
                     {stats.points?.toLocaleString() || 0} نقطة
                   </Badge>
                 </div>
               </div>
-              <Button
-                onClick={() => setIsEditing(!isEditing)}
-                className="bg-white/20 backdrop-blur text-white border border-white/30 hover:bg-white/30"
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                {isEditing ? "إلغاء" : "تعديل"}
-              </Button>
+              <div className="flex gap-2">
+                {isEditing ? (
+                  <>
+                    <Button
+                      onClick={handleSave}
+                      disabled={updateProfileMutation.isPending}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                      size="sm"
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      {updateProfileMutation.isPending ? "جاري الحفظ..." : "حفظ"}
+                    </Button>
+                    <Button
+                      onClick={() => setIsEditing(false)}
+                      variant="outline"
+                      className="border-white/30 text-white hover:bg-white/10"
+                      size="sm"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      إلغاء
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    onClick={() => setIsEditing(true)}
+                    className="bg-white/20 backdrop-blur text-white border border-white/30 hover:bg-white/30"
+                    size="sm"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    تعديل
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Stats Cards */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="gaming-card text-center">
                 <CardContent className="p-4">
-                  <Trophy className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-white">{stats.wins || 0}</p>
-                  <p className="text-sm text-white/60">الانتصارات</p>
+                  <Trophy className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500 mx-auto mb-2" />
+                  <p className="text-xl sm:text-2xl font-bold text-white">{stats.wins || 0}</p>
+                  <p className="text-xs sm:text-sm text-white/60">الانتصارات</p>
                 </CardContent>
               </Card>
               
               <Card className="gaming-card text-center">
                 <CardContent className="p-4">
-                  <Target className="h-8 w-8 text-red-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-white">{getKDRatio(stats.kills || 0, stats.deaths || 0)}</p>
-                  <p className="text-sm text-white/60">نسبة K/D</p>
+                  <Target className="h-6 w-6 sm:h-8 sm:w-8 text-red-500 mx-auto mb-2" />
+                  <p className="text-xl sm:text-2xl font-bold text-white">{getKDRatio(stats.kills || 0, stats.deaths || 0)}</p>
+                  <p className="text-xs sm:text-sm text-white/60">نسبة K/D</p>
                 </CardContent>
               </Card>
               
               <Card className="gaming-card text-center">
                 <CardContent className="p-4">
-                  <Gamepad2 className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-white">{stats.games_played || 0}</p>
-                  <p className="text-sm text-white/60">الألعاب</p>
+                  <Gamepad2 className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500 mx-auto mb-2" />
+                  <p className="text-xl sm:text-2xl font-bold text-white">{stats.games_played || 0}</p>
+                  <p className="text-xs sm:text-sm text-white/60">الألعاب</p>
                 </CardContent>
               </Card>
               
               <Card className="gaming-card text-center">
                 <CardContent className="p-4">
-                  <Users className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-white">{getWinRate(stats.wins || 0, stats.games_played || 0)}</p>
-                  <p className="text-sm text-white/60">معدل الفوز</p>
+                  <Users className="h-6 w-6 sm:h-8 sm:w-8 text-green-500 mx-auto mb-2" />
+                  <p className="text-xl sm:text-2xl font-bold text-white">{getWinRate(stats.wins || 0, stats.games_played || 0)}</p>
+                  <p className="text-xs sm:text-sm text-white/60">معدل الفوز</p>
                 </CardContent>
               </Card>
             </div>
@@ -355,7 +449,7 @@ const Profile = () => {
                 <CardTitle className="text-s3m-red">الإحصائيات التفصيلية</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <span className="text-white/80">إجمالي النقاط:</span>
@@ -403,7 +497,8 @@ const Profile = () => {
                       <Input
                         value={formData.username}
                         onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                        className="bg-black/20 border-s3m-red/30 text-white"
+                        className="bg-black/20 border-s3m-red/30 text-white placeholder:text-white/40"
+                        placeholder="أدخل اسم المستخدم"
                       />
                     </div>
                     <div className="space-y-2">
@@ -411,7 +506,8 @@ const Profile = () => {
                       <Input
                         value={formData.full_name}
                         onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
-                        className="bg-black/20 border-s3m-red/30 text-white"
+                        className="bg-black/20 border-s3m-red/30 text-white placeholder:text-white/40"
+                        placeholder="أدخل الاسم الكامل"
                       />
                     </div>
                     <div className="space-y-2">
@@ -419,7 +515,8 @@ const Profile = () => {
                       <Input
                         value={formData.game_id}
                         onChange={(e) => setFormData(prev => ({ ...prev, game_id: e.target.value }))}
-                        className="bg-black/20 border-s3m-red/30 text-white"
+                        className="bg-black/20 border-s3m-red/30 text-white placeholder:text-white/40"
+                        placeholder="أدخل معرف اللعبة"
                       />
                     </div>
                     <div className="space-y-2">
@@ -427,7 +524,8 @@ const Profile = () => {
                       <Input
                         value={formData.phone_number}
                         onChange={(e) => setFormData(prev => ({ ...prev, phone_number: e.target.value }))}
-                        className="bg-black/20 border-s3m-red/30 text-white"
+                        className="bg-black/20 border-s3m-red/30 text-white placeholder:text-white/40"
+                        placeholder="أدخل رقم الهاتف"
                       />
                     </div>
                     <div className="space-y-2">
@@ -435,54 +533,58 @@ const Profile = () => {
                       <Input
                         value={formData.bio}
                         onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                        className="bg-black/20 border-s3m-red/30 text-white"
+                        className="bg-black/20 border-s3m-red/30 text-white placeholder:text-white/40"
+                        placeholder="أدخل نبذة تعريفية"
                       />
                     </div>
-                    <Button 
-                      onClick={handleSave}
-                      disabled={updateProfileMutation.isPending}
-                      className="w-full bg-gradient-to-r from-s3m-red to-red-600"
-                    >
-                      {updateProfileMutation.isPending ? "جاري الحفظ..." : "حفظ التغييرات"}
-                    </Button>
                   </>
                 ) : (
                   <>
-                    <div className="flex items-center space-x-3">
-                      <User className="h-5 w-5 text-s3m-red" />
-                      <div>
+                    <div className="flex items-center space-x-3 space-x-reverse">
+                      <User className="h-5 w-5 text-s3m-red flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
                         <p className="text-white/60 text-sm">اسم المستخدم</p>
-                        <p className="text-white">{profile.username || 'غير محدد'}</p>
+                        <p className="text-white truncate">{profile.username || 'غير محدد'}</p>
                       </div>
                     </div>
                     
                     <Separator className="bg-white/10" />
                     
-                    <div className="flex items-center space-x-3">
-                      <Gamepad2 className="h-5 w-5 text-s3m-red" />
-                      <div>
+                    <div className="flex items-center space-x-3 space-x-reverse">
+                      <User className="h-5 w-5 text-s3m-red flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-white/60 text-sm">الاسم الكامل</p>
+                        <p className="text-white truncate">{profile.full_name || 'غير محدد'}</p>
+                      </div>
+                    </div>
+                    
+                    <Separator className="bg-white/10" />
+                    
+                    <div className="flex items-center space-x-3 space-x-reverse">
+                      <Gamepad2 className="h-5 w-5 text-s3m-red flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
                         <p className="text-white/60 text-sm">معرف اللعبة</p>
-                        <p className="text-white">{profile.game_id || 'غير محدد'}</p>
+                        <p className="text-white truncate">{profile.game_id || 'غير محدد'}</p>
                       </div>
                     </div>
                     
                     <Separator className="bg-white/10" />
                     
-                    <div className="flex items-center space-x-3">
-                      <Phone className="h-5 w-5 text-s3m-red" />
-                      <div>
+                    <div className="flex items-center space-x-3 space-x-reverse">
+                      <Phone className="h-5 w-5 text-s3m-red flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
                         <p className="text-white/60 text-sm">رقم الهاتف</p>
-                        <p className="text-white">{profile.phone_number || 'غير محدد'}</p>
+                        <p className="text-white truncate">{profile.phone_number || 'غير محدد'}</p>
                       </div>
                     </div>
                     
                     <Separator className="bg-white/10" />
                     
-                    <div className="flex items-center space-x-3">
-                      <Mail className="h-5 w-5 text-s3m-red" />
-                      <div>
+                    <div className="flex items-center space-x-3 space-x-reverse">
+                      <Mail className="h-5 w-5 text-s3m-red flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
                         <p className="text-white/60 text-sm">البريد الإلكتروني</p>
-                        <p className="text-white">{user?.email || 'غير محدد'}</p>
+                        <p className="text-white truncate">{user?.email || 'غير محدد'}</p>
                       </div>
                     </div>
                     
@@ -491,7 +593,7 @@ const Profile = () => {
                         <Separator className="bg-white/10" />
                         <div>
                           <p className="text-white/60 text-sm mb-2">النبذة التعريفية</p>
-                          <p className="text-white">{profile.bio}</p>
+                          <p className="text-white break-words">{profile.bio}</p>
                         </div>
                       </>
                     )}
