@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -49,7 +48,7 @@ const TournamentEditor = ({ tournament, onClose }: TournamentEditorProps) => {
     prize_info: "",
     rules: "",
     image_url: "",
-    status: "upcoming" as const
+    status: "upcoming" as 'upcoming' | 'active' | 'completed' | 'cancelled'
   });
 
   useEffect(() => {
@@ -279,7 +278,7 @@ const TournamentEditor = ({ tournament, onClose }: TournamentEditorProps) => {
 
           <div className="space-y-2">
             <Label className="text-white">حالة البطولة</Label>
-            <Select value={formData.status} onValueChange={(value: any) => setFormData(prev => ({ ...prev, status: value }))}>
+            <Select value={formData.status} onValueChange={(value: 'upcoming' | 'active' | 'completed' | 'cancelled') => setFormData(prev => ({ ...prev, status: value }))}>
               <SelectTrigger className="bg-black/20 border-s3m-red/30 text-white">
                 <SelectValue />
               </SelectTrigger>

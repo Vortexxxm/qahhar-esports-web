@@ -21,7 +21,7 @@ type Notification = {
   type: string;
   read: boolean;
   created_at: string;
-  data: any;
+  data?: any;
 };
 
 const NotificationsPopover = () => {
