@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -89,8 +90,11 @@ const Profile = () => {
       };
     },
     enabled: !!user?.id,
+    staleTime: 1000 * 60 * 10, // Keep data fresh for 10 minutes
+    gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
     refetchOnWindowFocus: false,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 3,
+    retryDelay: 1000,
   });
   
   useEffect(() => {
@@ -109,7 +113,7 @@ const Profile = () => {
         (payload) => {
           console.log('Profile updated:', payload);
           queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
-          queryClient.invalidateQueries({ queryKey: ['profile'] }); // Also invalidate general profile queries
+          queryClient.invalidateQueries({ queryKey: ['profile'] });
         }
       )
       .on(
@@ -157,7 +161,6 @@ const Profile = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      // Invalidate all profile queries to ensure consistency across components
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       queryClient.refetchQueries({ queryKey: ['profile', user?.id] });
       setIsEditing(false);
@@ -208,7 +211,6 @@ const Profile = () => {
       return publicUrl;
     },
     onSuccess: () => {
-      // Force refresh of all profile queries across all components
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       queryClient.refetchQueries({ queryKey: ['profile', user?.id] });
       toast({
@@ -272,7 +274,7 @@ const Profile = () => {
         <div className="text-center text-white">
           <p>حدث خطأ في تحميل بيانات الملف الشخصي</p>
           <Button 
-            onClick={() => window.location.reload()} 
+            onClick={() => queryClient.refetchQueries({ queryKey: ['profile', user?.id] })} 
             className="mt-4 bg-gradient-to-r from-s3m-red to-red-600"
           >
             إعادة المحاولة
@@ -317,6 +319,16 @@ const Profile = () => {
     rank_position: null
   };
 
+  const getAvatarUrl = () => {
+    const avatarUrl = profile.avatar_url;
+    if (avatarUrl && avatarUrl.trim() !== '') {
+      const cleanUrl = avatarUrl.split('?')[0];
+      const timestamp = Date.now();
+      return `${cleanUrl}?t=${timestamp}&cache_bust=${Math.random()}`;
+    }
+    return null;
+  };
+
   return (
     <div className="min-h-screen w-full">
       <div className="w-full max-w-none mx-auto px-4 py-8">
@@ -334,8 +346,8 @@ const Profile = () => {
                 <div className="relative">
                   <Avatar className="w-24 h-24 border-4 border-white shadow-xl">
                     <AvatarImage 
-                      src={profile.avatar_url || ""} 
-                      key={profile.avatar_url} // Force re-render when avatar changes
+                      src={getAvatarUrl() || ""} 
+                      key={getAvatarUrl()}
                     />
                     <AvatarFallback className="bg-s3m-red text-white text-2xl">
                       {(profile.username || profile.full_name || 'U').slice(0, 2).toUpperCase()}
