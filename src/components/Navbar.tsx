@@ -46,11 +46,11 @@ const Navbar = () => {
       return data;
     },
     enabled: !!user?.id,
-    staleTime: 0, // Always fetch fresh data
-    cacheTime: 0, // Don't cache
+    staleTime: 0,
+    gcTime: 0,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: 30000,
   });
 
   const handleSignOut = async () => {
@@ -81,14 +81,11 @@ const Navbar = () => {
   };
 
   const getAvatarUrl = () => {
-    // Force refresh by adding current timestamp
     const avatarUrl = profile?.avatar_url;
     if (avatarUrl && avatarUrl.trim() !== '') {
-      // Remove any existing timestamp parameters
       const cleanUrl = avatarUrl.split('?')[0];
-      const separator = '?';
-      const timestamp = new Date().getTime();
-      return `${cleanUrl}${separator}t=${timestamp}&refresh=${Math.random()}`;
+      const timestamp = Date.now();
+      return `${cleanUrl}?t=${timestamp}&cache_bust=${Math.random()}`;
     }
     return null;
   };
