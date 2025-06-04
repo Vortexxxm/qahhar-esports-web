@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -24,10 +25,12 @@ const Navbar = () => {
   const { user, signOut, userRole } = useAuth();
   const navigate = useNavigate();
 
-  const { data: profile } = useQuery({
+  const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
+      
+      console.log('Fetching profile for navbar:', user.id);
       
       const { data, error } = await supabase
         .from('profiles')
@@ -35,10 +38,17 @@ const Navbar = () => {
         .eq('id', user.id)
         .single();
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profile for navbar:', error);
+        throw error;
+      }
+      
+      console.log('Profile data for navbar:', data);
       return data;
     },
     enabled: !!user?.id,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: true,
   });
 
   const handleSignOut = async () => {
@@ -54,6 +64,18 @@ const Navbar = () => {
     { name: "البطولات", href: "/tournaments", icon: Trophy },
     { name: "انضم إلينا", href: "/join-us" },
   ];
+
+  const getUserDisplayName = () => {
+    if (profile?.username) return profile.username;
+    if (profile?.full_name) return profile.full_name;
+    if (user?.email) return user.email.split('@')[0];
+    return 'مستخدم';
+  };
+
+  const getUserInitials = () => {
+    const name = getUserDisplayName();
+    return name.slice(0, 2).toUpperCase();
+  };
 
   const MobileUserButton = () => {
     if (!user) {
@@ -74,9 +96,13 @@ const Navbar = () => {
         <SheetTrigger asChild>
           <Button variant="ghost" className="p-0 h-auto">
             <Avatar className="h-10 w-10 border-2 border-s3m-red/50">
-              <AvatarImage src={profile?.avatar_url || ""} alt="Profile" />
+              <AvatarImage 
+                src={profile?.avatar_url || ""} 
+                alt="Profile"
+                key={profile?.avatar_url} // Force re-render when avatar changes
+              />
               <AvatarFallback className="bg-s3m-red text-white">
-                <User className="h-5 w-5" />
+                {profileLoading ? <User className="h-5 w-5" /> : getUserInitials()}
               </AvatarFallback>
             </Avatar>
           </Button>
@@ -86,12 +112,16 @@ const Navbar = () => {
             {/* User Profile Section */}
             <div className="flex flex-col items-center py-6 border-b border-s3m-red/20">
               <Avatar className="h-20 w-20 mb-4 border-4 border-s3m-red/50">
-                <AvatarImage src={profile?.avatar_url || ""} alt="Profile" />
+                <AvatarImage 
+                  src={profile?.avatar_url || ""} 
+                  alt="Profile"
+                  key={profile?.avatar_url} // Force re-render when avatar changes
+                />
                 <AvatarFallback className="bg-s3m-red text-white text-xl">
-                  <User className="h-8 w-8" />
+                  {profileLoading ? <User className="h-8 w-8" /> : getUserInitials()}
                 </AvatarFallback>
               </Avatar>
-              <h3 className="text-lg font-bold text-white">{profile?.username || 'مستخدم'}</h3>
+              <h3 className="text-lg font-bold text-white">{getUserDisplayName()}</h3>
               <p className="text-sm text-white/60">{user.email}</p>
             </div>
 
@@ -119,7 +149,6 @@ const Navbar = () => {
               </nav>
             </div>
 
-            {/* Admin & Actions Section */}
             <div className="border-t border-s3m-red/20 pt-6 space-y-2">
               {userRole === 'admin' && (
                 <Link
@@ -184,7 +213,7 @@ const Navbar = () => {
                 
                 {userRole === 'admin' && (
                   <Link to="/admin">
-                    <Button variant="outline\" size="sm\" className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white">
+                    <Button variant="outline" size="sm" className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white">
                       <Settings className="h-4 w-4 ml-2" />
                       لوحة الإدارة
                     </Button>
@@ -195,9 +224,13 @@ const Navbar = () => {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={profile?.avatar_url || ""} alt="Profile" />
+                        <AvatarImage 
+                          src={profile?.avatar_url || ""} 
+                          alt="Profile"
+                          key={profile?.avatar_url} // Force re-render when avatar changes
+                        />
                         <AvatarFallback className="bg-s3m-red text-white">
-                          <User className="h-4 w-4" />
+                          {profileLoading ? <User className="h-4 w-4" /> : getUserInitials()}
                         </AvatarFallback>
                       </Avatar>
                     </Button>

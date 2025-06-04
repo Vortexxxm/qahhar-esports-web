@@ -107,38 +107,69 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
+    let mounted = true;
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return;
+        
+        console.log('Auth state change:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          await fetchUserRole(session.user.id);
-          await initializeUserProfile(session.user.id);
-          // Invalidate and refetch relevant queries
-          queryClient.invalidateQueries({ queryKey: ['profile'] });
-          queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
+          // Fetch user data immediately
+          setTimeout(async () => {
+            if (mounted) {
+              await fetchUserRole(session.user.id);
+              await initializeUserProfile(session.user.id);
+              // Force invalidate all queries to refresh data
+              queryClient.invalidateQueries({ queryKey: ['profile'] });
+              queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
+              queryClient.refetchQueries({ queryKey: ['profile', session.user.id] });
+            }
+          }, 0);
         } else {
           setUserRole(null);
+          // Clear all queries when user logs out
+          queryClient.clear();
         }
         
         setLoading(false);
       }
     );
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserRole(session.user.id);
-        initializeUserProfile(session.user.id);
+    // Check for existing session on mount
+    const getInitialSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!mounted) return;
+        
+        console.log('Initial session:', session?.user?.id);
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          await fetchUserRole(session.user.id);
+          await initializeUserProfile(session.user.id);
+          // Ensure queries are fresh
+          queryClient.invalidateQueries({ queryKey: ['profile'] });
+          queryClient.refetchQueries({ queryKey: ['profile', session.user.id] });
+        }
+      } catch (error) {
+        console.error('Error getting initial session:', error);
+      } finally {
+        if (mounted) setLoading(false);
       }
-      setLoading(false);
-    });
+    };
 
-    return () => subscription.unsubscribe();
+    getInitialSession();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [queryClient]);
 
   const signUp = async (email: string, password: string, userData: any) => {
@@ -211,6 +242,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await supabase.auth.signOut();
       // Clear all queries from the cache
       queryClient.clear();
+      setUser(null);
+      setSession(null);
+      setUserRole(null);
       toast({
         title: "تم تسجيل الخروج",
         description: "نراك قريباً!",

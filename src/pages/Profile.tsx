@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -91,6 +90,7 @@ const Profile = () => {
     },
     enabled: !!user?.id,
     refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
   
   useEffect(() => {
@@ -109,6 +109,7 @@ const Profile = () => {
         (payload) => {
           console.log('Profile updated:', payload);
           queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+          queryClient.invalidateQueries({ queryKey: ['profile'] }); // Also invalidate general profile queries
         }
       )
       .on(
@@ -156,7 +157,9 @@ const Profile = () => {
       if (error) throw error;
     },
     onSuccess: () => {
+      // Invalidate all profile queries to ensure consistency across components
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.refetchQueries({ queryKey: ['profile', user?.id] });
       setIsEditing(false);
       toast({
         title: "تم التحديث بنجاح",
@@ -205,7 +208,9 @@ const Profile = () => {
       return publicUrl;
     },
     onSuccess: () => {
+      // Force refresh of all profile queries across all components
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.refetchQueries({ queryKey: ['profile', user?.id] });
       toast({
         title: "تم تحديث الصورة",
         description: "تم رفع صورتك الشخصية بنجاح",
@@ -328,7 +333,10 @@ const Profile = () => {
               <div className="flex items-end space-x-6 space-x-reverse">
                 <div className="relative">
                   <Avatar className="w-24 h-24 border-4 border-white shadow-xl">
-                    <AvatarImage src={profile.avatar_url || ""} />
+                    <AvatarImage 
+                      src={profile.avatar_url || ""} 
+                      key={profile.avatar_url} // Force re-render when avatar changes
+                    />
                     <AvatarFallback className="bg-s3m-red text-white text-2xl">
                       {(profile.username || profile.full_name || 'U').slice(0, 2).toUpperCase()}
                     </AvatarFallback>
