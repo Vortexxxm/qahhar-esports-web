@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -47,10 +46,11 @@ const Navbar = () => {
       return data;
     },
     enabled: !!user?.id,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache
     refetchOnWindowFocus: true,
     refetchOnMount: true,
-    retry: 3,
+    refetchInterval: 30000, // Refetch every 30 seconds
   });
 
   const handleSignOut = async () => {
@@ -81,11 +81,14 @@ const Navbar = () => {
   };
 
   const getAvatarUrl = () => {
-    // Add timestamp to force refresh and prevent caching issues
+    // Force refresh by adding current timestamp
     const avatarUrl = profile?.avatar_url;
-    if (avatarUrl) {
-      const separator = avatarUrl.includes('?') ? '&' : '?';
-      return `${avatarUrl}${separator}t=${Date.now()}`;
+    if (avatarUrl && avatarUrl.trim() !== '') {
+      // Remove any existing timestamp parameters
+      const cleanUrl = avatarUrl.split('?')[0];
+      const separator = '?';
+      const timestamp = new Date().getTime();
+      return `${cleanUrl}${separator}t=${timestamp}&refresh=${Math.random()}`;
     }
     return null;
   };
@@ -112,6 +115,7 @@ const Navbar = () => {
               <AvatarImage 
                 src={getAvatarUrl() || ""} 
                 alt="Profile"
+                key={getAvatarUrl()} // Force re-render when URL changes
                 onError={(e) => {
                   console.error('Avatar failed to load:', e);
                 }}
@@ -130,6 +134,7 @@ const Navbar = () => {
                 <AvatarImage 
                   src={getAvatarUrl() || ""} 
                   alt="Profile"
+                  key={getAvatarUrl()} // Force re-render when URL changes
                   onError={(e) => {
                     console.error('Avatar failed to load:', e);
                   }}
@@ -244,6 +249,7 @@ const Navbar = () => {
                         <AvatarImage 
                           src={getAvatarUrl() || ""} 
                           alt="Profile"
+                          key={getAvatarUrl()} // Force re-render when URL changes
                           onError={(e) => {
                             console.error('Avatar failed to load:', e);
                           }}
