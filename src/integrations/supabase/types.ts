@@ -177,6 +177,7 @@ export type Database = {
       notifications: {
         Row: {
           created_at: string | null
+          deleted_at: string | null
           id: string
           message: string
           read: boolean | null
@@ -186,6 +187,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          deleted_at?: string | null
           id?: string
           message: string
           read?: boolean | null
@@ -195,6 +197,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          deleted_at?: string | null
           id?: string
           message?: string
           read?: boolean | null
@@ -237,6 +240,48 @@ export type Database = {
           phone_number?: string | null
           updated_at?: string
           username?: string
+        }
+        Relationships: []
+      }
+      team_members: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_featured: boolean | null
+          name: string
+          order_position: number | null
+          role: string
+          social_links: Json | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean | null
+          name: string
+          order_position?: number | null
+          role: string
+          social_links?: Json | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean | null
+          name?: string
+          order_position?: number | null
+          role?: string
+          social_links?: Json | null
+          title?: string | null
+          updated_at?: string
         }
         Relationships: []
       }

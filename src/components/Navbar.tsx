@@ -49,6 +49,8 @@ const Navbar = () => {
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    retry: 3,
   });
 
   const handleSignOut = async () => {
@@ -62,6 +64,7 @@ const Navbar = () => {
     { name: "المتصدرين", href: "/leaderboard" },
     { name: "الأخبار", href: "/news", icon: Newspaper },
     { name: "البطولات", href: "/tournaments", icon: Trophy },
+    { name: "الفريق والمطورين", href: "/team" },
     { name: "انضم إلينا", href: "/join-us" },
   ];
 
@@ -75,6 +78,16 @@ const Navbar = () => {
   const getUserInitials = () => {
     const name = getUserDisplayName();
     return name.slice(0, 2).toUpperCase();
+  };
+
+  const getAvatarUrl = () => {
+    // Add timestamp to force refresh and prevent caching issues
+    const avatarUrl = profile?.avatar_url;
+    if (avatarUrl) {
+      const separator = avatarUrl.includes('?') ? '&' : '?';
+      return `${avatarUrl}${separator}t=${Date.now()}`;
+    }
+    return null;
   };
 
   const MobileUserButton = () => {
@@ -97,9 +110,11 @@ const Navbar = () => {
           <Button variant="ghost" className="p-0 h-auto">
             <Avatar className="h-10 w-10 border-2 border-s3m-red/50">
               <AvatarImage 
-                src={profile?.avatar_url || ""} 
+                src={getAvatarUrl() || ""} 
                 alt="Profile"
-                key={profile?.avatar_url} // Force re-render when avatar changes
+                onError={(e) => {
+                  console.error('Avatar failed to load:', e);
+                }}
               />
               <AvatarFallback className="bg-s3m-red text-white">
                 {profileLoading ? <User className="h-5 w-5" /> : getUserInitials()}
@@ -113,9 +128,11 @@ const Navbar = () => {
             <div className="flex flex-col items-center py-6 border-b border-s3m-red/20">
               <Avatar className="h-20 w-20 mb-4 border-4 border-s3m-red/50">
                 <AvatarImage 
-                  src={profile?.avatar_url || ""} 
+                  src={getAvatarUrl() || ""} 
                   alt="Profile"
-                  key={profile?.avatar_url} // Force re-render when avatar changes
+                  onError={(e) => {
+                    console.error('Avatar failed to load:', e);
+                  }}
                 />
                 <AvatarFallback className="bg-s3m-red text-white text-xl">
                   {profileLoading ? <User className="h-8 w-8" /> : getUserInitials()}
@@ -225,9 +242,11 @@ const Navbar = () => {
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                       <Avatar className="h-8 w-8">
                         <AvatarImage 
-                          src={profile?.avatar_url || ""} 
+                          src={getAvatarUrl() || ""} 
                           alt="Profile"
-                          key={profile?.avatar_url} // Force re-render when avatar changes
+                          onError={(e) => {
+                            console.error('Avatar failed to load:', e);
+                          }}
                         />
                         <AvatarFallback className="bg-s3m-red text-white">
                           {profileLoading ? <User className="h-4 w-4" /> : getUserInitials()}

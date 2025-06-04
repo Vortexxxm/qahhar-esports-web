@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import { ar } from "date-fns/locale";
-import { CheckCircle, XCircle, Phone, User, Calendar, Trophy, Clock, MessageSquare } from "lucide-react";
+import { CheckCircle, XCircle, Phone, User, Calendar, Trophy, Clock, MessageSquare, Trash2 } from "lucide-react";
 
 type JoinRequest = {
   id: string;
@@ -73,8 +73,43 @@ const JoinRequests = () => {
     },
   });
 
+  const deleteRequestMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('join_requests')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['join-requests'] });
+      toast({
+        title: "تم الحذف",
+        description: "تم حذف الطلب بنجاح",
+      });
+      setSelectedRequest(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleUpdateStatus = (id: string, status: 'reviewed' | 'rejected') => {
     updateRequestMutation.mutate({ id, status });
+  };
+
+  const handleDeleteRequest = (id: string) => {
+    deleteRequestMutation.mutate(id);
+  };
+
+  const canDeleteRequest = (createdAt: string) => {
+    const daysSinceCreated = differenceInDays(new Date(), new Date(createdAt));
+    return daysSinceCreated >= 1;
   };
 
   const getRankLabel = (rank: string) => {
@@ -128,13 +163,26 @@ const JoinRequests = () => {
         <Card className="gaming-card">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-s3m-red">تفاصيل الطلب</CardTitle>
-            <Button
-              variant="outline"
-              className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white"
-              onClick={() => setSelectedRequest(null)}
-            >
-              عودة للقائمة
-            </Button>
+            <div className="flex gap-2">
+              {canDeleteRequest(selectedRequest.created_at) && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDeleteRequest(selectedRequest.id)}
+                  className="flex items-center gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  حذف الطلب
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white"
+                onClick={() => setSelectedRequest(null)}
+              >
+                عودة للقائمة
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
@@ -252,7 +300,22 @@ const JoinRequests = () => {
                       </div>
                     </div>
                   </div>
-                  {getStatusBadge(request.status)}
+                  <div className="flex items-center gap-2">
+                    {getStatusBadge(request.status)}
+                    {canDeleteRequest(request.created_at) && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteRequest(request.id);
+                        }}
+                        className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
