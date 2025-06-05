@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -236,21 +235,49 @@ const Profile = () => {
         .from('images')
         .getPublicUrl(filePath);
 
+      // Add timestamp for immediate cache busting
+      const newAvatarUrl = `${publicUrl}?t=${Date.now()}`;
+
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ 
-          avatar_url: publicUrl,
+          avatar_url: newAvatarUrl,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
 
       if (updateError) throw updateError;
 
-      return publicUrl;
+      // Immediately update local state to show the new image
+      setLocalProfileData(prev => prev ? {
+        ...prev,
+        profile: {
+          ...prev.profile,
+          avatar_url: newAvatarUrl
+        }
+      } : null);
+
+      return newAvatarUrl;
     },
-    onSuccess: () => {
+    onSuccess: (newAvatarUrl) => {
+      // Force refresh all queries with new data
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       queryClient.refetchQueries({ queryKey: ['profile', user?.id] });
+      
+      // Also update the navbar profile query specifically
+      queryClient.setQueryData(['profile', user?.id], (oldData: any) => {
+        if (oldData?.profile) {
+          return {
+            ...oldData,
+            profile: {
+              ...oldData.profile,
+              avatar_url: newAvatarUrl
+            }
+          };
+        }
+        return oldData;
+      });
+
       toast({
         title: "تم تحديث الصورة",
         description: "تم رفع صورتك الشخصية بنجاح",
@@ -302,9 +329,9 @@ const Profile = () => {
     const currentProfile = localProfileData?.profile || profileData?.profile;
     const avatarUrl = currentProfile?.avatar_url;
     if (avatarUrl && avatarUrl.trim() !== '') {
-      const cleanUrl = avatarUrl.split('?')[0];
-      const timestamp = Date.now();
-      return `${cleanUrl}?t=${timestamp}&cache_bust=${Math.random()}`;
+      // Always add a fresh timestamp to prevent caching
+      const separator = avatarUrl.includes('?') ? '&' : '?';
+      return `${avatarUrl}${separator}t=${Date.now()}&cache_bust=${Math.random()}`;
     }
     return null;
   };
@@ -424,7 +451,10 @@ const Profile = () => {
                   <Avatar className="w-24 h-24 border-4 border-white shadow-xl">
                     <AvatarImage 
                       src={getAvatarUrl() || ""} 
-                      key={getAvatarUrl()}
+                      key={getAvatarUrl() || 'no-avatar'}
+                      onError={(e) => {
+                        console.error('Avatar failed to load:', e);
+                      }}
                     />
                     <AvatarFallback className="bg-s3m-red text-white text-2xl">
                       {(profile.username || profile.full_name || 'U').slice(0, 2).toUpperCase()}

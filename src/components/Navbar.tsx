@@ -84,9 +84,9 @@ const Navbar = () => {
   const getAvatarUrl = () => {
     const avatarUrl = profile?.avatar_url;
     if (avatarUrl && avatarUrl.trim() !== '') {
-      const cleanUrl = avatarUrl.split('?')[0];
-      const timestamp = Date.now();
-      return `${cleanUrl}?t=${timestamp}&cache_bust=${Math.random()}`;
+      // Always add fresh timestamp to prevent caching issues
+      const separator = avatarUrl.includes('?') ? '&' : '?';
+      return `${avatarUrl}${separator}t=${Date.now()}&cache_bust=${Math.random()}`;
     }
     return null;
   };
@@ -113,7 +113,7 @@ const Navbar = () => {
               <AvatarImage 
                 src={getAvatarUrl() || ""} 
                 alt="Profile"
-                key={getAvatarUrl()}
+                key={getAvatarUrl() || 'no-avatar'}
                 onError={(e) => {
                   console.error('Avatar failed to load:', e);
                 }}
@@ -135,7 +135,7 @@ const Navbar = () => {
                 <AvatarImage 
                   src={getAvatarUrl() || ""} 
                   alt="Profile"
-                  key={getAvatarUrl()}
+                  key={getAvatarUrl() || 'no-avatar'}
                   onError={(e) => {
                     console.error('Avatar failed to load:', e);
                   }}
@@ -254,7 +254,7 @@ const Navbar = () => {
                         <AvatarImage 
                           src={getAvatarUrl() || ""} 
                           alt="Profile"
-                          key={getAvatarUrl()}
+                          key={getAvatarUrl() || 'no-avatar'}
                           onError={(e) => {
                             console.error('Avatar failed to load:', e);
                           }}
