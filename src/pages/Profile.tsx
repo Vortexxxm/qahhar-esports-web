@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Trophy, Target, Users, Gamepad2, Edit, Phone, User, Mail, Upload, Save, X } from "lucide-react";
+import { Loader2, Trophy, Target, Users, Gamepad2, Edit, Phone, User, Mail, Upload, Save, X, AlertCircle } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const Profile = () => {
@@ -308,6 +309,12 @@ const Profile = () => {
     return null;
   };
 
+  // Check if profile is incomplete
+  const isProfileIncomplete = (profile: any) => {
+    if (!profile) return true;
+    return !profile.full_name || !profile.game_id || !profile.bio || !profile.phone_number;
+  };
+
   // Loading state
   if (loading || profileLoading) {
     return (
@@ -373,9 +380,35 @@ const Profile = () => {
     rank_position: null
   };
 
+  const profileIncomplete = isProfileIncomplete(profile);
+
   return (
     <div className="min-h-screen w-full">
       <div className="w-full max-w-none mx-auto px-4 py-8">
+        {/* Welcome Message for New Users */}
+        {profileIncomplete && !isEditing && (
+          <Card className="gaming-card mb-8 border-s3m-red/30">
+            <CardContent className="p-6">
+              <div className="flex items-start space-x-4 space-x-reverse">
+                <AlertCircle className="h-6 w-6 text-s3m-red mt-1 flex-shrink-0" />
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-s3m-red mb-2">مرحباً بك في S3M E-Sports!</h3>
+                  <p className="text-white/80 mb-4">
+                    يبدو أن هذه زيارتك الأولى. لتحصل على أفضل تجربة معنا، يرجى إكمال معلوماتك الشخصية.
+                  </p>
+                  <Button 
+                    onClick={() => setIsEditing(true)}
+                    className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-s3m-red"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    إكمال الملف الشخصي
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Header Section */}
         <div className="relative w-full mb-8">
           <div 
@@ -415,10 +448,10 @@ const Profile = () => {
                 </div>
                 <div className="text-white">
                   <h1 className="text-3xl font-bold mb-1">
-                    {profile.username || 'مستخدم'}
+                    {profile.username || 'مستخدم جديد'}
                   </h1>
                   <p className="text-lg opacity-90">
-                    {profile.full_name || 'مرحباً بك'}
+                    {profile.full_name || 'مرحباً بك في فريق S3M'}
                   </p>
                   <Badge className="bg-gradient-to-r from-s3m-red to-red-600 mt-2">
                     {stats.points?.toLocaleString() || 0} نقطة
@@ -465,7 +498,6 @@ const Profile = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
           {/* Stats Cards */}
           <div className="lg:col-span-2 space-y-6">
-            {/* ... keep existing code (stats cards and detailed stats) */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="gaming-card text-center">
                 <CardContent className="p-4">
@@ -544,7 +576,12 @@ const Profile = () => {
           <div className="space-y-6">
             <Card className="gaming-card">
               <CardHeader>
-                <CardTitle className="text-s3m-red">المعلومات الشخصية</CardTitle>
+                <CardTitle className="text-s3m-red flex items-center">
+                  المعلومات الشخصية
+                  {profileIncomplete && (
+                    <AlertCircle className="h-4 w-4 text-yellow-500 mr-2" />
+                  )}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {isEditing ? (
@@ -601,7 +638,11 @@ const Profile = () => {
                       <User className="h-5 w-5 text-s3m-red flex-shrink-0" />
                       <div className="min-w-0 flex-1">
                         <p className="text-white/60 text-sm">اسم المستخدم</p>
-                        <p className="text-white truncate">{profile.username || 'غير محدد'}</p>
+                        <p className="text-white truncate">
+                          {profile.username || (
+                            <span className="text-white/40 italic">لم يتم تحديده بعد</span>
+                          )}
+                        </p>
                       </div>
                     </div>
                     
@@ -611,7 +652,11 @@ const Profile = () => {
                       <User className="h-5 w-5 text-s3m-red flex-shrink-0" />
                       <div className="min-w-0 flex-1">
                         <p className="text-white/60 text-sm">الاسم الكامل</p>
-                        <p className="text-white truncate">{profile.full_name || 'غير محدد'}</p>
+                        <p className="text-white truncate">
+                          {profile.full_name || (
+                            <span className="text-white/40 italic">لم يتم تحديده بعد</span>
+                          )}
+                        </p>
                       </div>
                     </div>
                     
@@ -621,7 +666,11 @@ const Profile = () => {
                       <Gamepad2 className="h-5 w-5 text-s3m-red flex-shrink-0" />
                       <div className="min-w-0 flex-1">
                         <p className="text-white/60 text-sm">معرف اللعبة</p>
-                        <p className="text-white truncate">{profile.game_id || 'غير محدد'}</p>
+                        <p className="text-white truncate">
+                          {profile.game_id || (
+                            <span className="text-white/40 italic">لم يتم تحديده بعد</span>
+                          )}
+                        </p>
                       </div>
                     </div>
                     
@@ -631,7 +680,11 @@ const Profile = () => {
                       <Phone className="h-5 w-5 text-s3m-red flex-shrink-0" />
                       <div className="min-w-0 flex-1">
                         <p className="text-white/60 text-sm">رقم الهاتف</p>
-                        <p className="text-white truncate">{profile.phone_number || 'غير محدد'}</p>
+                        <p className="text-white truncate">
+                          {profile.phone_number || (
+                            <span className="text-white/40 italic">لم يتم تحديده بعد</span>
+                          )}
+                        </p>
                       </div>
                     </div>
                     
@@ -645,12 +698,16 @@ const Profile = () => {
                       </div>
                     </div>
                     
-                    {profile.bio && (
+                    {(profile.bio || isEditing) && (
                       <>
                         <Separator className="bg-white/10" />
                         <div>
                           <p className="text-white/60 text-sm mb-2">النبذة التعريفية</p>
-                          <p className="text-white break-words">{profile.bio}</p>
+                          <p className="text-white break-words">
+                            {profile.bio || (
+                              <span className="text-white/40 italic">لم يتم إضافة نبذة تعريفية بعد</span>
+                            )}
+                          </p>
                         </div>
                       </>
                     )}
