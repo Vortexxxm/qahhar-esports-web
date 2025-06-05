@@ -209,35 +209,47 @@ export type Database = {
       }
       profiles: {
         Row: {
+          activity_score: number | null
           avatar_url: string | null
           bio: string | null
           created_at: string
           full_name: string | null
           game_id: string | null
           id: string
+          is_first_visit: boolean | null
           phone_number: string | null
+          rank_title: string | null
+          total_likes: number | null
           updated_at: string
           username: string
         }
         Insert: {
+          activity_score?: number | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           full_name?: string | null
           game_id?: string | null
           id: string
+          is_first_visit?: boolean | null
           phone_number?: string | null
+          rank_title?: string | null
+          total_likes?: number | null
           updated_at?: string
           username: string
         }
         Update: {
+          activity_score?: number | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           full_name?: string | null
           game_id?: string | null
           id?: string
+          is_first_visit?: boolean | null
           phone_number?: string | null
+          rank_title?: string | null
+          total_likes?: number | null
           updated_at?: string
           username?: string
         }
@@ -413,6 +425,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_activity: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_login: string | null
+          login_count: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_login?: string | null
+          login_count?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_login?: string | null
+          login_count?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_likes: {
+        Row: {
+          created_at: string | null
+          id: string
+          liked_user_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          liked_user_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          liked_user_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -445,6 +505,10 @@ export type Database = {
       }
       update_leaderboard_rankings: {
         Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      update_user_activity: {
+        Args: { user_uuid: string }
         Returns: undefined
       }
     }

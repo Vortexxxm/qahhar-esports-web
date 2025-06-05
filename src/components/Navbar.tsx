@@ -63,6 +63,7 @@ const Navbar = () => {
     { name: "الرئيسية", href: "/" },
     { name: "من نحن", href: "/about" },
     { name: "المتصدرين", href: "/leaderboard" },
+    { name: "اللاعبين", href: "/players", icon: Users },
     { name: "الأخبار", href: "/news", icon: Newspaper },
     { name: "البطولات", href: "/tournaments", icon: Trophy },
     { name: "الفريق والمطورين", href: "/team" },

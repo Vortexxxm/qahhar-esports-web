@@ -49,6 +49,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  // Function to track user activity
+  const trackUserActivity = async (userId: string) => {
+    try {
+      await supabase.rpc('update_user_activity', { user_uuid: userId });
+    } catch (error) {
+      console.error('Error tracking user activity:', error);
+    }
+  };
+
   // Function to initialize user profile
   const initializeUserProfile = async (userId: string, userData?: any) => {
     try {
@@ -67,6 +76,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             id: userId,
             username: userData?.username || user?.email?.split('@')[0] || 'مستخدم',
             full_name: userData?.full_name || '',
+            rank_title: 'Rookie',
+            total_likes: 0,
+            activity_score: 0,
+            is_first_visit: true,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           });
@@ -119,11 +132,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch user data immediately
+          // Track user activity and fetch data
           setTimeout(async () => {
             if (mounted) {
-              await fetchUserRole(session.user.id);
-              await initializeUserProfile(session.user.id);
+              await Promise.all([
+                fetchUserRole(session.user.id),
+                initializeUserProfile(session.user.id),
+                trackUserActivity(session.user.id)
+              ]);
               // Force invalidate all queries to refresh data
               queryClient.invalidateQueries({ queryKey: ['profile'] });
               queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
@@ -151,8 +167,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          await fetchUserRole(session.user.id);
-          await initializeUserProfile(session.user.id);
+          await Promise.all([
+            fetchUserRole(session.user.id),
+            initializeUserProfile(session.user.id),
+            trackUserActivity(session.user.id)
+          ]);
           // Ensure queries are fresh
           queryClient.invalidateQueries({ queryKey: ['profile'] });
           queryClient.refetchQueries({ queryKey: ['profile', session.user.id] });
