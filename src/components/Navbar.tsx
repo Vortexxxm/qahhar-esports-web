@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -46,8 +47,8 @@ const Navbar = () => {
       return data;
     },
     enabled: !!user?.id,
-    staleTime: 0,
-    gcTime: 0,
+    staleTime: 1000 * 60 * 10,
+    gcTime: 1000 * 60 * 30,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     refetchInterval: 30000,
@@ -112,7 +113,7 @@ const Navbar = () => {
               <AvatarImage 
                 src={getAvatarUrl() || ""} 
                 alt="Profile"
-                key={getAvatarUrl()} // Force re-render when URL changes
+                key={getAvatarUrl()}
                 onError={(e) => {
                   console.error('Avatar failed to load:', e);
                 }}
@@ -123,15 +124,18 @@ const Navbar = () => {
             </Avatar>
           </Button>
         </SheetTrigger>
-        <SheetContent side="right" className="w-80 bg-black/95 border-s3m-red/20 text-white">
-          <div className="flex flex-col h-full">
+        <SheetContent 
+          side="right" 
+          className="w-80 bg-black/95 border-s3m-red/20 text-white overflow-y-auto max-h-screen"
+        >
+          <div className="flex flex-col h-full min-h-0">
             {/* User Profile Section */}
-            <div className="flex flex-col items-center py-6 border-b border-s3m-red/20">
+            <div className="flex flex-col items-center py-6 border-b border-s3m-red/20 flex-shrink-0">
               <Avatar className="h-20 w-20 mb-4 border-4 border-s3m-red/50">
                 <AvatarImage 
                   src={getAvatarUrl() || ""} 
                   alt="Profile"
-                  key={getAvatarUrl()} // Force re-render when URL changes
+                  key={getAvatarUrl()}
                   onError={(e) => {
                     console.error('Avatar failed to load:', e);
                   }}
@@ -144,14 +148,15 @@ const Navbar = () => {
               <p className="text-sm text-white/60">{user.email}</p>
             </div>
 
-            {/* Navigation Menu */}
-            <div className="flex-1 py-6">
+            {/* Navigation Menu - Scrollable */}
+            <div className="flex-1 py-6 overflow-y-auto">
               <nav className="space-y-2">
                 {navItems.map((item) => (
                   <Link
                     key={item.name}
                     to={item.href}
                     className="flex items-center space-x-3 px-4 py-3 rounded-lg text-white/80 hover:text-s3m-red hover:bg-s3m-red/10 transition-all duration-200"
+                    onClick={() => setIsOpen(false)}
                   >
                     {item.icon && <item.icon className="h-5 w-5" />}
                     <span className="font-medium">{item.name}</span>
@@ -161,6 +166,7 @@ const Navbar = () => {
                 <Link
                   to="/profile"
                   className="flex items-center space-x-3 px-4 py-3 rounded-lg text-white/80 hover:text-s3m-red hover:bg-s3m-red/10 transition-all duration-200"
+                  onClick={() => setIsOpen(false)}
                 >
                   <User className="h-5 w-5" />
                   <span className="font-medium">الملف الشخصي</span>
@@ -168,11 +174,13 @@ const Navbar = () => {
               </nav>
             </div>
 
-            <div className="border-t border-s3m-red/20 pt-6 space-y-2">
+            {/* Admin and Logout Section - Fixed at bottom */}
+            <div className="border-t border-s3m-red/20 pt-4 pb-6 flex-shrink-0 space-y-2">
               {userRole === 'admin' && (
                 <Link
                   to="/admin"
                   className="flex items-center space-x-3 px-4 py-3 rounded-lg text-white/80 hover:text-s3m-red hover:bg-s3m-red/10 transition-all duration-200"
+                  onClick={() => setIsOpen(false)}
                 >
                   <Settings className="h-5 w-5" />
                   <span className="font-medium">لوحة الإدارة</span>
@@ -246,7 +254,7 @@ const Navbar = () => {
                         <AvatarImage 
                           src={getAvatarUrl() || ""} 
                           alt="Profile"
-                          key={getAvatarUrl()} // Force re-render when URL changes
+                          key={getAvatarUrl()}
                           onError={(e) => {
                             console.error('Avatar failed to load:', e);
                           }}
@@ -257,7 +265,7 @@ const Navbar = () => {
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 bg-black/90 border-s3m-red/20" align="end" forceMount>
+                  <DropdownMenuContent className="w-56 bg-black/90 border-s3m-red/20 z-50" align="end" forceMount>
                     <DropdownMenuItem disabled className="text-white/60">
                       {user.email}
                     </DropdownMenuItem>
@@ -310,7 +318,7 @@ const Navbar = () => {
         {/* Mobile Navigation for non-authenticated users */}
         {!user && isOpen && (
           <div className="md:hidden py-4 border-t border-s3m-red/20">
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col space-y-4 max-h-96 overflow-y-auto">
               {navItems.map((item) => (
                 <Link
                   key={item.name}

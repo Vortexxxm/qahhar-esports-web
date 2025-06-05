@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +20,8 @@ const Profile = () => {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
+  
+  // Local state for form data - initialized with empty values
   const [formData, setFormData] = useState({
     full_name: "",
     username: "",
@@ -28,6 +29,9 @@ const Profile = () => {
     bio: "",
     phone_number: ""
   });
+  
+  // Local state for profile data to prevent disappearing
+  const [localProfileData, setLocalProfileData] = useState(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -42,6 +46,7 @@ const Profile = () => {
       
       console.log('Fetching profile data for user:', user.id);
       
+      // Get profile data
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -51,6 +56,7 @@ const Profile = () => {
       if (profileError) {
         console.error('Profile error:', profileError);
         if (profileError.code === 'PGRST116') {
+          // Create new profile if doesn't exist
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
             .insert({
@@ -65,11 +71,26 @@ const Profile = () => {
             .single();
           
           if (createError) throw createError;
+          
+          // Also create leaderboard entry
+          await supabase
+            .from('leaderboard_scores')
+            .insert({
+              user_id: user.id,
+              points: 0,
+              wins: 0,
+              losses: 0,
+              kills: 0,
+              deaths: 0,
+              games_played: 0
+            });
+            
           return { profile: newProfile, stats: null };
         }
         throw profileError;
       }
       
+      // Get stats data
       const { data: statsData, error: statsError } = await supabase
         .from('leaderboard_scores')
         .select('*')
@@ -78,25 +99,53 @@ const Profile = () => {
         
       if (statsError) {
         console.error('Stats error:', statsError);
-        throw statsError;
+        // Don't throw error for stats, just log it
       }
       
-      console.log('Profile data:', profileData);
-      console.log('Stats data:', statsData);
-      
-      return {
+      const result = {
         profile: profileData,
-        stats: statsData
+        stats: statsData || {
+          points: 0,
+          wins: 0,
+          losses: 0,
+          kills: 0,
+          deaths: 0,
+          games_played: 0,
+          rank_position: null
+        }
       };
+      
+      console.log('Profile data loaded:', result);
+      return result;
     },
     enabled: !!user?.id,
-    staleTime: 1000 * 60 * 10, // Keep data fresh for 10 minutes
-    gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
-    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 15, // Keep data fresh for 15 minutes
+    gcTime: 1000 * 60 * 60, // Keep in cache for 1 hour
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
     retry: 3,
     retryDelay: 1000,
   });
   
+  // Update local state when profile data changes
+  useEffect(() => {
+    if (profileData) {
+      console.log('Updating local profile data:', profileData);
+      setLocalProfileData(profileData);
+      
+      if (profileData.profile) {
+        setFormData({
+          full_name: profileData.profile.full_name || "",
+          username: profileData.profile.username || "",
+          game_id: profileData.profile.game_id || "",
+          bio: profileData.profile.bio || "",
+          phone_number: profileData.profile.phone_number || ""
+        });
+      }
+    }
+  }, [profileData]);
+
+  // Real-time subscription for profile updates
   useEffect(() => {
     if (!user?.id) return;
 
@@ -135,18 +184,6 @@ const Profile = () => {
       supabase.removeChannel(channel);
     };
   }, [user?.id, queryClient]);
-  
-  useEffect(() => {
-    if (profileData?.profile) {
-      setFormData({
-        full_name: profileData.profile.full_name || "",
-        username: profileData.profile.username || "",
-        game_id: profileData.profile.game_id || "",
-        bio: profileData.profile.bio || "",
-        phone_number: profileData.profile.phone_number || ""
-      });
-    }
-  }, [profileData]);
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -249,6 +286,7 @@ const Profile = () => {
     updateProfileMutation.mutate(formData);
   };
 
+  // Helper functions
   const getKDRatio = (kills: number, deaths: number) => {
     if (deaths === 0) return kills > 0 ? kills.toFixed(1) : "0.0";
     return (kills / deaths).toFixed(1);
@@ -259,6 +297,18 @@ const Profile = () => {
     return `${((wins / gamesPlayed) * 100).toFixed(1)}%`;
   };
 
+  const getAvatarUrl = () => {
+    const currentProfile = localProfileData?.profile || profileData?.profile;
+    const avatarUrl = currentProfile?.avatar_url;
+    if (avatarUrl && avatarUrl.trim() !== '') {
+      const cleanUrl = avatarUrl.split('?')[0];
+      const timestamp = Date.now();
+      return `${cleanUrl}?t=${timestamp}&cache_bust=${Math.random()}`;
+    }
+    return null;
+  };
+
+  // Loading state
   if (loading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -267,7 +317,8 @@ const Profile = () => {
     );
   }
 
-  if (profileError) {
+  // Error state
+  if (profileError && !localProfileData) {
     console.error('Profile error:', profileError);
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -284,6 +335,7 @@ const Profile = () => {
     );
   }
 
+  // No user state
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -300,7 +352,9 @@ const Profile = () => {
     );
   }
 
-  const profile = profileData?.profile || {
+  // Use local data if available, fallback to fresh data
+  const currentData = localProfileData || profileData;
+  const profile = currentData?.profile || {
     username: user?.email?.split('@')[0] || 'مستخدم',
     full_name: '',
     game_id: '',
@@ -309,7 +363,7 @@ const Profile = () => {
     avatar_url: null
   };
 
-  const stats = profileData?.stats || {
+  const stats = currentData?.stats || {
     points: 0,
     wins: 0,
     losses: 0,
@@ -317,16 +371,6 @@ const Profile = () => {
     deaths: 0,
     games_played: 0,
     rank_position: null
-  };
-
-  const getAvatarUrl = () => {
-    const avatarUrl = profile.avatar_url;
-    if (avatarUrl && avatarUrl.trim() !== '') {
-      const cleanUrl = avatarUrl.split('?')[0];
-      const timestamp = Date.now();
-      return `${cleanUrl}?t=${timestamp}&cache_bust=${Math.random()}`;
-    }
-    return null;
   };
 
   return (
@@ -421,6 +465,7 @@ const Profile = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
           {/* Stats Cards */}
           <div className="lg:col-span-2 space-y-6">
+            {/* ... keep existing code (stats cards and detailed stats) */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="gaming-card text-center">
                 <CardContent className="p-4">
