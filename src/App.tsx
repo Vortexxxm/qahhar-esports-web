@@ -1,40 +1,3 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider } from "@/contexts/AuthContext";
-import Navbar from "@/components/Navbar";
-import Index from "@/pages/Index";
-import Home from "./pages/Home";
-import About from "./pages/About";
-import News from "./pages/News";
-import Tournaments from "./pages/Tournaments";
-import TournamentDetails from "./pages/TournamentDetails";
-import Leaderboard from "./pages/Leaderboard";
-import JoinUs from "./pages/JoinUs";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import Profile from "./pages/Profile";
-import AdminPanel from "./pages/AdminPanel";
-import NotFound from "./pages/NotFound";
-import Terms from "./pages/Terms";
-import Privacy from "./pages/Privacy";
-import ResetPassword from "./pages/ResetPassword";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
-import Team from "./pages/Team";
-import Players from "@/pages/Players";
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 30,   // 30 minutes
-    },
-  },
-});
-
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -65,10 +28,10 @@ function App() {
                   <Route path="/players" element={<Players />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-              </AuthProvider>
-            </div>
-            <Toaster />
-            <Sonner />
+                <Toaster />
+                <Sonner />
+              </div>
+            </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
       </ThemeProvider>
