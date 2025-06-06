@@ -22,7 +22,7 @@ interface UserProfileData {
     wins: number;
     kills: number;
     deaths: number;
-  };
+  } | null;
 }
 
 interface UserProfileProps {
@@ -47,7 +47,8 @@ const UserProfile = ({ userId, compact = false }: UserProfileProps) => {
 
   const fetchUserProfile = async () => {
     try {
-      const { data, error } = await supabase
+      // First fetch the profile data
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select(`
           id,
@@ -56,21 +57,33 @@ const UserProfile = ({ userId, compact = false }: UserProfileProps) => {
           avatar_url,
           rank_title,
           total_likes,
-          bio,
-          leaderboard_scores (
-            points,
-            wins,
-            kills,
-            deaths
-          )
+          bio
         `)
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
+      if (profileError) throw profileError;
       
-      setProfileData(data);
-      setLikesCount(data.total_likes || 0);
+      // Then fetch leaderboard data separately
+      const { data: leaderboardData, error: leaderboardError } = await supabase
+        .from('leaderboard_scores')
+        .select(`
+          points,
+          wins,
+          kills,
+          deaths
+        `)
+        .eq('user_id', userId)
+        .single();
+
+      // Combine the data
+      const userData: UserProfileData = {
+        ...profileData,
+        leaderboard_scores: leaderboardError ? null : leaderboardData
+      };
+      
+      setProfileData(userData);
+      setLikesCount(userData.total_likes || 0);
     } catch (error) {
       console.error('Error fetching user profile:', error);
     } finally {
