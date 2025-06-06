@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect, useState } from "react";
@@ -229,17 +230,17 @@ const AdminPanel = () => {
         />
 
         <Tabs defaultValue="requests" className="space-y-4">
-          <TabsList className="bg-black/20 border border-s3m-red/20 w-full md:w-auto">
-            <TabsTrigger value="requests" className="data-[state=active]:bg-s3m-red text-xs md:text-sm">
+          <TabsList className="bg-black/20 border border-s3m-red/20 w-full md:w-auto overflow-x-auto flex flex-nowrap">
+            <TabsTrigger value="requests" className="data-[state=active]:bg-s3m-red text-xs md:text-sm whitespace-nowrap">
               طلبات الانضمام
             </TabsTrigger>
-            <TabsTrigger value="tournaments" className="data-[state=active]:bg-s3m-red text-xs md:text-sm">
+            <TabsTrigger value="tournaments" className="data-[state=active]:bg-s3m-red text-xs md:text-sm whitespace-nowrap">
               طلبات البطولات
             </TabsTrigger>
-            <TabsTrigger value="users" className="data-[state=active]:bg-s3m-red text-xs md:text-sm">
+            <TabsTrigger value="users" className="data-[state=active]:bg-s3m-red text-xs md:text-sm whitespace-nowrap">
               إدارة الأعضاء
             </TabsTrigger>
-            <TabsTrigger value="points" className="data-[state=active]:bg-s3m-red text-xs md:text-sm">
+            <TabsTrigger value="points" className="data-[state=active]:bg-s3m-red text-xs md:text-sm whitespace-nowrap">
               إدارة النقاط
             </TabsTrigger>
           </TabsList>
@@ -271,7 +272,7 @@ const AdminPanel = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-s3m-red text-lg md:text-xl">قائمة الأعضاء</CardTitle>
               </CardHeader>
-              <CardContent className="p-3 md:p-6">
+              <CardContent className="p-3 md:p-6 overflow-x-auto">
                 <UsersTable 
                   users={users || []}
                   currentUserId={user?.id || ''}

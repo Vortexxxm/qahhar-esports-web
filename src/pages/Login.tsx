@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { LogIn, UserPlus, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 const Login = () => {
   const { toast } = useToast();
@@ -130,6 +131,27 @@ const Login = () => {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`
+        }
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: "خطأ في تسجيل الدخول",
+        description: error.message,
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div 
       className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
@@ -212,6 +234,31 @@ const Login = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
+                    <Button 
+                      onClick={handleGoogleSignIn}
+                      className="w-full bg-white text-gray-900 hover:bg-gray-200 flex items-center justify-center gap-2 mb-4 relative"
+                      disabled={isLoading}
+                    >
+                      <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                        <g transform="matrix(1, 0, 0, 1, 0, 0)">
+                          <path d="M21.35,11.1H12v3.73h5.51c-0.52,2.48-2.76,4.34-5.51,4.34c-3.36,0-6.1-2.69-6.1-6s2.73-6,6.1-6c1.55,0,2.95,0.57,4.03,1.5l2.7-2.58C17.18,4.56,14.74,3.5,12,3.5c-4.97,0-9,3.99-9,8.9s4.03,8.9,9,8.9c4.97,0,8.54-3.5,8.54-8.29C21.54,12.44,21.47,11.78,21.35,11.1z" fill="#4285F4"></path>
+                          <path d="M3,11.1h4v3.73H3V11.1z" fill="#34A853"></path>
+                          <path d="M12,3.5c-1.97,0-3.79,0.71-5.2,1.88L3,2.6C5.02,1,8.29,0,12,0c3.72,0,6.98,1,9,2.6L18.2,5.38C16.79,4.21,14.97,3.5,12,3.5z" fill="#EA4335"></path>
+                          <path d="M12,21.3c-3.72,0-6.98-1-9-2.6l3.8-2.77C8.21,16.79,10.03,17.5,12,17.5c1.97,0,3.79-0.71,5.2-1.88l3.8,2.77C18.98,20.3,15.72,21.3,12,21.3z" fill="#FBBC05"></path>
+                        </g>
+                      </svg>
+                      <span>تسجيل الدخول باستخدام جوجل</span>
+                    </Button>
+
+                    <div className="relative my-6">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t border-gray-600"></span>
+                      </div>
+                      <div className="relative flex justify-center text-sm">
+                        <span className="px-2 bg-black/50 text-gray-400">أو تسجيل الدخول بالبريد الإلكتروني</span>
+                      </div>
+                    </div>
+
                     <form onSubmit={handleLogin} className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="email" className="text-white">البريد الإلكتروني</Label>
@@ -281,6 +328,31 @@ const Login = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
+                    <Button 
+                      onClick={handleGoogleSignIn}
+                      className="w-full bg-white text-gray-900 hover:bg-gray-200 flex items-center justify-center gap-2 mb-4"
+                      disabled={isLoading}
+                    >
+                      <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                        <g transform="matrix(1, 0, 0, 1, 0, 0)">
+                          <path d="M21.35,11.1H12v3.73h5.51c-0.52,2.48-2.76,4.34-5.51,4.34c-3.36,0-6.1-2.69-6.1-6s2.73-6,6.1-6c1.55,0,2.95,0.57,4.03,1.5l2.7-2.58C17.18,4.56,14.74,3.5,12,3.5c-4.97,0-9,3.99-9,8.9s4.03,8.9,9,8.9c4.97,0,8.54-3.5,8.54-8.29C21.54,12.44,21.47,11.78,21.35,11.1z" fill="#4285F4"></path>
+                          <path d="M3,11.1h4v3.73H3V11.1z" fill="#34A853"></path>
+                          <path d="M12,3.5c-1.97,0-3.79,0.71-5.2,1.88L3,2.6C5.02,1,8.29,0,12,0c3.72,0,6.98,1,9,2.6L18.2,5.38C16.79,4.21,14.97,3.5,12,3.5z" fill="#EA4335"></path>
+                          <path d="M12,21.3c-3.72,0-6.98-1-9-2.6l3.8-2.77C8.21,16.79,10.03,17.5,12,17.5c1.97,0,3.79-0.71,5.2-1.88l3.8,2.77C18.98,20.3,15.72,21.3,12,21.3z" fill="#FBBC05"></path>
+                        </g>
+                      </svg>
+                      <span>التسجيل باستخدام جوجل</span>
+                    </Button>
+
+                    <div className="relative my-6">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t border-gray-600"></span>
+                      </div>
+                      <div className="relative flex justify-center text-sm">
+                        <span className="px-2 bg-black/50 text-gray-400">أو التسجيل بالبريد الإلكتروني</span>
+                      </div>
+                    </div>
+
                     <form onSubmit={handleSignup} className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="signup-username" className="text-white">اسم المستخدم</Label>

@@ -415,9 +415,9 @@ const Profile = () => {
         {/* Welcome Message for New Users */}
         {profileIncomplete && !isEditing && (
           <Card className="gaming-card mb-8 border-s3m-red/30">
-            <CardContent className="p-6">
-              <div className="flex items-start space-x-4 space-x-reverse">
-                <AlertCircle className="h-6 w-6 text-s3m-red mt-1 flex-shrink-0" />
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center sm:space-x-4 sm:space-x-reverse">
+                <AlertCircle className="h-6 w-6 text-s3m-red mb-2 sm:mb-0 sm:mt-0 flex-shrink-0" />
                 <div className="flex-1">
                   <h3 className="text-lg font-bold text-s3m-red mb-2">مرحباً بك في S3M E-Sports!</h3>
                   <p className="text-white/80 mb-4">
@@ -439,16 +439,16 @@ const Profile = () => {
         {/* Header Section */}
         <div className="relative w-full mb-8">
           <div 
-            className="h-64 w-full rounded-xl bg-cover bg-center relative overflow-hidden"
+            className="h-48 md:h-64 w-full rounded-xl bg-cover bg-center relative overflow-hidden"
             style={{
               backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1920&q=80')`
             }}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/30 to-red-600/30" />
-            <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
-              <div className="flex items-end space-x-6 space-x-reverse">
+            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 flex flex-col md:flex-row md:items-end md:justify-between">
+              <div className="flex flex-col md:flex-row md:items-end space-y-3 md:space-y-0 md:space-x-6 md:space-x-reverse">
                 <div className="relative">
-                  <Avatar className="w-24 h-24 border-4 border-white shadow-xl">
+                  <Avatar className="w-20 h-20 md:w-24 md:h-24 border-4 border-white shadow-xl">
                     <AvatarImage 
                       src={getAvatarUrl() || ""} 
                       key={getAvatarUrl() || 'no-avatar'}
@@ -477,10 +477,10 @@ const Profile = () => {
                   />
                 </div>
                 <div className="text-white">
-                  <h1 className="text-3xl font-bold mb-1">
+                  <h1 className="text-2xl md:text-3xl font-bold mb-1">
                     {profile.username || 'مستخدم جديد'}
                   </h1>
-                  <p className="text-lg opacity-90">
+                  <p className="text-md md:text-lg opacity-90">
                     {profile.full_name || 'مرحباً بك في فريق S3M'}
                   </p>
                   <Badge className="bg-gradient-to-r from-s3m-red to-red-600 mt-2">
@@ -488,7 +488,7 @@ const Profile = () => {
                   </Badge>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 mt-4 md:mt-0">
                 {isEditing ? (
                   <>
                     <Button
@@ -525,51 +525,51 @@ const Profile = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 w-full">
           {/* Stats Cards */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
               <Card className="gaming-card text-center">
-                <CardContent className="p-4">
-                  <Trophy className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-white">{stats.wins || 0}</p>
-                  <p className="text-sm text-white/60">الانتصارات</p>
+                <CardContent className="p-3 md:p-4">
+                  <Trophy className="h-6 w-6 md:h-8 md:w-8 text-yellow-500 mx-auto mb-2" />
+                  <p className="text-xl md:text-2xl font-bold text-white">{stats.wins || 0}</p>
+                  <p className="text-xs md:text-sm text-white/60">الانتصارات</p>
                 </CardContent>
               </Card>
               
               <Card className="gaming-card text-center">
-                <CardContent className="p-4">
-                  <Target className="h-8 w-8 text-red-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-white">{getKDRatio(stats.kills || 0, stats.deaths || 0)}</p>
-                  <p className="text-sm text-white/60">نسبة K/D</p>
+                <CardContent className="p-3 md:p-4">
+                  <Target className="h-6 w-6 md:h-8 md:w-8 text-red-500 mx-auto mb-2" />
+                  <p className="text-xl md:text-2xl font-bold text-white">{getKDRatio(stats.kills || 0, stats.deaths || 0)}</p>
+                  <p className="text-xs md:text-sm text-white/60">نسبة K/D</p>
                 </CardContent>
               </Card>
               
               <Card className="gaming-card text-center">
-                <CardContent className="p-4">
-                  <Gamepad2 className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-white">{stats.games_played || 0}</p>
-                  <p className="text-sm text-white/60">الألعاب</p>
+                <CardContent className="p-3 md:p-4">
+                  <Gamepad2 className="h-6 w-6 md:h-8 md:w-8 text-blue-500 mx-auto mb-2" />
+                  <p className="text-xl md:text-2xl font-bold text-white">{stats.games_played || 0}</p>
+                  <p className="text-xs md:text-sm text-white/60">الألعاب</p>
                 </CardContent>
               </Card>
               
               <Card className="gaming-card text-center">
-                <CardContent className="p-4">
-                  <Users className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-white">{getWinRate(stats.wins || 0, stats.games_played || 0)}</p>
-                  <p className="text-sm text-white/60">معدل الفوز</p>
+                <CardContent className="p-3 md:p-4">
+                  <Users className="h-6 w-6 md:h-8 md:w-8 text-green-500 mx-auto mb-2" />
+                  <p className="text-xl md:text-2xl font-bold text-white">{getWinRate(stats.wins || 0, stats.games_played || 0)}</p>
+                  <p className="text-xs md:text-sm text-white/60">معدل الفوز</p>
                 </CardContent>
               </Card>
             </div>
 
             {/* Detailed Stats */}
             <Card className="gaming-card">
-              <CardHeader>
-                <CardTitle className="text-s3m-red">الإحصائيات التفصيلية</CardTitle>
+              <CardHeader className="pb-2 md:pb-3">
+                <CardTitle className="text-s3m-red text-lg md:text-xl">الإحصائيات التفصيلية</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <div className="space-y-3 md:space-y-4">
                     <div className="flex justify-between">
                       <span className="text-white/80">إجمالي النقاط:</span>
                       <span className="text-s3m-red font-bold">{stats.points?.toLocaleString() || 0}</span>
@@ -583,7 +583,7 @@ const Profile = () => {
                       <span className="text-white font-bold">{stats.losses || 0}</span>
                     </div>
                   </div>
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     <div className="flex justify-between">
                       <span className="text-white/80">القتلات:</span>
                       <span className="text-white font-bold">{stats.kills || 0}</span>
@@ -603,9 +603,9 @@ const Profile = () => {
           </div>
 
           {/* Profile Info */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             <Card className="gaming-card">
-              <CardHeader>
+              <CardHeader className="pb-2 md:pb-3">
                 <CardTitle className="text-s3m-red flex items-center">
                   المعلومات الشخصية
                   {profileIncomplete && (

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -219,21 +218,21 @@ const Navbar = () => {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          {/* Desktop Navigation - Enhanced with styling */}
+          <div className="hidden md:flex items-center space-x-1 lg:space-x-2">
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
-                className="flex items-center space-x-2 text-white/80 hover:text-s3m-red transition-colors duration-200 font-medium"
+                className="flex items-center space-x-1 px-3 py-2 text-white/80 hover:text-s3m-red hover:bg-white/5 rounded-md transition-all duration-200 font-medium text-sm lg:text-base"
               >
-                {item.icon && <item.icon className="h-4 w-4" />}
+                {item.icon && <item.icon className="h-4 w-4 mr-1" />}
                 <span>{item.name}</span>
               </Link>
             ))}
           </div>
 
-          {/* Desktop Auth Section */}
+          {/* Desktop Auth Section - Enhanced with animations */}
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <div className="flex items-center space-x-4">
@@ -241,8 +240,12 @@ const Navbar = () => {
                 
                 {userRole === 'admin' && (
                   <Link to="/admin">
-                    <Button variant="outline" size="sm" className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white">
-                      <Settings className="h-4 w-4 ml-2" />
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white transition-all duration-200"
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
                       لوحة الإدارة
                     </Button>
                   </Link>
@@ -250,8 +253,11 @@ const Navbar = () => {
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                      <Avatar className="h-8 w-8">
+                    <Button 
+                      variant="ghost" 
+                      className="relative h-8 w-8 rounded-full hover:bg-white/10 transition-colors duration-200 p-0"
+                    >
+                      <Avatar className="h-8 w-8 border border-s3m-red/30 transition-transform hover:scale-105 duration-200">
                         <AvatarImage 
                           src={getAvatarUrl() || ""} 
                           alt="Profile"
@@ -266,18 +272,22 @@ const Navbar = () => {
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 bg-black/90 border-s3m-red/20 z-50" align="end" forceMount>
+                  <DropdownMenuContent 
+                    className="w-56 bg-black/90 border-s3m-red/20 z-50 animate-in fade-in-80 slide-in-from-top-5" 
+                    align="end" 
+                    forceMount
+                  >
                     <DropdownMenuItem disabled className="text-white/60">
                       {user.email}
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="text-white hover:bg-s3m-red/20">
                       <Link to="/profile" className="flex items-center">
-                        <User className="ml-2 h-4 w-4" />
+                        <User className="mr-2 h-4 w-4" />
                         <span>الملف الشخصي</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleSignOut} className="text-white hover:bg-s3m-red/20">
-                      <LogOut className="ml-2 h-4 w-4" />
+                      <LogOut className="mr-2 h-4 w-4" />
                       <span>تسجيل الخروج</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -286,12 +296,17 @@ const Navbar = () => {
             ) : (
               <div className="flex items-center space-x-4">
                 <Link to="/login">
-                  <Button variant="ghost" className="text-white hover:text-s3m-red">
+                  <Button 
+                    variant="ghost" 
+                    className="text-white hover:text-s3m-red hover:bg-white/5 transition-all duration-200"
+                  >
                     تسجيل الدخول
                   </Button>
                 </Link>
                 <Link to="/signup">
-                  <Button className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-s3m-red">
+                  <Button 
+                    className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-s3m-red shadow-lg shadow-s3m-red/20 hover:shadow-s3m-red/40 transition-all duration-300"
+                  >
                     انضم الآن
                   </Button>
                 </Link>
@@ -318,16 +333,16 @@ const Navbar = () => {
 
         {/* Mobile Navigation for non-authenticated users */}
         {!user && isOpen && (
-          <div className="md:hidden py-4 border-t border-s3m-red/20">
-            <div className="flex flex-col space-y-4 max-h-96 overflow-y-auto">
+          <div className="md:hidden py-4 border-t border-s3m-red/20 animate-in slide-in-from-top-5 duration-300">
+            <div className="flex flex-col space-y-2 max-h-96 overflow-y-auto">
               {navItems.map((item) => (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className="flex items-center space-x-3 text-white/80 hover:text-s3m-red transition-colors duration-200 font-medium px-4 py-2"
+                  className="flex items-center space-x-3 text-white/80 hover:text-s3m-red hover:bg-white/5 transition-colors duration-200 font-medium rounded-md px-4 py-2"
                   onClick={() => setIsOpen(false)}
                 >
-                  {item.icon && <item.icon className="h-4 w-4" />}
+                  {item.icon && <item.icon className="h-4 w-4 mr-2" />}
                   <span>{item.name}</span>
                 </Link>
               ))}
