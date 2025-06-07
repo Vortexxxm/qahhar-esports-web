@@ -52,7 +52,7 @@ const Players = () => {
   const [filteredPlayers, setFilteredPlayers] = useState<Player[]>([]);
   const [sortBy, setSortBy] = useState<'total_likes' | 'rank_title' | 'username' | 'points'>('total_likes');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [filterRank, setFilterRank] = useState<string | null>(null);
+  const [filterRank, setFilterRank] = useState<string>('all');
   const [cardStyleFilter, setCardStyleFilter] = useState<string>('all');
   const [weeklyPlayer, setWeeklyPlayer] = useState<string | null>(null);
 
@@ -79,7 +79,7 @@ const Players = () => {
     }
     
     // Rank filter
-    if (filterRank) {
+    if (filterRank && filterRank !== 'all') {
       filtered = filtered.filter(player => player.rank_title === filterRank);
     }
     
@@ -153,8 +153,13 @@ const Players = () => {
   const setWeeklyPlayerMutation = useMutation({
     mutationFn: async (playerId: string) => {
       // In a real app, you'd update this in the database
-      localStorage.setItem('weeklyPlayer', playerId);
-      setWeeklyPlayer(playerId);
+      if (playerId === 'none') {
+        localStorage.removeItem('weeklyPlayer');
+        setWeeklyPlayer(null);
+      } else {
+        localStorage.setItem('weeklyPlayer', playerId);
+        setWeeklyPlayer(playerId);
+      }
     },
     onSuccess: () => {
       toast({
@@ -217,7 +222,7 @@ const Players = () => {
     setSearchTerm('');
     setSortBy('total_likes');
     setSortOrder('desc');
-    setFilterRank(null);
+    setFilterRank('all');
     setCardStyleFilter('all');
   };
 
@@ -254,12 +259,12 @@ const Players = () => {
                 />
               </div>
               
-              <Select value={filterRank || ""} onValueChange={(value) => setFilterRank(value || null)}>
+              <Select value={filterRank} onValueChange={setFilterRank}>
                 <SelectTrigger className="bg-black/20 border-s3m-red/30 text-white">
                   <SelectValue placeholder="فلتر الرتبة" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">جميع الرتب</SelectItem>
+                  <SelectItem value="all">جميع الرتب</SelectItem>
                   <SelectItem value="Heroic">Heroic</SelectItem>
                   <SelectItem value="Legend">Legend</SelectItem>
                   <SelectItem value="Pro">Pro</SelectItem>
@@ -311,12 +316,12 @@ const Players = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="text-white/80 text-sm block mb-2">تحديد لاعب الأسبوع:</label>
-                    <Select value={weeklyPlayer || ""} onValueChange={(value) => setWeeklyPlayerMutation.mutate(value)}>
+                    <Select value={weeklyPlayer || "none"} onValueChange={(value) => setWeeklyPlayerMutation.mutate(value)}>
                       <SelectTrigger className="bg-black/20 border-s3m-red/30 text-white">
                         <SelectValue placeholder="اختر لاعب الأسبوع" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">بدون لاعب أسبوع</SelectItem>
+                        <SelectItem value="none">بدون لاعب أسبوع</SelectItem>
                         {players.map((player) => (
                           <SelectItem key={player.id} value={player.id}>
                             {player.username || player.full_name}
