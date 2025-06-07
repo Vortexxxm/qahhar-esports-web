@@ -213,10 +213,10 @@ const AdminPanel = () => {
   const averagePoints = users?.length ? Math.round(users.reduce((sum, u) => sum + (u.leaderboard_scores?.points || 0), 0) / users.length) : 0;
 
   return (
-    <div className="min-h-screen py-6 px-4">
+    <div className="min-h-screen py-4 px-3 md:py-6 md:px-4">
       <div className="container mx-auto max-w-7xl">
-        <div className="mb-6">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-s3m-red to-red-600 bg-clip-text text-transparent">
+        <div className="mb-4 md:mb-6">
+          <h1 className="text-2xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-s3m-red to-red-600 bg-clip-text text-transparent">
             لوحة الإدارة
           </h1>
           <p className="text-white/70 text-sm md:text-base">إدارة أعضاء الفريق والنقاط والإحصائيات</p>
@@ -229,28 +229,33 @@ const AdminPanel = () => {
           averagePoints={averagePoints}
         />
 
-        <Tabs defaultValue="requests" className="space-y-4">
-          <TabsList className="bg-black/20 border border-s3m-red/20 w-full md:w-auto overflow-x-auto flex flex-nowrap">
-            <TabsTrigger value="requests" className="data-[state=active]:bg-s3m-red text-xs md:text-sm whitespace-nowrap">
-              طلبات الانضمام
-            </TabsTrigger>
-            <TabsTrigger value="tournaments" className="data-[state=active]:bg-s3m-red text-xs md:text-sm whitespace-nowrap">
-              طلبات البطولات
-            </TabsTrigger>
-            <TabsTrigger value="users" className="data-[state=active]:bg-s3m-red text-xs md:text-sm whitespace-nowrap">
-              إدارة الأعضاء
-            </TabsTrigger>
-            <TabsTrigger value="points" className="data-[state=active]:bg-s3m-red text-xs md:text-sm whitespace-nowrap">
-              إدارة النقاط
-            </TabsTrigger>
-          </TabsList>
+        <Tabs defaultValue="requests" className="space-y-3 md:space-y-4">
+          <div className="overflow-x-auto">
+            <TabsList className="bg-black/20 border border-s3m-red/20 w-full min-w-max flex">
+              <TabsTrigger value="requests" className="data-[state=active]:bg-s3m-red text-xs md:text-sm px-3 py-2 whitespace-nowrap">
+                طلبات الانضمام
+              </TabsTrigger>
+              <TabsTrigger value="tournaments" className="data-[state=active]:bg-s3m-red text-xs md:text-sm px-3 py-2 whitespace-nowrap">
+                طلبات البطولات
+              </TabsTrigger>
+              <TabsTrigger value="users" className="data-[state=active]:bg-s3m-red text-xs md:text-sm px-3 py-2 whitespace-nowrap">
+                إدارة الأعضاء
+              </TabsTrigger>
+              <TabsTrigger value="points" className="data-[state=active]:bg-s3m-red text-xs md:text-sm px-3 py-2 whitespace-nowrap">
+                إدارة النقاط
+              </TabsTrigger>
+              <TabsTrigger value="players" className="data-[state=active]:bg-s3m-red text-xs md:text-sm px-3 py-2 whitespace-nowrap">
+                إدارة اللاعبين
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="requests">
             <Card className="gaming-card">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-s3m-red text-lg md:text-xl">طلبات الانضمام</CardTitle>
+              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
+                <CardTitle className="text-s3m-red text-base md:text-xl">طلبات الانضمام</CardTitle>
               </CardHeader>
-              <CardContent className="p-3 md:p-6">
+              <CardContent className="p-2 md:p-6">
                 <JoinRequests />
               </CardContent>
             </Card>
@@ -258,10 +263,10 @@ const AdminPanel = () => {
 
           <TabsContent value="tournaments">
             <Card className="gaming-card">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-s3m-red text-lg md:text-xl">طلبات المشاركة في البطولات</CardTitle>
+              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
+                <CardTitle className="text-s3m-red text-base md:text-xl">طلبات المشاركة في البطولات</CardTitle>
               </CardHeader>
-              <CardContent className="p-3 md:p-6">
+              <CardContent className="p-2 md:p-6">
                 <TournamentRegistrations />
               </CardContent>
             </Card>
@@ -269,17 +274,19 @@ const AdminPanel = () => {
 
           <TabsContent value="users">
             <Card className="gaming-card">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-s3m-red text-lg md:text-xl">قائمة الأعضاء</CardTitle>
+              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
+                <CardTitle className="text-s3m-red text-base md:text-xl">قائمة الأعضاء</CardTitle>
               </CardHeader>
-              <CardContent className="p-3 md:p-6 overflow-x-auto">
-                <UsersTable 
-                  users={users || []}
-                  currentUserId={user?.id || ''}
-                  onEditPlayer={setEditingPlayer}
-                  onToggleRole={handleToggleUserRole}
-                  onToggleVisibility={handleToggleVisibility}
-                />
+              <CardContent className="p-2 md:p-6">
+                <div className="overflow-x-auto">
+                  <UsersTable 
+                    users={users || []}
+                    currentUserId={user?.id || ''}
+                    onEditPlayer={setEditingPlayer}
+                    onToggleRole={handleToggleUserRole}
+                    onToggleVisibility={handleToggleVisibility}
+                  />
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -293,6 +300,43 @@ const AdminPanel = () => {
               />
               <TopPlayers users={users || []} />
             </div>
+          </TabsContent>
+
+          <TabsContent value="players">
+            <Card className="gaming-card">
+              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
+                <CardTitle className="text-s3m-red text-base md:text-xl">إدارة بطاقات اللاعبين</CardTitle>
+              </CardHeader>
+              <CardContent className="p-2 md:p-6">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {users?.map((user) => (
+                    <PlayerCard
+                      key={user.id}
+                      player={{
+                        id: user.id,
+                        username: user.profiles?.username || '',
+                        full_name: user.profiles?.full_name || '',
+                        avatar_url: user.profiles?.avatar_url || '',
+                        rank_title: user.profiles?.rank_title || 'Rookie',
+                        total_likes: user.profiles?.total_likes || 0,
+                        bio: user.profiles?.bio || '',
+                        leaderboard_scores: user.leaderboard_scores ? {
+                          points: user.leaderboard_scores.points || 0,
+                          wins: user.leaderboard_scores.wins || 0,
+                          kills: user.leaderboard_scores.kills || 0,
+                          deaths: user.leaderboard_scores.deaths || 0,
+                          visible_in_leaderboard: user.leaderboard_scores.visible_in_leaderboard || false
+                        } : null
+                      }}
+                      cardStyle="classic"
+                      isAdmin={true}
+                      onEdit={setEditingPlayer}
+                      onToggleVisibility={handleToggleVisibility}
+                    />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

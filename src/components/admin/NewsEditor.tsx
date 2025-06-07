@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,7 @@ interface NewsItem {
   description: string;
   content: string | null;
   image_url: string | null;
+  video_url: string | null;
   created_at?: string;
   updated_at?: string;
   author_id?: string | null;
@@ -32,12 +32,15 @@ const NewsEditor = ({ news, onClose }: NewsEditorProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     content: "",
-    image_url: ""
+    image_url: "",
+    video_url: ""
   });
 
   useEffect(() => {
@@ -46,9 +49,11 @@ const NewsEditor = ({ news, onClose }: NewsEditorProps) => {
         title: news.title || "",
         description: news.description || "",
         content: news.content || "",
-        image_url: news.image_url || ""
+        image_url: news.image_url || "",
+        video_url: news.video_url || ""
       });
       setImagePreview(news.image_url);
+      setVideoPreview(news.video_url);
     }
   }, [news]);
 
@@ -62,6 +67,7 @@ const NewsEditor = ({ news, onClose }: NewsEditorProps) => {
             description: data.description,
             content: data.content,
             image_url: data.image_url,
+            video_url: data.video_url,
             updated_at: new Date().toISOString()
           })
           .eq('id', news.id);
@@ -75,6 +81,7 @@ const NewsEditor = ({ news, onClose }: NewsEditorProps) => {
             description: data.description,
             content: data.content,
             image_url: data.image_url,
+            video_url: data.video_url,
             author_id: user?.id
           });
 
@@ -114,7 +121,6 @@ const NewsEditor = ({ news, onClose }: NewsEditorProps) => {
     setUploading(true);
 
     try {
-      // Create a preview URL for immediate display
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
 
@@ -148,6 +154,69 @@ const NewsEditor = ({ news, onClose }: NewsEditorProps) => {
       setImagePreview(null);
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user?.id) return;
+
+    // Check file size (60MB limit)
+    if (file.size > 60 * 1024 * 1024) {
+      toast({
+        title: "حجم الملف كبير",
+        description: "يجب أن يكون حجم الفيديو أقل من 60 ميجابايت",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith('video/')) {
+      toast({
+        title: "نوع ملف غير صحيح",
+        description: "يرجى رفع ملف فيديو صحيح",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadingVideo(true);
+
+    try {
+      const previewUrl = URL.createObjectURL(file);
+      setVideoPreview(previewUrl);
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      const filePath = `news-videos/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('images')
+        .getPublicUrl(filePath);
+
+      setFormData(prev => ({ ...prev, video_url: publicUrl }));
+      setVideoPreview(publicUrl);
+
+      toast({
+        title: "تم رفع الفيديو",
+        description: "تم رفع فيديو الخبر بنجاح",
+      });
+    } catch (error: any) {
+      toast({
+        title: "خطأ في رفع الفيديو",
+        description: error.message,
+        variant: "destructive",
+      });
+      setVideoPreview(null);
+    } finally {
+      setUploadingVideo(false);
     }
   };
 
@@ -215,44 +284,88 @@ const NewsEditor = ({ news, onClose }: NewsEditorProps) => {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-white">صورة الخبر</Label>
-            <div className="flex items-center gap-4">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-                id="news-image"
-                disabled={uploading}
-              />
-              <label
-                htmlFor="news-image"
-                className="cursor-pointer bg-s3m-red hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-              >
-                {uploading ? (
-                  <>جاري الرفع...</>
-                ) : (
-                  <>
-                    <Upload className="h-4 w-4" />
-                    رفع صورة
-                  </>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Image Upload */}
+            <div className="space-y-2">
+              <Label className="text-white">صورة الخبر</Label>
+              <div className="flex items-center gap-4">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  id="news-image"
+                  disabled={uploading}
+                />
+                <label
+                  htmlFor="news-image"
+                  className="cursor-pointer bg-s3m-red hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                >
+                  {uploading ? (
+                    <>جاري الرفع...</>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4" />
+                      رفع صورة
+                    </>
+                  )}
+                </label>
+                {formData.image_url && (
+                  <span className="text-green-400 text-sm">تم رفع الصورة بنجاح</span>
                 )}
-              </label>
-              {formData.image_url && (
-                <span className="text-green-400 text-sm">تم رفع الصورة بنجاح</span>
+              </div>
+              {imagePreview && (
+                <div className="mt-4">
+                  <p className="text-white/60 text-sm mb-2">معاينة الصورة:</p>
+                  <img 
+                    src={imagePreview} 
+                    alt="معاينة الصورة"
+                    className="w-full max-w-sm rounded-lg"
+                  />
+                </div>
               )}
             </div>
-            {imagePreview && (
-              <div className="mt-4">
-                <p className="text-white/60 text-sm mb-2">معاينة الصورة:</p>
-                <img 
-                  src={imagePreview} 
-                  alt="معاينة الصورة"
-                  className="w-full max-w-md rounded-lg"
+
+            {/* Video Upload */}
+            <div className="space-y-2">
+              <Label className="text-white">فيديو الخبر (اختياري - حد أقصى 60 MB)</Label>
+              <div className="flex items-center gap-4">
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={handleVideoUpload}
+                  className="hidden"
+                  id="news-video"
+                  disabled={uploadingVideo}
                 />
+                <label
+                  htmlFor="news-video"
+                  className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                >
+                  {uploadingVideo ? (
+                    <>جاري الرفع...</>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4" />
+                      رفع فيديو
+                    </>
+                  )}
+                </label>
+                {formData.video_url && (
+                  <span className="text-green-400 text-sm">تم رفع الفيديو بنجاح</span>
+                )}
               </div>
-            )}
+              {videoPreview && (
+                <div className="mt-4">
+                  <p className="text-white/60 text-sm mb-2">معاينة الفيديو:</p>
+                  <video 
+                    src={videoPreview} 
+                    controls
+                    className="w-full max-w-sm rounded-lg"
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex gap-4">

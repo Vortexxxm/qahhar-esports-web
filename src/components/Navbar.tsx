@@ -203,37 +203,40 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-black/20 backdrop-blur-md border-b border-s3m-red/20 sticky top-0 z-50">
+    <nav className="bg-black/30 backdrop-blur-xl border-b border-s3m-red/30 sticky top-0 z-50 shadow-lg shadow-black/20">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3">
+          {/* Enhanced Logo */}
+          <Link to="/" className="flex items-center space-x-3 group">
             <img
               src="/lovable-uploads/876694d5-ec41-469d-9b93-b1c067364893.png"
               alt="S3M E-Sports"
-              className="h-10 w-auto"
+              className="h-10 w-auto transition-transform group-hover:scale-110 duration-300"
             />
-            <span className="text-xl font-bold bg-gradient-to-r from-s3m-red to-red-600 bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-gradient-to-r from-s3m-red via-red-500 to-red-600 bg-clip-text text-transparent group-hover:from-red-400 group-hover:to-s3m-red transition-all duration-300">
               S3M E-Sports
             </span>
           </Link>
 
-          {/* Desktop Navigation - Enhanced with styling */}
-          <div className="hidden md:flex items-center space-x-1 lg:space-x-2">
+          {/* Enhanced Desktop Navigation */}
+          <div className="hidden lg:flex items-center space-x-1">
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
-                className="flex items-center space-x-1 px-3 py-2 text-white/80 hover:text-s3m-red hover:bg-white/5 rounded-md transition-all duration-200 font-medium text-sm lg:text-base"
+                className="group relative flex items-center space-x-1 px-4 py-2 text-white/80 hover:text-white rounded-lg transition-all duration-300 font-medium text-sm hover:bg-white/5"
               >
-                {item.icon && <item.icon className="h-4 w-4 mr-1" />}
-                <span>{item.name}</span>
+                {item.icon && <item.icon className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-300" />}
+                <span className="relative">
+                  {item.name}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-s3m-red to-red-600 group-hover:w-full transition-all duration-300"></span>
+                </span>
               </Link>
             ))}
           </div>
 
-          {/* Desktop Auth Section - Enhanced with animations */}
-          <div className="hidden md:flex items-center space-x-4">
+          {/* Enhanced Desktop Auth Section */}
+          <div className="hidden lg:flex items-center space-x-4">
             {user ? (
               <div className="flex items-center space-x-4">
                 <NotificationsPopover />
@@ -243,7 +246,7 @@ const Navbar = () => {
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white transition-all duration-200"
+                      className="border-s3m-red/50 text-s3m-red hover:bg-s3m-red hover:text-white transition-all duration-300 shadow-lg shadow-s3m-red/20 hover:shadow-s3m-red/40 backdrop-blur-sm"
                     >
                       <Settings className="h-4 w-4 mr-2" />
                       لوحة الإدارة
@@ -255,9 +258,9 @@ const Navbar = () => {
                   <DropdownMenuTrigger asChild>
                     <Button 
                       variant="ghost" 
-                      className="relative h-8 w-8 rounded-full hover:bg-white/10 transition-colors duration-200 p-0"
+                      className="relative h-10 w-10 rounded-full hover:bg-white/10 transition-all duration-300 p-0 ring-2 ring-transparent hover:ring-s3m-red/30"
                     >
-                      <Avatar className="h-8 w-8 border border-s3m-red/30 transition-transform hover:scale-105 duration-200">
+                      <Avatar className="h-10 w-10 border-2 border-s3m-red/30 transition-all duration-300 hover:border-s3m-red/60 hover:scale-105">
                         <AvatarImage 
                           src={getAvatarUrl() || ""} 
                           alt="Profile"
@@ -266,28 +269,42 @@ const Navbar = () => {
                             console.error('Avatar failed to load:', e);
                           }}
                         />
-                        <AvatarFallback className="bg-s3m-red text-white">
+                        <AvatarFallback className="bg-gradient-to-br from-s3m-red to-red-600 text-white text-sm">
                           {profileLoading ? <User className="h-4 w-4" /> : getUserInitials()}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent 
-                    className="w-56 bg-black/90 border-s3m-red/20 z-50 animate-in fade-in-80 slide-in-from-top-5" 
+                    className="w-64 bg-black/95 backdrop-blur-xl border-s3m-red/30 z-50 animate-in fade-in-80 slide-in-from-top-5 shadow-2xl" 
                     align="end" 
                     forceMount
                   >
-                    <DropdownMenuItem disabled className="text-white/60">
-                      {user.email}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="text-white hover:bg-s3m-red/20">
-                      <Link to="/profile" className="flex items-center">
-                        <User className="mr-2 h-4 w-4" />
+                    <div className="p-4 border-b border-s3m-red/20">
+                      <div className="flex items-center space-x-3">
+                        <Avatar className="h-12 w-12 border-2 border-s3m-red/50">
+                          <AvatarImage src={getAvatarUrl() || ""} />
+                          <AvatarFallback className="bg-s3m-red text-white">
+                            {getUserInitials()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-white font-semibold">{getUserDisplayName()}</p>
+                          <p className="text-white/60 text-sm">{user.email}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <DropdownMenuItem asChild className="text-white hover:bg-s3m-red/20 focus:bg-s3m-red/20 cursor-pointer">
+                      <Link to="/profile" className="flex items-center w-full py-3 px-4">
+                        <User className="mr-3 h-4 w-4" />
                         <span>الملف الشخصي</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleSignOut} className="text-white hover:bg-s3m-red/20">
-                      <LogOut className="mr-2 h-4 w-4" />
+                    <DropdownMenuItem 
+                      onClick={handleSignOut} 
+                      className="text-red-400 hover:bg-red-500/20 focus:bg-red-500/20 cursor-pointer py-3 px-4"
+                    >
+                      <LogOut className="mr-3 h-4 w-4" />
                       <span>تسجيل الخروج</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -298,14 +315,14 @@ const Navbar = () => {
                 <Link to="/login">
                   <Button 
                     variant="ghost" 
-                    className="text-white hover:text-s3m-red hover:bg-white/5 transition-all duration-200"
+                    className="text-white hover:text-s3m-red hover:bg-white/5 transition-all duration-300 font-medium"
                   >
                     تسجيل الدخول
                   </Button>
                 </Link>
                 <Link to="/signup">
                   <Button 
-                    className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-s3m-red shadow-lg shadow-s3m-red/20 hover:shadow-s3m-red/40 transition-all duration-300"
+                    className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-s3m-red shadow-xl shadow-s3m-red/25 hover:shadow-s3m-red/50 transition-all duration-300 font-bold px-6"
                   >
                     انضم الآن
                   </Button>
@@ -315,7 +332,7 @@ const Navbar = () => {
           </div>
 
           {/* Mobile menu button/user avatar */}
-          <div className="md:hidden">
+          <div className="lg:hidden">
             {user ? (
               <MobileUserButton />
             ) : (
@@ -323,7 +340,7 @@ const Navbar = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsOpen(!isOpen)}
-                className="text-white"
+                className="text-white hover:bg-white/10 transition-colors duration-200"
               >
                 {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
@@ -333,13 +350,13 @@ const Navbar = () => {
 
         {/* Mobile Navigation for non-authenticated users */}
         {!user && isOpen && (
-          <div className="md:hidden py-4 border-t border-s3m-red/20 animate-in slide-in-from-top-5 duration-300">
+          <div className="lg:hidden py-4 border-t border-s3m-red/20 animate-in slide-in-from-top-5 duration-300 bg-black/50 backdrop-blur-sm rounded-b-lg">
             <div className="flex flex-col space-y-2 max-h-96 overflow-y-auto">
               {navItems.map((item) => (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className="flex items-center space-x-3 text-white/80 hover:text-s3m-red hover:bg-white/5 transition-colors duration-200 font-medium rounded-md px-4 py-2"
+                  className="flex items-center space-x-3 text-white/80 hover:text-s3m-red hover:bg-white/5 transition-colors duration-200 font-medium rounded-md px-4 py-3 mx-2"
                   onClick={() => setIsOpen(false)}
                 >
                   {item.icon && <item.icon className="h-4 w-4 mr-2" />}
@@ -347,14 +364,14 @@ const Navbar = () => {
                 </Link>
               ))}
               
-              <div className="px-4 py-2 space-y-2 border-t border-s3m-red/20 mt-4 pt-4">
+              <div className="px-4 py-2 space-y-2 border-t border-s3m-red/20 mt-4 pt-4 mx-2">
                 <Link to="/login" onClick={() => setIsOpen(false)}>
-                  <Button variant="ghost" className="w-full text-white hover:text-s3m-red">
+                  <Button variant="ghost" className="w-full text-white hover:text-s3m-red hover:bg-white/5">
                     تسجيل الدخول
                   </Button>
                 </Link>
                 <Link to="/signup" onClick={() => setIsOpen(false)}>
-                  <Button className="w-full bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-s3m-red">
+                  <Button className="w-full bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-s3m-red shadow-lg">
                     انضم الآن
                   </Button>
                 </Link>
