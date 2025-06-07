@@ -183,6 +183,35 @@ const AdminPanel = () => {
     toggleVisibilityMutation.mutate({ userId, visibility: !currentVisibility });
   };
 
+  // Transform UserWithProfile to PlayerCardData
+  const transformToPlayerCardData = (user: UserWithProfile) => {
+    return {
+      id: user.id,
+      username: user.profiles?.username || '',
+      full_name: user.profiles?.full_name || '',
+      avatar_url: user.profiles?.avatar_url || '',
+      rank_title: user.profiles?.rank_title || 'Rookie',
+      total_likes: user.profiles?.total_likes || 0,
+      bio: user.profiles?.bio || '',
+      leaderboard_scores: user.leaderboard_scores ? {
+        points: user.leaderboard_scores.points || 0,
+        wins: user.leaderboard_scores.wins || 0,
+        kills: user.leaderboard_scores.kills || 0,
+        deaths: user.leaderboard_scores.deaths || 0,
+        visible_in_leaderboard: user.leaderboard_scores.visible_in_leaderboard || false
+      } : null
+    };
+  };
+
+  // Handle edit from PlayerCard
+  const handleEditFromPlayerCard = (playerCardData: any) => {
+    // Find the original user data
+    const originalUser = users?.find(u => u.id === playerCardData.id);
+    if (originalUser) {
+      setEditingPlayer(originalUser);
+    }
+  };
+
   if (loading || usersLoading) {
     return (
       <div className="min-h-screen py-12 flex items-center justify-center">
@@ -313,25 +342,10 @@ const AdminPanel = () => {
                   {users?.map((user) => (
                     <PlayerCard
                       key={user.id}
-                      player={{
-                        id: user.id,
-                        username: user.profiles?.username || '',
-                        full_name: user.profiles?.full_name || '',
-                        avatar_url: user.profiles?.avatar_url || '',
-                        rank_title: user.profiles?.rank_title || 'Rookie',
-                        total_likes: user.profiles?.total_likes || 0,
-                        bio: user.profiles?.bio || '',
-                        leaderboard_scores: user.leaderboard_scores ? {
-                          points: user.leaderboard_scores.points || 0,
-                          wins: user.leaderboard_scores.wins || 0,
-                          kills: user.leaderboard_scores.kills || 0,
-                          deaths: user.leaderboard_scores.deaths || 0,
-                          visible_in_leaderboard: user.leaderboard_scores.visible_in_leaderboard || false
-                        } : null
-                      }}
+                      player={transformToPlayerCardData(user)}
                       cardStyle="classic"
                       isAdmin={true}
-                      onEdit={setEditingPlayer}
+                      onEdit={handleEditFromPlayerCard}
                       onToggleVisibility={handleToggleVisibility}
                     />
                   ))}
