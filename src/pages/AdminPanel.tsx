@@ -9,6 +9,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import PlayerEditor from "@/components/PlayerEditor";
+import PlayerCard from "@/components/PlayerCard";
 import AdminStats from "@/components/admin/AdminStats";
 import UsersTable from "@/components/admin/UsersTable";
 import PointsManager from "@/components/admin/PointsManager";
