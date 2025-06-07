@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
@@ -6,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, Users, Trophy, Filter, ArrowUpDown, Settings, Crown } from 'lucide-react';
 import PlayerCard from '@/components/PlayerCard';
+import WeeklyPlayerCard from '@/components/WeeklyPlayerCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -230,6 +230,14 @@ const Players = () => {
     toggleVisibilityMutation.mutate({ playerId, visibility: !currentVisibility });
   };
 
+  const handleEditFromPlayerCard = (playerId: string) => {
+    // Implement edit functionality here
+  };
+
+  // Filter out weekly player from regular grid
+  const regularPlayers = filteredPlayers.filter(player => player.id !== weeklyPlayer);
+  const weeklyPlayerData = filteredPlayers.find(player => player.id === weeklyPlayer);
+
   return (
     <div className="min-h-screen py-12 bg-gradient-to-b from-black to-gray-900">
       <div className="container mx-auto px-4">
@@ -367,7 +375,25 @@ const Players = () => {
           </Card>
         </div>
 
-        {/* Players Grid */}
+        {/* Weekly Player Card - Displayed at top if exists */}
+        {weeklyPlayerData && (
+          <div className="mb-12">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent mb-2">
+                🏆 لاعب الأسبوع 🏆
+              </h2>
+              <p className="text-white/80">اللاعب المتميز لهذا الأسبوع</p>
+            </div>
+            <WeeklyPlayerCard
+              player={weeklyPlayerData}
+              isAdmin={isAdmin}
+              onEdit={handleEditFromPlayerCard}
+              onToggleVisibility={handleToggleVisibility}
+            />
+          </div>
+        )}
+
+        {/* Regular Players Grid */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[...Array(8)].map((_, i) => (
@@ -376,7 +402,7 @@ const Players = () => {
           </div>
         ) : (
           <>
-            {filteredPlayers.length === 0 ? (
+            {regularPlayers.length === 0 && !weeklyPlayerData ? (
               <div className="text-center py-12">
                 <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-white mb-2">
@@ -387,17 +413,28 @@ const Players = () => {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredPlayers.map((player) => (
-                  <PlayerCard
-                    key={player.id}
-                    player={player}
-                    cardStyle={getCardStyle(player)}
-                    isAdmin={isAdmin}
-                    onToggleVisibility={handleToggleVisibility}
-                  />
-                ))}
-              </div>
+              <>
+                {regularPlayers.length > 0 && (
+                  <div>
+                    <div className="text-center mb-8">
+                      <h2 className="text-2xl font-bold text-white mb-2">الأعضاء</h2>
+                      <p className="text-white/60">جميع أعضاء الفريق</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                      {regularPlayers.map((player) => (
+                        <PlayerCard
+                          key={player.id}
+                          player={player}
+                          cardStyle={getCardStyle(player)}
+                          isAdmin={isAdmin}
+                          onEdit={handleEditFromPlayerCard}
+                          onToggleVisibility={handleToggleVisibility}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </>
         )}
