@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,6 +29,7 @@ interface PlayerCardProps {
   cardStyle?: 'classic' | 'hero' | 'legend' | 'champion' | 'elite' | 'weekly';
   onEdit?: (player: PlayerCardData) => void;
   onToggleVisibility?: (playerId: string, currentVisibility: boolean) => void;
+  onSetWeeklyPlayer?: (playerId: string) => void;
   isAdmin?: boolean;
 }
 
@@ -38,6 +38,7 @@ const PlayerCard = ({
   cardStyle = 'classic', 
   onEdit, 
   onToggleVisibility,
+  onSetWeeklyPlayer,
   isAdmin = false 
 }: PlayerCardProps) => {
   const { user } = useAuth();
@@ -272,6 +273,18 @@ const PlayerCard = ({
           {/* Admin Controls */}
           {isAdmin && (
             <div className="flex space-x-2">
+              {onSetWeeklyPlayer && cardStyle !== 'weekly' && (
+                <Button
+                  onClick={() => onSetWeeklyPlayer(player.id)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-yellow-400 hover:text-yellow-300"
+                  title="تحديد كلاعب أسبوع"
+                >
+                  <Crown className="h-4 w-4" />
+                </Button>
+              )}
+              
               <Button
                 onClick={() => onEdit?.(player)}
                 variant="ghost"

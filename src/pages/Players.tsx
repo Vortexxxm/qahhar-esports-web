@@ -240,6 +240,10 @@ const Players = () => {
     console.log('Edit player:', player);
   };
 
+  const handleSetWeeklyPlayer = (playerId: string) => {
+    setWeeklyPlayerMutation.mutate(playerId);
+  };
+
   // Filter out weekly player from regular grid
   const regularPlayers = filteredPlayers.filter(player => player.id !== weeklyPlayer);
   const weeklyPlayerData = filteredPlayers.find(player => player.id === weeklyPlayer);
@@ -435,6 +439,7 @@ const Players = () => {
                           isAdmin={isAdmin}
                           onEdit={handleEditFromPlayerCard}
                           onToggleVisibility={handleToggleVisibility}
+                          onSetWeeklyPlayer={handleSetWeeklyPlayer}
                         />
                       ))}
                     </div>
