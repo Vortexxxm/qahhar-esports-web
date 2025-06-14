@@ -1,115 +1,135 @@
 
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { User, LogOut, Shield } from 'lucide-react';
+import { LogIn, User, LogOut, Settings, Crown, Bell } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useQuery } from '@tanstack/react-query';
-import NotificationsPopover from '../NotificationsPopover';
-import SmartGreeting from '../SmartGreeting';
+import { useToast } from '@/hooks/use-toast';
+import NotificationsPopover from '@/components/NotificationsPopover';
+import { motion } from 'framer-motion';
 
 const UserActions = () => {
-  const { user, signOut } = useAuth();
+  const { user, userRole } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  // Check if user is admin
-  const { data: userRole } = useQuery({
-    queryKey: ['user-role', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      
-      const { data, error } = await supabase
-        .rpc('get_user_role', { user_uuid: user.id });
-      
-      if (error) {
-        console.error('Error fetching user role:', error);
-        return null;
-      }
-      
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
-  const isAdmin = userRole === 'admin';
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
-
-  const handleProfileClick = () => {
-    navigate('/profile');
-  };
-
-  const handleAdminClick = () => {
-    navigate('/admin');
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "خطأ في تسجيل الخروج",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      navigate('/');
+    }
   };
 
   if (!user) {
     return (
-      <div className="hidden lg:flex items-center space-x-3 rtl:space-x-reverse bg-black/40 backdrop-blur-sm rounded-2xl px-4 py-2 border border-white/10">
-        <Button
+      <motion.div 
+        className="flex items-center space-x-3 rtl:space-x-reverse"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Button 
           onClick={() => navigate('/login')}
           variant="ghost"
-          size="sm"
-          className="text-gray-300 hover:text-white hover:bg-white/10 border border-white/20 hover:border-white/40 rounded-xl transition-all duration-300"
+          className="text-white hover:text-s3m-red hover:bg-white/10 border border-transparent hover:border-s3m-red/30 rounded-xl transition-all duration-300 px-6 py-2 font-medium"
         >
+          <LogIn className="w-4 h-4 ml-2" />
           دخول
         </Button>
-        <Button
-          onClick={() => navigate('/signup')}
-          className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-s3m-red text-white rounded-xl shadow-lg shadow-s3m-red/30 transition-all duration-300 hover:scale-105"
-          size="sm"
-        >
-          تسجيل
-        </Button>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <>
-      <div className="hidden lg:block">
-        <SmartGreeting />
-      </div>
-      
+    <motion.div 
+      className="flex items-center space-x-4 rtl:space-x-reverse"
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Notifications */}
       <NotificationsPopover />
-      
-      <div className="hidden lg:flex items-center space-x-3 rtl:space-x-reverse bg-black/40 backdrop-blur-sm rounded-2xl px-4 py-2 border border-white/10">
-        {isAdmin && (
-          <Button
-            onClick={handleAdminClick}
-            variant="ghost"
-            size="sm"
-            className="text-s3m-red hover:text-white hover:bg-s3m-red/20 border border-s3m-red/30 hover:border-s3m-red rounded-xl transition-all duration-300"
-          >
-            <Shield className="w-4 h-4 ml-1" />
-            الإدارة
+
+      {/* User Menu */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="relative h-10 w-10 rounded-full border-2 border-transparent hover:border-s3m-red/50 transition-all duration-300">
+            <Avatar className="h-9 w-9">
+              <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email} />
+              <AvatarFallback className="bg-gradient-to-br from-s3m-red to-red-600 text-white font-bold">
+                {user.email?.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            {userRole === 'admin' && (
+              <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs flex items-center justify-center">
+                <Crown className="h-3 w-3" />
+              </Badge>
+            )}
           </Button>
-        )}
-        
-        <Button
-          onClick={handleProfileClick}
-          variant="ghost"
-          size="sm"
-          className="text-gray-300 hover:text-white hover:bg-white/10 border border-white/20 hover:border-white/40 rounded-xl transition-all duration-300"
-        >
-          <User className="w-4 h-4 ml-1" />
-          الملف الشخصي
-        </Button>
-        
-        <Button
-          onClick={handleSignOut}
-          variant="ghost"
-          size="sm"
-          className="text-red-400 hover:text-white hover:bg-red-600/20 border border-red-600/30 hover:border-red-600 rounded-xl transition-all duration-300"
-        >
-          <LogOut className="w-4 h-4 ml-1" />
-          خروج
-        </Button>
-      </div>
-    </>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56 bg-gray-900/95 border-gray-700 backdrop-blur-sm" align="end" forceMount>
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none text-white">
+                {user.user_metadata?.full_name || user.email}
+              </p>
+              <p className="text-xs leading-none text-gray-400">
+                {user.email}
+              </p>
+              {userRole && (
+                <Badge className="w-fit bg-gradient-to-r from-s3m-red to-red-600 text-white text-xs">
+                  {userRole === 'admin' ? 'مدير' : 'عضو'}
+                </Badge>
+              )}
+            </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator className="bg-gray-700" />
+          <DropdownMenuGroup>
+            <DropdownMenuItem 
+              onClick={() => navigate('/profile')}
+              className="text-white hover:bg-gray-800 cursor-pointer"
+            >
+              <User className="ml-2 h-4 w-4" />
+              <span>الملف الشخصي</span>
+            </DropdownMenuItem>
+            {userRole === 'admin' && (
+              <DropdownMenuItem 
+                onClick={() => navigate('/admin')}
+                className="text-white hover:bg-gray-800 cursor-pointer"
+              >
+                <Settings className="ml-2 h-4 w-4" />
+                <span>لوحة الإدارة</span>
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator className="bg-gray-700" />
+          <DropdownMenuItem 
+            onClick={handleLogout}
+            className="text-red-400 hover:bg-gray-800 cursor-pointer"
+          >
+            <LogOut className="ml-2 h-4 w-4" />
+            <span>تسجيل الخروج</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </motion.div>
   );
 };
 

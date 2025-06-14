@@ -1,7 +1,6 @@
-
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Users, Trophy, Target, Star, Flame, Zap, GamepadIcon, Crown, Calendar, ArrowRight, Bell, Globe, Rocket, Upload } from 'lucide-react';
+import { Play, Users, Trophy, Target, Star, Flame, Zap, GamepadIcon, Crown, Calendar, ArrowRight, Bell, Globe, Rocket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +16,7 @@ const Home = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Fetch latest news with images
+  // Fetch latest news with images - only 3 latest news
   const { data: news = [] } = useQuery({
     queryKey: ['latest-news'],
     queryFn: async () => {
@@ -305,42 +304,61 @@ const Home = () => {
         </div>
       </motion.section>
 
-      {/* Enhanced News Section - Cards with right to left scroll */}
+      {/* Featured News Section - Enhanced with mobile-responsive cards */}
       {news.length > 0 && (
         <motion.section 
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="relative py-12 bg-black/90 border-y border-s3m-red/30"
+          className="relative py-12 bg-gradient-to-br from-black/95 via-s3m-red/10 to-purple-900/20 border-y border-s3m-red/30"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/10 to-purple-600/10"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/5 to-purple-600/5"></div>
           <div className="relative z-10 container mx-auto px-4">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center">
-                <Bell className="w-6 h-6 text-s3m-red ml-3 animate-pulse" />
-                <h3 className="text-2xl font-bold text-white">🔥 أحدث الأخبار</h3>
-                <Globe className="w-5 h-5 text-s3m-red mr-3" />
+                <Bell className="w-8 h-8 text-s3m-red ml-3 animate-pulse" />
+                <h3 className="text-2xl md:text-3xl font-bold text-white">🔥 التحديثات المميزة</h3>
+                <Globe className="w-6 h-6 text-s3m-red mr-3" />
               </div>
               <Button 
                 variant="outline"
                 onClick={() => navigate('/news')}
-                className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white rounded-xl transition-all duration-300"
+                className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white rounded-xl transition-all duration-300 text-sm md:text-base"
               >
-                زيارة صفحة الأخبار
+                جميع الأخبار
                 <ArrowRight className="w-4 h-4 mr-2" />
               </Button>
             </div>
             
-            {/* News Cards Slider */}
+            {/* Enhanced News Cards with RTL scroll */}
             <div className="relative overflow-hidden rounded-2xl">
-              <div className="flex space-x-6 rtl:space-x-reverse animate-scroll-right">
-                {news.concat(news).map((newsItem, index) => (
+              <div className="flex space-x-6 rtl:space-x-reverse animate-scroll-right pb-4">
+                {/* Duplicate news for seamless loop */}
+                {[...news, ...news, ...news].map((newsItem, index) => (
                   <motion.div
                     key={`${newsItem.id}-${index}`}
-                    className="flex-shrink-0 w-80"
+                    className="flex-shrink-0 w-80 md:w-96"
                     initial={{ opacity: 0, x: 50 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
+                    transition={{ delay: (index % 3) * 0.1 }}
+                  >
+                    <div className="h-full">
+                      <NewsCard news={newsItem} />
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Mobile-specific news grid for better readability */}
+            <div className="md:hidden mt-8">
+              <div className="grid gap-4 sm:grid-cols-1">
+                {news.map((newsItem, index) => (
+                  <motion.div
+                    key={newsItem.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.2 }}
                   >
                     <NewsCard news={newsItem} />
                   </motion.div>

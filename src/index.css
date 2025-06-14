@@ -61,7 +61,7 @@
     direction: rtl;
   }
   
-  /* News scroll animation */
+  /* Enhanced news scroll animation */
   @keyframes scroll-right {
     0% {
       transform: translateX(100%);
@@ -72,12 +72,19 @@
   }
   
   .animate-scroll-right {
-    animation: scroll-right 30s linear infinite;
+    animation: scroll-right 40s linear infinite;
   }
   
-  /* Pause animation on hover */
+  /* Pause animation on hover for better UX */
   .animate-scroll-right:hover {
     animation-play-state: paused;
+  }
+  
+  /* Responsive scroll speed for mobile */
+  @media (max-width: 768px) {
+    .animate-scroll-right {
+      animation: scroll-right 30s linear infinite;
+    }
   }
   
   /* Marquee animation for news ticker */
@@ -91,7 +98,14 @@
   }
   
   .animate-marquee {
-    animation: marquee 20s linear infinite;
+    animation: marquee 25s linear infinite;
+  }
+  
+  /* Mobile marquee speed adjustment */
+  @media (max-width: 768px) {
+    .animate-marquee {
+      animation: marquee 20s linear infinite;
+    }
   }
 }
 
@@ -130,4 +144,29 @@
 /* Smooth transitions */
 * {
   transition: all 0.3s ease;
+}
+
+/* News card enhancements */
+@keyframes news-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(239, 68, 68, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+  }
+}
+
+.news-card-featured {
+  animation: news-glow 3s ease-in-out infinite;
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 768px) {
+  .gaming-card {
+    @apply shadow-lg;
+  }
+  
+  .news-section-mobile {
+    @apply px-2;
+  }
 }
