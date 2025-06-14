@@ -1,7 +1,6 @@
-
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Users, Trophy, Target, Star, Flame, Zap, GamepadIcon, Crown, Calendar, ArrowRight, Bell, Globe, Rocket } from 'lucide-react';
+import { Play, Users, Trophy, Target, Star, Flame, Zap, GamepadIcon, Crown, Calendar, ArrowRight, Bell, Globe, Rocket, Newspaper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
