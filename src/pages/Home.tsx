@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import WeeklyPlayerCard from '@/components/WeeklyPlayerCard';
 import MonthlyPlayerCard from '@/components/MonthlyPlayerCard';
+import NewsCard from '@/components/NewsCard';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -25,14 +26,14 @@ const Home = () => {
         .from('news')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(5);
+        .limit(8);
       
       if (error) throw error;
       return data;
     }
   });
 
-  // Fetch special players with corrected query
+  // Fetch special players
   const { data: specialPlayers } = useQuery({
     queryKey: ['special-players'],
     queryFn: async () => {
@@ -51,6 +52,21 @@ const Home = () => {
           )
         `)
         .eq('is_active', true);
+
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  // Fetch players preview
+  const { data: playersPreview = [] } = useQuery({
+    queryKey: ['players-preview'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(6);
 
       if (error) throw error;
       return data;
@@ -78,7 +94,7 @@ const Home = () => {
     return leaderboardScores?.find(score => score.user_id === userId) || null;
   };
 
-  // Auto-scroll news
+  // Auto-scroll news ticker
   useEffect(() => {
     if (news.length > 1) {
       const interval = setInterval(() => {
@@ -88,7 +104,7 @@ const Home = () => {
     }
   }, [news.length]);
 
-  // Animation variants with correct types
+  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -105,24 +121,33 @@ const Home = () => {
       y: 0,
       opacity: 1,
       transition: {
-        duration: 0.6,
-        ease: "easeOut"
+        duration: 0.6
       }
     }
   };
 
+  const featuredNews = news.slice(0, 4);
+  const tickerNews = news.slice(0, 5);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-s3m-red/20 overflow-hidden">
-      {/* Hero Section with Video Trailer */}
+      {/* Hero Video Trailer Section */}
       <motion.section 
-        className="relative h-screen flex items-center justify-center"
+        className="relative h-screen flex items-center justify-center overflow-hidden"
         initial="hidden"
         animate="visible"
         variants={containerVariants}
       >
-        {/* Background Effects */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-s3m-red/20 to-black/80"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(220,38,38,0.1),transparent_70%)]"></div>
+        {/* Video Background */}
+        <div className="absolute inset-0 bg-black">
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40"
+            style={{
+              backgroundImage: `url('https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1920&q=80')`
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-s3m-red/30 to-black/80"></div>
+        </div>
         
         {/* Animated Particles */}
         <div className="absolute inset-0 overflow-hidden">
@@ -151,24 +176,26 @@ const Home = () => {
         <div className="relative z-10 text-center px-4 max-w-6xl mx-auto">
           {/* Main Title */}
           <motion.div variants={itemVariants} className="mb-8">
-            <h1 className="text-4xl md:text-8xl font-black mb-4 bg-gradient-to-r from-s3m-red via-red-400 to-orange-500 bg-clip-text text-transparent">
-              فريق قهار S3M
+            <h1 className="text-4xl md:text-8xl font-black mb-6 bg-gradient-to-r from-s3m-red via-red-400 to-orange-500 bg-clip-text text-transparent">
+              Unleashing Power
             </h1>
             <div className="flex items-center justify-center gap-3 mb-6">
               <Flame className="w-8 h-8 text-red-500 animate-pulse" />
-              <p className="text-xl md:text-3xl text-white/90 font-bold">
-                ترايلر الكلان الأسطوري
+              <p className="text-2xl md:text-4xl text-white font-bold">
+                S3M E-Sports
               </p>
               <Flame className="w-8 h-8 text-red-500 animate-pulse" />
             </div>
+            <p className="text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+              Dominating the battlefield. Redefining victory. Join the legend.
+            </p>
           </motion.div>
 
-          {/* Video Trailer Section */}
+          {/* Video Trailer Placeholder */}
           <motion.div variants={itemVariants} className="mb-12">
             <div className="relative w-full max-w-4xl mx-auto">
               <div className="relative bg-gradient-to-br from-s3m-red/20 to-purple-600/20 rounded-3xl p-2 border-2 border-s3m-red/50 shadow-2xl shadow-s3m-red/25">
                 <div className="relative bg-black rounded-2xl overflow-hidden aspect-video">
-                  {/* Video Placeholder with Amazing Effects */}
                   <div className="absolute inset-0 bg-gradient-to-br from-s3m-red/30 via-purple-600/20 to-blue-600/20 flex items-center justify-center">
                     <div className="text-center">
                       <motion.div
@@ -186,10 +213,10 @@ const Home = () => {
                       </motion.div>
                       
                       <h3 className="text-2xl md:text-4xl font-bold text-white mb-4">
-                        🎬 ترايلر فريق قهار الرسمي
+                        🎬 Official S3M Trailer
                       </h3>
                       <p className="text-lg text-white/80 mb-6">
-                        شاهد رحلة الكلان الأسطورية نحو المجد
+                        Watch our legendary journey to greatness
                       </p>
                       
                       <Button 
@@ -197,13 +224,10 @@ const Home = () => {
                         className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                       >
                         <Play className="w-6 h-6 mr-2" />
-                        تشغيل الترايلر
+                        Play Trailer
                       </Button>
                     </div>
                   </div>
-                  
-                  {/* Animated Border */}
-                  <div className="absolute inset-0 rounded-2xl border-4 border-transparent bg-gradient-to-r from-s3m-red via-purple-500 to-blue-500 opacity-50 animate-pulse"></div>
                 </div>
               </div>
             </div>
@@ -217,7 +241,7 @@ const Home = () => {
               className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
               <Users className="w-6 h-6 mr-2" />
-              انضم إلى الفريق
+              Join Our Team
               <Rocket className="w-5 h-5 ml-2" />
             </Button>
             
@@ -228,29 +252,29 @@ const Home = () => {
               className="border-2 border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 transform hover:scale-105"
             >
               <Trophy className="w-6 h-6 mr-2" />
-              البطولات
+              Tournaments
             </Button>
           </motion.div>
         </div>
       </motion.section>
 
-      {/* Moving News Ticker */}
+      {/* News Ticker Section */}
       <motion.section 
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="relative py-6 bg-black/80 border-y border-s3m-red/30 overflow-hidden"
+        className="relative py-6 bg-black/90 border-y border-s3m-red/30 overflow-hidden"
       >
         <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/10 to-purple-600/10"></div>
         <div className="relative z-10 container mx-auto px-4">
           <div className="flex items-center mb-4">
             <Bell className="w-6 h-6 text-s3m-red mr-3 animate-pulse" />
-            <h3 className="text-xl font-bold text-white">آخر الأخبار</h3>
+            <h3 className="text-xl font-bold text-white">Latest News</h3>
             <Globe className="w-5 h-5 text-s3m-red ml-3" />
           </div>
           
-          {news.length > 0 && (
-            <div className="relative h-16 overflow-hidden rounded-lg bg-black/50 border border-s3m-red/30">
+          {tickerNews.length > 0 && (
+            <div className="relative h-16 overflow-hidden rounded-lg bg-black/50 border border-s3m-red/30 mb-6">
               <motion.div
                 key={currentNewsIndex}
                 initial={{ x: '100%' }}
@@ -260,71 +284,91 @@ const Home = () => {
               >
                 <Star className="w-5 h-5 text-yellow-400 mr-3 flex-shrink-0" />
                 <span className="text-lg font-medium whitespace-nowrap">
-                  {news[currentNewsIndex]?.title}
+                  {tickerNews[currentNewsIndex]?.title}
                 </span>
               </motion.div>
             </div>
           )}
           
-          <div className="text-center mt-6">
+          <div className="text-center">
             <Button 
               variant="outline"
               onClick={() => navigate('/news')}
-              className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white"
+              className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white rounded-xl"
             >
-              زيارة صفحة الأخبار
+              Visit News Page
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
         </div>
       </motion.section>
 
-      {/* Special Players Section */}
-      {(weeklyPlayer || monthlyPlayer) && (
+      {/* Featured News Cards */}
+      {featuredNews.length > 0 && (
         <motion.section 
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
           className="py-16 px-4"
         >
-          <div className="container mx-auto max-w-6xl">
+          <div className="container mx-auto max-w-7xl">
             <motion.h2 
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.8 }}
               className="text-3xl md:text-5xl font-bold text-center mb-12 bg-gradient-to-r from-s3m-red to-purple-500 bg-clip-text text-transparent"
             >
-              🌟 اللاعبون المميزون 🌟
+              🚨 Featured Updates
+            </motion.h2>
+            
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {featuredNews.map((newsItem, index) => (
+                <motion.div
+                  key={newsItem.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
+                >
+                  <NewsCard news={newsItem} />
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.section>
+      )}
+
+      {/* Dynamic Player of the Month/Week */}
+      {(weeklyPlayer || monthlyPlayer) && (
+        <motion.section 
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="py-16 px-4 bg-black/50"
+        >
+          <div className="container mx-auto max-w-6xl">
+            <motion.h2 
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.8 }}
+              className="text-3xl md:text-5xl font-bold text-center mb-12 bg-gradient-to-r from-yellow-400 to-purple-500 bg-clip-text text-transparent"
+            >
+              🌟 Elite Players 🌟
             </motion.h2>
             
             <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
-              {weeklyPlayer && weeklyPlayer.profiles && (
+              {monthlyPlayer && monthlyPlayer.profiles && (
                 <motion.div 
                   initial={{ opacity: 0, x: -50 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.8, delay: 0.3 }}
+                  transition={{ duration: 0.8, delay: 0.5 }}
+                  className="relative"
                 >
-                  <WeeklyPlayerCard 
-                    player={{
-                      id: weeklyPlayer.profiles.id,
-                      username: weeklyPlayer.profiles.username,
-                      full_name: weeklyPlayer.profiles.full_name,
-                      avatar_url: weeklyPlayer.profiles.avatar_url,
-                      rank_title: weeklyPlayer.profiles.rank_title,
-                      total_likes: weeklyPlayer.profiles.total_likes,
-                      bio: weeklyPlayer.profiles.bio,
-                      leaderboard_scores: getPlayerLeaderboardData(weeklyPlayer.user_id)
-                    }}
-                  />
-                </motion.div>
-              )}
-              
-              {monthlyPlayer && monthlyPlayer.profiles && (
-                <motion.div 
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.8, delay: 0.4 }}
-                >
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                    <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold px-4 py-2 rounded-full shadow-lg">
+                      <Crown className="w-4 h-4 mr-1" />
+                      Player of the Month
+                    </Badge>
+                  </div>
                   <MonthlyPlayerCard 
                     player={{
                       id: monthlyPlayer.profiles.id,
@@ -339,6 +383,97 @@ const Home = () => {
                   />
                 </motion.div>
               )}
+              
+              {weeklyPlayer && weeklyPlayer.profiles && (
+                <motion.div 
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8, delay: 0.6 }}
+                  className="relative"
+                >
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                    <Badge className="bg-gradient-to-r from-blue-400 to-cyan-500 text-black font-bold px-4 py-2 rounded-full shadow-lg">
+                      <Star className="w-4 h-4 mr-1" />
+                      Player of the Week
+                    </Badge>
+                  </div>
+                  <WeeklyPlayerCard 
+                    player={{
+                      id: weeklyPlayer.profiles.id,
+                      username: weeklyPlayer.profiles.username,
+                      full_name: weeklyPlayer.profiles.full_name,
+                      avatar_url: weeklyPlayer.profiles.avatar_url,
+                      rank_title: weeklyPlayer.profiles.rank_title,
+                      total_likes: weeklyPlayer.profiles.total_likes,
+                      bio: weeklyPlayer.profiles.bio,
+                      leaderboard_scores: getPlayerLeaderboardData(weeklyPlayer.user_id)
+                    }}
+                  />
+                </motion.div>
+              )}
+            </div>
+          </div>
+        </motion.section>
+      )}
+
+      {/* Players Preview Section */}
+      {playersPreview.length > 0 && (
+        <motion.section 
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="py-16 px-4"
+        >
+          <div className="container mx-auto max-w-7xl">
+            <motion.h2 
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.8 }}
+              className="text-3xl md:text-5xl font-bold text-center mb-12 text-white"
+            >
+              💪 Our Warriors
+            </motion.h2>
+            
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+              {playersPreview.map((player, index) => (
+                <motion.div
+                  key={player.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.7 + index * 0.1 }}
+                  onClick={() => navigate('/players')}
+                  className="cursor-pointer group"
+                >
+                  <Card className="gaming-card hover:scale-105 transition-all duration-300 group-hover:border-s3m-red/60">
+                    <CardContent className="p-4 text-center">
+                      <div className="relative mb-4">
+                        <img 
+                          src={player.avatar_url || `https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=150&q=80`}
+                          alt={player.username}
+                          className="w-16 h-16 rounded-full mx-auto object-cover border-2 border-s3m-red/30 group-hover:border-s3m-red transition-colors"
+                        />
+                        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-black"></div>
+                      </div>
+                      <h3 className="text-white font-bold text-sm mb-1 truncate">{player.username}</h3>
+                      <p className="text-xs text-gray-400">{player.rank_title || 'Rookie'}</p>
+                      <div className="flex items-center justify-center mt-2">
+                        <Star className="w-3 h-3 text-yellow-400 mr-1" />
+                        <span className="text-xs text-white">{player.total_likes || 0}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+            
+            <div className="text-center mt-8">
+              <Button 
+                onClick={() => navigate('/players')}
+                className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-8 py-3 rounded-xl"
+              >
+                View All Players
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
             </div>
           </div>
         </motion.section>
@@ -348,35 +483,35 @@ const Home = () => {
       <motion.section 
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.5 }}
-        className="py-16 px-4 bg-black/50"
+        transition={{ duration: 0.8, delay: 0.8 }}
+        className="py-16 px-4 bg-gradient-to-r from-s3m-red/20 to-purple-600/20"
       >
         <div className="container mx-auto max-w-6xl">
           <motion.h2 
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
+            transition={{ duration: 0.8 }}
             className="text-3xl md:text-5xl font-bold text-center mb-12 text-white"
           >
-            🏆 إحصائيات الفريق
+            🏆 Victory Stats
           </motion.h2>
           
           <div className="grid gap-6 md:grid-cols-4">
             {[
-              { icon: Users, label: 'الأعضاء', value: '150+', color: 'text-blue-400' },
-              { icon: Trophy, label: 'البطولات', value: '25+', color: 'text-yellow-400' },
-              { icon: Target, label: 'الانتصارات', value: '500+', color: 'text-green-400' },
-              { icon: GamepadIcon, label: 'المباريات', value: '1000+', color: 'text-purple-400' },
+              { icon: Users, label: 'Elite Members', value: '150+', color: 'text-blue-400' },
+              { icon: Trophy, label: 'Championships', value: '25+', color: 'text-yellow-400' },
+              { icon: Target, label: 'Victories', value: '500+', color: 'text-green-400' },
+              { icon: GamepadIcon, label: 'Battles Won', value: '1000+', color: 'text-purple-400' },
             ].map((stat, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.7 + index * 0.1 }}
+                transition={{ duration: 0.6, delay: 0.9 + index * 0.1 }}
                 whileHover={{ scale: 1.05, y: -5 }}
                 className="text-center"
               >
-                <Card className="bg-black/50 border-s3m-red/30 hover:border-s3m-red/60 transition-all duration-300">
+                <Card className="gaming-card hover:border-s3m-red/60 transition-all duration-300">
                   <CardContent className="p-6">
                     <stat.icon className={`w-12 h-12 ${stat.color} mx-auto mb-4`} />
                     <h3 className="text-3xl font-bold text-white mb-2">{stat.value}</h3>
@@ -393,30 +528,30 @@ const Home = () => {
       <motion.section 
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.8 }}
-        className="py-16 px-4 text-center bg-gradient-to-r from-s3m-red/20 to-purple-600/20"
+        transition={{ duration: 0.8, delay: 1.0 }}
+        className="py-16 px-4 text-center bg-black/80"
       >
         <div className="container mx-auto max-w-4xl">
           <motion.h2 
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.9 }}
+            transition={{ duration: 0.8 }}
             className="text-3xl md:text-5xl font-bold mb-6 text-white"
           >
-            🚀 هل أنت مستعد للانضمام؟
+            🚀 Ready to Dominate?
           </motion.h2>
           <motion.p 
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 1.0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
             className="text-xl text-white/80 mb-8"
           >
-            انضم إلى عائلة قهار وكن جزءاً من الأسطورة
+            Join the S3M family and become part of the legend
           </motion.p>
           <motion.div 
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 1.1 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
             <Button 
@@ -425,7 +560,7 @@ const Home = () => {
               className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
               <Crown className="w-6 h-6 mr-2" />
-              ابدأ رحلتك الآن
+              Start Your Journey
             </Button>
           </motion.div>
         </div>
