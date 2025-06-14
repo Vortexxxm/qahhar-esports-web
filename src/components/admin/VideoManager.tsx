@@ -21,14 +21,22 @@ const VideoManager = () => {
   const { data: currentVideoFile } = useQuery({
     queryKey: ['homepage-video-file'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('site_settings')
-        .select('*')
-        .eq('key', 'homepage_video_file')
-        .maybeSingle();
-      
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase
+          .from('site_settings')
+          .select('*')
+          .eq('key', 'homepage_video_file')
+          .maybeSingle();
+        
+        if (error) {
+          console.error('Error fetching video file:', error);
+          throw error;
+        }
+        return data;
+      } catch (error) {
+        console.error('Error in video file query:', error);
+        return null;
+      }
     }
   });
 
@@ -36,14 +44,22 @@ const VideoManager = () => {
   const { data: currentVideoUrl } = useQuery({
     queryKey: ['homepage-video-url'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('site_settings')
-        .select('*')
-        .eq('key', 'homepage_trailer')
-        .maybeSingle();
-      
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase
+          .from('site_settings')
+          .select('*')
+          .eq('key', 'homepage_trailer')
+          .maybeSingle();
+        
+        if (error) {
+          console.error('Error fetching video URL:', error);
+          throw error;
+        }
+        return data;
+      } catch (error) {
+        console.error('Error in video URL query:', error);
+        return null;
+      }
     }
   });
 
@@ -117,7 +133,7 @@ const VideoManager = () => {
       console.error('Video upload error:', error);
       toast({
         title: "خطأ في الرفع",
-        description: error.message,
+        description: error.message || "حدث خطأ أثناء رفع الفيديو",
         variant: "destructive",
       });
     },
@@ -125,44 +141,70 @@ const VideoManager = () => {
 
   const saveVideoUrlMutation = useMutation({
     mutationFn: async (url: string) => {
-      // Clear any existing file setting
-      await supabase
-        .from('site_settings')
-        .update({ 
-          value: null,
-          updated_at: new Date().toISOString()
-        })
-        .eq('key', 'homepage_video_file');
-
-      // Check if URL record exists
-      const { data: existingRecord } = await supabase
-        .from('site_settings')
-        .select('*')
-        .eq('key', 'homepage_trailer')
-        .maybeSingle();
-
-      if (existingRecord) {
-        // Update existing record
-        const { error: updateError } = await supabase
+      try {
+        console.log('Saving video URL:', url);
+        
+        // Clear any existing file setting first
+        const { error: clearFileError } = await supabase
           .from('site_settings')
           .update({ 
-            value: url,
+            value: null,
             updated_at: new Date().toISOString()
           })
-          .eq('key', 'homepage_trailer');
+          .eq('key', 'homepage_video_file');
 
-        if (updateError) throw updateError;
-      } else {
-        // Insert new record
-        const { error: insertError } = await supabase
+        if (clearFileError) {
+          console.error('Error clearing file setting:', clearFileError);
+        }
+
+        // Check if URL record exists
+        const { data: existingRecord, error: fetchError } = await supabase
           .from('site_settings')
-          .insert({
-            key: 'homepage_trailer',
-            value: url,
-            description: 'Video URL for homepage trailer'
-          });
+          .select('*')
+          .eq('key', 'homepage_trailer')
+          .maybeSingle();
 
-        if (insertError) throw insertError;
+        if (fetchError) {
+          console.error('Error fetching existing record:', fetchError);
+          throw fetchError;
+        }
+
+        if (existingRecord) {
+          console.log('Updating existing record');
+          // Update existing record
+          const { error: updateError } = await supabase
+            .from('site_settings')
+            .update({ 
+              value: url,
+              updated_at: new Date().toISOString()
+            })
+            .eq('key', 'homepage_trailer');
+
+          if (updateError) {
+            console.error('Error updating record:', updateError);
+            throw updateError;
+          }
+        } else {
+          console.log('Inserting new record');
+          // Insert new record
+          const { error: insertError } = await supabase
+            .from('site_settings')
+            .insert({
+              key: 'homepage_trailer',
+              value: url,
+              description: 'Video URL for homepage trailer'
+            });
+
+          if (insertError) {
+            console.error('Error inserting record:', insertError);
+            throw insertError;
+          }
+        }
+
+        return url;
+      } catch (error) {
+        console.error('Error in saveVideoUrlMutation:', error);
+        throw error;
       }
     },
     onSuccess: () => {
@@ -180,7 +222,7 @@ const VideoManager = () => {
       console.error('Video URL save error:', error);
       toast({
         title: "خطأ في الحفظ",
-        description: error.message,
+        description: error.message || "حدث خطأ أثناء حفظ رابط الفيديو",
         variant: "destructive",
       });
     },
@@ -230,7 +272,7 @@ const VideoManager = () => {
       console.error('Video delete error:', error);
       toast({
         title: "خطأ في الحذف",
-        description: error.message,
+        description: error.message || "حدث خطأ أثناء حذف الفيديو",
         variant: "destructive",
       });
     },
@@ -271,7 +313,7 @@ const VideoManager = () => {
     }
   };
 
-  const handleUrlSubmit = () => {
+  const handleUrlSubmit = async () => {
     if (!videoUrl.trim()) {
       toast({
         title: "رابط فارغ",
@@ -293,7 +335,24 @@ const VideoManager = () => {
       return;
     }
 
-    saveVideoUrlMutation.mutate(videoUrl);
+    // Additional validation for supported platforms
+    const isYoutube = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be');
+    const isInstagram = videoUrl.includes('instagram.com');
+    
+    if (!isYoutube && !isInstagram) {
+      toast({
+        title: "رابط غير مدعوم",
+        description: "يرجى استخدام روابط YouTube أو Instagram فقط",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await saveVideoUrlMutation.mutateAsync(videoUrl);
+    } catch (error) {
+      console.error('Error submitting URL:', error);
+    }
   };
 
   const getVideoFileUrl = () => {
