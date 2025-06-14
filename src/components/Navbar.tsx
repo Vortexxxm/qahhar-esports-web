@@ -74,40 +74,49 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="bg-black/95 backdrop-blur-sm border-b border-s3m-red/30 sticky top-0 z-50">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
+      <nav className="bg-gradient-to-r from-black via-gray-900 to-black backdrop-blur-sm border-b border-s3m-red/30 sticky top-0 z-50 shadow-lg shadow-s3m-red/10">
+        <div className="container mx-auto px-6">
+          <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2 rtl:space-x-reverse">
-              <div className="w-10 h-10 bg-gradient-to-r from-s3m-red to-red-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">S3M</span>
+            <Link to="/" className="flex items-center space-x-3 rtl:space-x-reverse group">
+              <div className="w-12 h-12 bg-gradient-to-br from-s3m-red via-red-500 to-red-700 rounded-xl flex items-center justify-center shadow-lg shadow-s3m-red/30 group-hover:scale-105 transition-all duration-300">
+                <span className="text-white font-bold text-xl">S3M</span>
               </div>
-              <span className="text-white font-bold text-xl hidden sm:block">S3M E-Sports</span>
+              <div className="hidden sm:block">
+                <span className="text-white font-bold text-2xl bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                  S3M E-Sports
+                </span>
+                <div className="text-xs text-s3m-red font-medium">نادي الرياضات الإلكترونية</div>
+              </div>
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center space-x-6 rtl:space-x-reverse">
+            <div className="hidden lg:flex items-center space-x-2 rtl:space-x-reverse bg-black/40 backdrop-blur-sm rounded-2xl px-6 py-3 border border-white/10">
               {navLinks.map((link) => {
                 const Icon = link.icon;
+                const isActive = isActivePath(link.path);
                 return (
                   <Link
                     key={link.path}
                     to={link.path}
-                    className={`flex items-center space-x-1 rtl:space-x-reverse px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      isActivePath(link.path)
-                        ? 'text-s3m-red bg-s3m-red/10'
-                        : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                    className={`relative flex items-center space-x-2 rtl:space-x-reverse px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 group ${
+                      isActive
+                        ? 'text-white bg-gradient-to-r from-s3m-red to-red-600 shadow-lg shadow-s3m-red/30'
+                        : 'text-gray-300 hover:text-white hover:bg-white/10'
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
-                    <span>{link.label}</span>
+                    <Icon className={`w-4 h-4 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+                    <span className="font-medium">{link.label}</span>
+                    {isActive && (
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-s3m-red/20 to-red-600/20 animate-pulse" />
+                    )}
                   </Link>
                 );
               })}
             </div>
 
             {/* User Actions */}
-            <div className="flex items-center space-x-3 rtl:space-x-reverse">
+            <div className="flex items-center space-x-4 rtl:space-x-reverse">
               {user ? (
                 <>
                   <div className="hidden lg:block">
@@ -116,51 +125,53 @@ const Navbar = () => {
                   
                   <NotificationsPopover />
                   
-                  {isAdmin && (
+                  <div className="hidden lg:flex items-center space-x-3 rtl:space-x-reverse bg-black/40 backdrop-blur-sm rounded-2xl px-4 py-2 border border-white/10">
+                    {isAdmin && (
+                      <Button
+                        onClick={handleAdminClick}
+                        variant="ghost"
+                        size="sm"
+                        className="text-s3m-red hover:text-white hover:bg-s3m-red/20 border border-s3m-red/30 hover:border-s3m-red rounded-xl transition-all duration-300"
+                      >
+                        <Shield className="w-4 h-4 ml-1" />
+                        الإدارة
+                      </Button>
+                    )}
+                    
                     <Button
-                      onClick={handleAdminClick}
-                      variant="outline"
+                      onClick={handleProfileClick}
+                      variant="ghost"
                       size="sm"
-                      className="hidden lg:flex border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white"
+                      className="text-gray-300 hover:text-white hover:bg-white/10 border border-white/20 hover:border-white/40 rounded-xl transition-all duration-300"
                     >
-                      <Shield className="w-4 h-4 ml-1" />
-                      الإدارة
+                      <User className="w-4 h-4 ml-1" />
+                      الملف الشخصي
                     </Button>
-                  )}
-                  
-                  <Button
-                    onClick={handleProfileClick}
-                    variant="outline"
-                    size="sm"
-                    className="hidden lg:flex border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
-                  >
-                    <User className="w-4 h-4 ml-1" />
-                    الملف الشخصي
-                  </Button>
-                  
-                  <Button
-                    onClick={handleSignOut}
-                    variant="outline"
-                    size="sm"
-                    className="hidden lg:flex border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
-                  >
-                    <LogOut className="w-4 h-4 ml-1" />
-                    خروج
-                  </Button>
+                    
+                    <Button
+                      onClick={handleSignOut}
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-400 hover:text-white hover:bg-red-600/20 border border-red-600/30 hover:border-red-600 rounded-xl transition-all duration-300"
+                    >
+                      <LogOut className="w-4 h-4 ml-1" />
+                      خروج
+                    </Button>
+                  </div>
                 </>
               ) : (
-                <div className="hidden lg:flex items-center space-x-2 rtl:space-x-reverse">
+                <div className="hidden lg:flex items-center space-x-3 rtl:space-x-reverse bg-black/40 backdrop-blur-sm rounded-2xl px-4 py-2 border border-white/10">
                   <Button
                     onClick={() => navigate('/login')}
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+                    className="text-gray-300 hover:text-white hover:bg-white/10 border border-white/20 hover:border-white/40 rounded-xl transition-all duration-300"
                   >
                     دخول
                   </Button>
                   <Button
                     onClick={() => navigate('/signup')}
-                    className="bg-s3m-red hover:bg-red-600 text-white"
+                    className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-s3m-red text-white rounded-xl shadow-lg shadow-s3m-red/30 transition-all duration-300 hover:scale-105"
                     size="sm"
                   >
                     تسجيل
@@ -174,7 +185,7 @@ const Navbar = () => {
                   onClick={() => setIsOpen(!isOpen)}
                   variant="ghost"
                   size="sm"
-                  className="text-gray-300 hover:text-white hover:bg-gray-700"
+                  className="text-gray-300 hover:text-white hover:bg-white/10 rounded-xl border border-white/20 hover:border-white/40 transition-all duration-300"
                 >
                   {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                 </Button>
@@ -185,7 +196,7 @@ const Navbar = () => {
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="lg:hidden bg-black/98 border-t border-s3m-red/30">
+          <div className="lg:hidden bg-black/98 border-t border-s3m-red/30 backdrop-blur-sm">
             <div className="container mx-auto px-4 py-4 space-y-3">
               {navLinks.map((link) => {
                 const Icon = link.icon;

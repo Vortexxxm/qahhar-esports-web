@@ -284,37 +284,36 @@ export type Database = {
       }
       special_players: {
         Row: {
-          assigned_at: string | null
+          created_at: string
+          created_by: string
+          end_date: string | null
           id: string
           is_active: boolean | null
+          start_date: string
           type: string | null
-          updated_by: string | null
           user_id: string | null
         }
         Insert: {
-          assigned_at?: string | null
+          created_at?: string
+          created_by?: string
+          end_date?: string | null
           id?: string
           is_active?: boolean | null
+          start_date?: string
           type?: string | null
-          updated_by?: string | null
           user_id?: string | null
         }
         Update: {
-          assigned_at?: string | null
+          created_at?: string
+          created_by?: string
+          end_date?: string | null
           id?: string
           is_active?: boolean | null
+          start_date?: string
           type?: string | null
-          updated_by?: string | null
           user_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "special_players_updated_by_fkey"
-            columns: ["updated_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "special_players_user_id_fkey"
             columns: ["user_id"]
