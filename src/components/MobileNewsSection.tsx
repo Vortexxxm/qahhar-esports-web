@@ -25,8 +25,8 @@ const MobileNewsSection = ({ news }: MobileNewsSectionProps) => {
 
   if (news.length === 0) return null;
 
-  // تكرار الأخبار 12 مرة لضمان عدم الاختفاء أبداً
-  const repeatedNews = Array(12).fill([...news]).flat();
+  // عرض أول 3 أخبار فقط
+  const latestNews = news.slice(0, 3);
 
   return (
     <motion.section 
@@ -66,7 +66,7 @@ const MobileNewsSection = ({ news }: MobileNewsSectionProps) => {
         ))}
       </div>
       
-      <div className="relative z-10 container mx-auto px-2">
+      <div className="relative z-10 container mx-auto px-4">
         {/* Enhanced Header */}
         <div className="flex items-center justify-center mb-8">
           <motion.div
@@ -101,27 +101,20 @@ const MobileNewsSection = ({ news }: MobileNewsSectionProps) => {
           </motion.div>
         </div>
         
-        {/* حاوي الأخبار المحسّن للهواتف - بدون اختفاء */}
-        <div className="relative overflow-hidden rounded-2xl border border-s3m-red/40 backdrop-blur-sm shadow-2xl bg-black/95">
+        {/* قسم الأخبار الثابت - بدون تمرير */}
+        <div className="relative rounded-2xl border border-s3m-red/40 backdrop-blur-sm shadow-2xl bg-black/95 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/10 via-transparent to-purple-600/10"></div>
           
-          {/* منطقة التمرير الآمنة بدون اختفاء */}
-          <div className="relative py-6 min-h-[300px] bg-black/90">
-            <div 
-              className="flex gap-4 animate-seamless-scroll"
-              style={{ 
-                width: `${repeatedNews.length * 320}px`,
-                willChange: 'transform'
-              }}
-            >
-              {repeatedNews.map((newsItem, index) => (
-                <div
-                  key={`mobile-news-${newsItem.id}-${index}`}
-                  className="flex-shrink-0 w-80 max-w-80 opacity-100 visible"
-                  style={{ 
-                    minWidth: '320px',
-                    maxWidth: '320px'
-                  }}
+          {/* عرض الأخبار الثابت */}
+          <div className="relative py-6">
+            <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-3 px-4">
+              {latestNews.map((newsItem, index) => (
+                <motion.div
+                  key={`static-news-${newsItem.id}`}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.2 }}
+                  className="w-full"
                 >
                   <div className="relative group h-full min-h-[280px] bg-gradient-to-br from-gray-900 to-black rounded-xl overflow-hidden shadow-xl border border-s3m-red/50 hover:border-s3m-red/70 transition-all duration-300">
                     
@@ -170,7 +163,7 @@ const MobileNewsSection = ({ news }: MobileNewsSectionProps) => {
                     {/* لمسة تصميمية */}
                     <div className="absolute top-0 left-0 w-0 h-0 border-r-[30px] border-r-transparent border-t-[30px] border-t-s3m-red/20"></div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
