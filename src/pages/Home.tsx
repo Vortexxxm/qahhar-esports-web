@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Users, Trophy, Target, Star, Flame, Zap, GamepadIcon, Crown, Calendar, ArrowRight, Bell, Globe, Rocket, Newspaper } from 'lucide-react';
@@ -16,7 +17,7 @@ const Home = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Fetch latest news with images - only 3 latest news
+  // Fetch latest news with images
   const { data: news = [] } = useQuery({
     queryKey: ['latest-news'],
     queryFn: async () => {
@@ -24,7 +25,7 @@ const Home = () => {
         .from('news')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(3);
+        .limit(6);
       
       if (error) throw error;
       return data;
@@ -280,7 +281,7 @@ const Home = () => {
         </div>
       </motion.section>
 
-      {/* Featured News Section - Only moving news from right to left */}
+      {/* Featured News Section */}
       {news.length > 0 && (
         <motion.section 
           initial={{ opacity: 0, y: 50 }}
@@ -331,7 +332,7 @@ const Home = () => {
                     <Bell className="w-10 h-10 text-s3m-red" />
                   </motion.div>
                   <h3 className="text-3xl md:text-5xl font-black bg-gradient-to-r from-s3m-red via-red-400 to-orange-500 bg-clip-text text-transparent">
-                    التحديثات المميزة
+                    الأخبار المميزة
                   </h3>
                   <motion.div
                     animate={{ scale: [1, 1.2, 1] }}
@@ -342,11 +343,11 @@ const Home = () => {
                   </motion.div>
                 </div>
                 <div className="w-20 h-1 bg-gradient-to-r from-s3m-red to-orange-500 rounded-full mx-auto mb-6"></div>
-                <p className="text-gray-300 text-lg font-medium">آخر الأخبار والتطورات من عالم S3M E-Sports</p>
+                <p className="text-white/80 text-lg font-medium">آخر الأخبار والتطورات من عالم S3M E-Sports</p>
               </motion.div>
             </div>
             
-            {/* Enhanced Moving News Cards - Right to Left only */}
+            {/* Moving News Cards */}
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-black/50 to-gray-900/50 border border-s3m-red/30 backdrop-blur-sm">
               <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/5 via-transparent to-purple-600/5"></div>
               
@@ -355,14 +356,13 @@ const Home = () => {
                   className="flex space-x-8 rtl:space-x-reverse"
                   animate={{ x: ["100%", "-100%"] }}
                   transition={{
-                    duration: 40,
+                    duration: 30,
                     repeat: Infinity,
                     ease: "linear",
                   }}
                   style={{ willChange: "transform" }}
                 >
-                  {/* Duplicate news for seamless loop */}
-                  {[...news, ...news, ...news].map((newsItem, index) => (
+                  {[...news, ...news].map((newsItem, index) => (
                     <motion.div
                       key={`${newsItem.id}-${index}`}
                       className="flex-shrink-0 w-80 md:w-96"
@@ -370,7 +370,6 @@ const Home = () => {
                       transition={{ duration: 0.3 }}
                     >
                       <div className="relative group">
-                        {/* Glow effect on hover */}
                         <div className="absolute -inset-1 bg-gradient-to-r from-s3m-red/50 to-purple-600/50 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         <div className="relative">
                           <NewsCard news={newsItem} />
@@ -407,7 +406,7 @@ const Home = () => {
         </motion.section>
       )}
 
-      {/* Enhanced Player of the Month/Week Section for Mobile */}
+      {/* Enhanced Player of the Month/Week Section */}
       {(weeklyPlayer || monthlyPlayer) && (
         <motion.section 
           initial={{ opacity: 0, y: 50 }}
