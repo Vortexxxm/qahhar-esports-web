@@ -1,3 +1,4 @@
+
 import { motion } from "framer-motion";
 import { Trophy, Users, Target, Gamepad2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -47,21 +48,35 @@ const Home = () => {
           username,
           full_name,
           avatar_url,
-          game_id,
-          leaderboard_scores!inner (
-            points,
-            wins,
-            kills,
-            deaths,
-            visible_in_leaderboard
-          )
+          game_id
         `)
-        .eq('leaderboard_scores.visible_in_leaderboard', true)
-        .order('leaderboard_scores.points', { ascending: false })
         .limit(3);
 
       if (error) throw error;
-      return data;
+
+      // Get leaderboard data separately
+      const { data: leaderboardScores, error: scoresError } = await supabase
+        .from('leaderboard_scores')
+        .select('user_id, points, wins, kills, deaths, visible_in_leaderboard')
+        .eq('visible_in_leaderboard', true)
+        .order('points', { ascending: false })
+        .limit(3);
+
+      if (scoresError) throw scoresError;
+
+      // Combine the data
+      const combinedData = data?.map(profile => {
+        const score = leaderboardScores?.find(score => score.user_id === profile.id);
+        return {
+          ...profile,
+          points: score?.points || 0,
+          wins: score?.wins || 0,
+          kills: score?.kills || 0,
+          deaths: score?.deaths || 0
+        };
+      }).filter(profile => profile.points > 0) || [];
+
+      return combinedData;
     }
   });
 
@@ -316,7 +331,7 @@ const Home = () => {
                         {player.username || 'مجهول'}
                       </h3>
                       <p className="text-yellow-400 font-bold text-xl">
-                        {Number(player.leaderboard_scores?.[0]?.points || 0).toLocaleString()} نقطة
+                        {Number(player.points || 0).toLocaleString()} نقطة
                       </p>
                     </CardContent>
                   </Card>
