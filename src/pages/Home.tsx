@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { Trophy, Users, Target, Gamepad2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -317,7 +316,7 @@ const Home = () => {
                         {player.username || 'مجهول'}
                       </h3>
                       <p className="text-yellow-400 font-bold text-xl">
-                        {player.leaderboard_scores?.[0]?.points?.toLocaleString() || 0} نقطة
+                        {Number(player.leaderboard_scores?.[0]?.points || 0).toLocaleString()} نقطة
                       </p>
                     </CardContent>
                   </Card>
