@@ -15,7 +15,8 @@ import TopPlayers from "@/components/admin/TopPlayers";
 import JoinRequests from "@/components/admin/JoinRequests";
 import TournamentRegistrations from "@/components/admin/TournamentRegistrations";
 import VideoManager from "@/components/admin/VideoManager";
-import { Shield, Users, Trophy, Settings, FileText, Video, UserPlus, Calendar } from "lucide-react";
+import { Shield, Users, Trophy, Settings, FileText, Video, UserPlus, Calendar, Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type UserWithProfile = {
   id: string;
@@ -30,6 +31,7 @@ const AdminPanel = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [editingPlayer, setEditingPlayer] = useState<UserWithProfile | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || userRole !== 'admin')) {
@@ -239,8 +241,9 @@ const AdminPanel = () => {
     return (
       <div className="min-h-screen py-12 flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-s3m-red/20">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-s3m-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <div className="text-white text-lg">جاري التحميل...</div>
+          <div className="w-12 h-12 border-4 border-s3m-red border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <div className="text-white text-xl font-medium">جاري التحميل...</div>
+          <div className="text-white/60 text-sm mt-2">يرجى الانتظار</div>
         </div>
       </div>
     );
@@ -272,35 +275,60 @@ const AdminPanel = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-s3m-red/20">
-      {/* Mobile-optimized header */}
-      <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-sm border-b border-s3m-red/20 p-3 md:p-4">
-        <div className="container mx-auto max-w-7xl">
+      {/* Enhanced Mobile-optimized header */}
+      <div className="sticky top-0 z-50 bg-black/90 backdrop-blur-md border-b border-s3m-red/30 shadow-lg">
+        <div className="container mx-auto max-w-7xl p-3 md:p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Shield className="w-6 h-6 md:w-8 md:h-8 text-s3m-red" />
+              <div className="p-2 bg-gradient-to-br from-s3m-red/20 to-red-600/20 rounded-xl border border-s3m-red/30">
+                <Shield className="w-6 h-6 md:w-8 md:h-8 text-s3m-red" />
+              </div>
               <div>
-                <h1 className="text-lg md:text-2xl font-bold bg-gradient-to-r from-s3m-red to-red-600 bg-clip-text text-transparent">
+                <h1 className="text-lg md:text-2xl font-black bg-gradient-to-r from-s3m-red to-red-600 bg-clip-text text-transparent">
                   لوحة الإدارة
                 </h1>
-                <p className="text-white/60 text-xs md:text-sm hidden md:block">
-                  إدارة النظام والمستخدمين
+                <p className="text-white/70 text-xs md:text-sm hidden sm:block">
+                  إدارة النظام والمستخدمين بسهولة
                 </p>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-white/80 text-xs md:text-sm font-medium">
-                مرحباً {user?.email?.split('@')[0]}
-              </p>
-              <p className="text-s3m-red text-xs">المدير العام</p>
+            
+            {/* Mobile Menu Button */}
+            <div className="flex items-center gap-3">
+              <div className="text-right hidden sm:block">
+                <p className="text-white/90 text-sm md:text-base font-medium">
+                  مرحباً {user?.email?.split('@')[0]}
+                </p>
+                <p className="text-s3m-red text-xs md:text-sm font-bold">المدير العام ⭐</p>
+              </div>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="md:hidden text-white hover:bg-s3m-red/20 border border-s3m-red/30"
+              >
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </Button>
             </div>
           </div>
+          
+          {/* Mobile User Info */}
+          {isMobileMenuOpen && (
+            <div className="md:hidden mt-4 p-3 bg-black/40 rounded-lg border border-s3m-red/20">
+              <p className="text-white text-sm font-medium">
+                مرحباً {user?.email?.split('@')[0]}
+              </p>
+              <p className="text-s3m-red text-xs font-bold">المدير العام ⭐</p>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="p-2 md:p-4">
+      <div className="p-3 md:p-6 space-y-6">
         <div className="container mx-auto max-w-7xl">
-          {/* Mobile-optimized stats */}
-          <div className="mb-4">
+          {/* Enhanced Mobile stats */}
+          <div className="mb-6">
             <AdminStats 
               totalUsers={totalUsers}
               activeUsers={activeUsers}
@@ -309,13 +337,13 @@ const AdminPanel = () => {
             />
           </div>
 
-          {/* Enhanced Mobile Tabs */}
-          <Tabs defaultValue="requests" className="space-y-3">
-            <div className="overflow-x-auto scrollbar-hide">
-              <TabsList className="bg-black/40 border border-s3m-red/30 backdrop-blur-sm w-full min-w-max flex p-1 rounded-lg">
+          {/* Enhanced Mobile-First Tabs */}
+          <Tabs defaultValue="requests" className="space-y-4">
+            <div className="overflow-x-auto scrollbar-hide pb-2">
+              <TabsList className="bg-gradient-to-r from-black/60 to-gray-900/60 border border-s3m-red/40 backdrop-blur-md w-full min-w-max flex p-1.5 rounded-xl shadow-lg">
                 <TabsTrigger 
                   value="requests" 
-                  className="data-[state=active]:bg-s3m-red data-[state=active]:text-white text-white/70 text-xs md:text-sm px-2 md:px-4 py-2 whitespace-nowrap rounded-md transition-all duration-200 flex items-center gap-2"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-s3m-red data-[state=active]:to-red-600 data-[state=active]:text-white text-white/80 text-xs md:text-sm px-3 md:px-5 py-2.5 whitespace-nowrap rounded-lg transition-all duration-300 flex items-center gap-2 font-medium"
                 >
                   <UserPlus className="w-4 h-4" />
                   <span className="hidden sm:inline">طلبات الانضمام</span>
@@ -323,7 +351,7 @@ const AdminPanel = () => {
                 </TabsTrigger>
                 <TabsTrigger 
                   value="tournaments" 
-                  className="data-[state=active]:bg-s3m-red data-[state=active]:text-white text-white/70 text-xs md:text-sm px-2 md:px-4 py-2 whitespace-nowrap rounded-md transition-all duration-200 flex items-center gap-2"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-s3m-red data-[state=active]:to-red-600 data-[state=active]:text-white text-white/80 text-xs md:text-sm px-3 md:px-5 py-2.5 whitespace-nowrap rounded-lg transition-all duration-300 flex items-center gap-2 font-medium"
                 >
                   <Calendar className="w-4 h-4" />
                   <span className="hidden sm:inline">البطولات</span>
@@ -331,7 +359,7 @@ const AdminPanel = () => {
                 </TabsTrigger>
                 <TabsTrigger 
                   value="users" 
-                  className="data-[state=active]:bg-s3m-red data-[state=active]:text-white text-white/70 text-xs md:text-sm px-2 md:px-4 py-2 whitespace-nowrap rounded-md transition-all duration-200 flex items-center gap-2"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-s3m-red data-[state=active]:to-red-600 data-[state=active]:text-white text-white/80 text-xs md:text-sm px-3 md:px-5 py-2.5 whitespace-nowrap rounded-lg transition-all duration-300 flex items-center gap-2 font-medium"
                 >
                   <Users className="w-4 h-4" />
                   <span className="hidden sm:inline">الأعضاء</span>
@@ -339,7 +367,7 @@ const AdminPanel = () => {
                 </TabsTrigger>
                 <TabsTrigger 
                   value="points" 
-                  className="data-[state=active]:bg-s3m-red data-[state=active]:text-white text-white/70 text-xs md:text-sm px-2 md:px-4 py-2 whitespace-nowrap rounded-md transition-all duration-200 flex items-center gap-2"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-s3m-red data-[state=active]:to-red-600 data-[state=active]:text-white text-white/80 text-xs md:text-sm px-3 md:px-5 py-2.5 whitespace-nowrap rounded-lg transition-all duration-300 flex items-center gap-2 font-medium"
                 >
                   <Trophy className="w-4 h-4" />
                   <span className="hidden sm:inline">النقاط</span>
@@ -347,7 +375,7 @@ const AdminPanel = () => {
                 </TabsTrigger>
                 <TabsTrigger 
                   value="video" 
-                  className="data-[state=active]:bg-s3m-red data-[state=active]:text-white text-white/70 text-xs md:text-sm px-2 md:px-4 py-2 whitespace-nowrap rounded-md transition-all duration-200 flex items-center gap-2"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-s3m-red data-[state=active]:to-red-600 data-[state=active]:text-white text-white/80 text-xs md:text-sm px-3 md:px-5 py-2.5 whitespace-nowrap rounded-lg transition-all duration-300 flex items-center gap-2 font-medium"
                 >
                   <Video className="w-4 h-4" />
                   <span className="hidden sm:inline">الفيديو</span>
@@ -356,44 +384,50 @@ const AdminPanel = () => {
               </TabsList>
             </div>
 
-            {/* Mobile-optimized tab content */}
-            <TabsContent value="requests">
-              <Card className="gaming-card border-s3m-red/30">
-                <CardHeader className="pb-2 p-3 md:p-4">
-                  <CardTitle className="text-s3m-red text-sm md:text-lg flex items-center gap-2">
-                    <UserPlus className="w-5 h-5" />
-                    طلبات الانضمام
+            {/* Enhanced Mobile-optimized tab content */}
+            <TabsContent value="requests" className="mt-6">
+              <Card className="bg-gradient-to-br from-gray-900/95 to-black/95 border border-s3m-red/40 backdrop-blur-sm shadow-xl">
+                <CardHeader className="pb-3 p-4 md:p-6 border-b border-s3m-red/20">
+                  <CardTitle className="text-s3m-red text-base md:text-xl flex items-center gap-3 font-bold">
+                    <div className="p-2 bg-s3m-red/20 rounded-lg">
+                      <UserPlus className="w-5 h-5" />
+                    </div>
+                    طلبات الانضمام الجديدة
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-2 md:p-4">
+                <CardContent className="p-3 md:p-6">
                   <JoinRequests />
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="tournaments">
-              <Card className="gaming-card border-s3m-red/30">
-                <CardHeader className="pb-2 p-3 md:p-4">
-                  <CardTitle className="text-s3m-red text-sm md:text-lg flex items-center gap-2">
-                    <Calendar className="w-5 h-5" />
+            <TabsContent value="tournaments" className="mt-6">
+              <Card className="bg-gradient-to-br from-gray-900/95 to-black/95 border border-s3m-red/40 backdrop-blur-sm shadow-xl">
+                <CardHeader className="pb-3 p-4 md:p-6 border-b border-s3m-red/20">
+                  <CardTitle className="text-s3m-red text-base md:text-xl flex items-center gap-3 font-bold">
+                    <div className="p-2 bg-s3m-red/20 rounded-lg">
+                      <Calendar className="w-5 h-5" />
+                    </div>
                     طلبات المشاركة في البطولات
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-2 md:p-4">
+                <CardContent className="p-3 md:p-6">
                   <TournamentRegistrations />
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="users">
-              <Card className="gaming-card border-s3m-red/30">
-                <CardHeader className="pb-2 p-3 md:p-4">
-                  <CardTitle className="text-s3m-red text-sm md:text-lg flex items-center gap-2">
-                    <Users className="w-5 h-5" />
-                    قائمة الأعضاء
+            <TabsContent value="users" className="mt-6">
+              <Card className="bg-gradient-to-br from-gray-900/95 to-black/95 border border-s3m-red/40 backdrop-blur-sm shadow-xl">
+                <CardHeader className="pb-3 p-4 md:p-6 border-b border-s3m-red/20">
+                  <CardTitle className="text-s3m-red text-base md:text-xl flex items-center gap-3 font-bold">
+                    <div className="p-2 bg-s3m-red/20 rounded-lg">
+                      <Users className="w-5 h-5" />
+                    </div>
+                    إدارة الأعضاء
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-1 md:p-4">
+                <CardContent className="p-2 md:p-6">
                   <div className="overflow-x-auto">
                     <UsersTable 
                       users={users || []}
@@ -409,19 +443,56 @@ const AdminPanel = () => {
               </Card>
             </TabsContent>
 
-            <TabsContent value="points">
-              <div className="grid gap-3 lg:grid-cols-2">
-                <PointsManager 
-                  users={users || []}
-                  onAddPoints={handleAddPoints}
-                  isLoading={updatePointsMutation.isPending}
-                />
-                <TopPlayers users={users || []} />
+            <TabsContent value="points" className="mt-6">
+              <div className="grid gap-4 lg:grid-cols-2">
+                <Card className="bg-gradient-to-br from-gray-900/95 to-black/95 border border-s3m-red/40 backdrop-blur-sm shadow-xl">
+                  <CardHeader className="pb-3 p-4 border-b border-s3m-red/20">
+                    <CardTitle className="text-s3m-red text-base md:text-lg flex items-center gap-3 font-bold">
+                      <div className="p-2 bg-s3m-red/20 rounded-lg">
+                        <Trophy className="w-4 h-4" />
+                      </div>
+                      إدارة النقاط
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3">
+                    <PointsManager 
+                      users={users || []}
+                      onAddPoints={handleAddPoints}
+                      isLoading={updatePointsMutation.isPending}
+                    />
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-gradient-to-br from-gray-900/95 to-black/95 border border-s3m-red/40 backdrop-blur-sm shadow-xl">
+                  <CardHeader className="pb-3 p-4 border-b border-s3m-red/20">
+                    <CardTitle className="text-s3m-red text-base md:text-lg flex items-center gap-3 font-bold">
+                      <div className="p-2 bg-yellow-500/20 rounded-lg">
+                        <Trophy className="w-4 h-4 text-yellow-500" />
+                      </div>
+                      أفضل اللاعبين
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3">
+                    <TopPlayers users={users || []} />
+                  </CardContent>
+                </Card>
               </div>
             </TabsContent>
 
-            <TabsContent value="video">
-              <VideoManager />
+            <TabsContent value="video" className="mt-6">
+              <Card className="bg-gradient-to-br from-gray-900/95 to-black/95 border border-s3m-red/40 backdrop-blur-sm shadow-xl">
+                <CardHeader className="pb-3 p-4 md:p-6 border-b border-s3m-red/20">
+                  <CardTitle className="text-s3m-red text-base md:text-xl flex items-center gap-3 font-bold">
+                    <div className="p-2 bg-s3m-red/20 rounded-lg">
+                      <Video className="w-5 h-5" />
+                    </div>
+                    إدارة الفيديوهات
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-3 md:p-6">
+                  <VideoManager />
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>

@@ -25,15 +25,15 @@ const MobileNewsSection = ({ news }: MobileNewsSectionProps) => {
 
   if (news.length === 0) return null;
 
-  // تكرار الأخبار 4 مرات للحصول على حركة مستمرة واحترافية
-  const repeatedNews = [...news, ...news, ...news, ...news];
+  // تكرار الأخبار 6 مرات للحصول على حركة مستمرة بدون فراغات
+  const repeatedNews = [...news, ...news, ...news, ...news, ...news, ...news];
 
   return (
     <motion.section 
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
-      className="relative py-6 md:py-12 bg-gradient-to-br from-black/98 via-s3m-red/5 to-purple-900/10 border-y border-s3m-red/20"
+      className="relative py-8 md:py-12 bg-gradient-to-br from-black/98 via-s3m-red/5 to-purple-900/10 border-y border-s3m-red/20 overflow-hidden"
     >
       {/* Background Effects */}
       <div className="absolute inset-0">
@@ -44,137 +44,138 @@ const MobileNewsSection = ({ news }: MobileNewsSectionProps) => {
       
       {/* Floating particles */}
       <div className="absolute inset-0 overflow-hidden">
-        {[...Array(20)].map((_, i) => (
+        {[...Array(25)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-1 h-1 bg-s3m-red/30 rounded-full"
+            className="absolute w-1 h-1 bg-s3m-red/40 rounded-full"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
             }}
             animate={{
-              y: [0, -30, 0],
-              opacity: [0.1, 0.8, 0.1],
-              scale: [1, 2, 1],
+              y: [0, -40, 0],
+              opacity: [0.2, 0.9, 0.2],
+              scale: [1, 2.5, 1],
             }}
             transition={{
-              duration: 8 + Math.random() * 4,
+              duration: 10 + Math.random() * 5,
               repeat: Infinity,
-              delay: Math.random() * 5,
+              delay: Math.random() * 6,
             }}
           />
         ))}
       </div>
       
       <div className="relative z-10 container mx-auto px-2">
-        {/* Header */}
-        <div className="flex items-center justify-center mb-6">
+        {/* Enhanced Header */}
+        <div className="flex items-center justify-center mb-8">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.6 }}
             className="text-center"
           >
-            <div className="flex items-center justify-center mb-3">
+            <div className="flex items-center justify-center mb-4">
               <motion.div
                 animate={{ rotate: [0, 360] }}
-                transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                className="mr-2"
+                transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                className="mr-3"
               >
-                <Bell className="w-6 h-6 md:w-8 md:h-8 text-s3m-red" />
+                <Bell className="w-7 h-7 md:w-9 md:h-9 text-s3m-red" />
               </motion.div>
-              <h3 className="text-xl md:text-3xl font-black bg-gradient-to-r from-s3m-red via-red-400 to-orange-500 bg-clip-text text-transparent">
+              <h3 className="text-2xl md:text-4xl font-black bg-gradient-to-r from-s3m-red via-red-400 to-orange-500 bg-clip-text text-transparent">
                 الأخبار العاجلة
               </h3>
               <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 4, repeat: Infinity }}
-                className="mr-2"
+                animate={{ scale: [1, 1.3, 1] }}
+                transition={{ duration: 3.5, repeat: Infinity }}
+                className="mr-3"
               >
-                <Globe className="w-5 h-5 md:w-6 md:h-6 text-s3m-red" />
+                <Globe className="w-6 h-6 md:w-7 md:h-7 text-s3m-red" />
               </motion.div>
             </div>
-            <div className="w-12 md:w-20 h-0.5 bg-gradient-to-r from-s3m-red to-orange-500 rounded-full mx-auto mb-3"></div>
-            <p className="text-white/80 text-sm md:text-base font-medium px-2">
+            <div className="w-16 md:w-24 h-0.5 bg-gradient-to-r from-s3m-red to-orange-500 rounded-full mx-auto mb-4"></div>
+            <p className="text-white/85 text-base md:text-lg font-medium px-3">
               تابع آخر أخبار وأحداث عالم S3M E-Sports
             </p>
           </motion.div>
         </div>
         
-        {/* Professional Mobile News Container */}
-        <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-black/95 to-gray-900/95 border border-s3m-red/30 backdrop-blur-sm shadow-xl">
-          <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/8 via-transparent to-purple-600/8"></div>
+        {/* Enhanced Professional Mobile News Container */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-black/96 to-gray-900/96 border border-s3m-red/40 backdrop-blur-sm shadow-2xl">
+          <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/10 via-transparent to-purple-600/10"></div>
           
-          {/* Enhanced News Scrolling Container */}
-          <div className="relative py-4">
+          {/* Seamless News Scrolling Container */}
+          <div className="relative py-6">
             <motion.div
-              className="flex gap-3"
-              animate={{ x: [0, "-25%"] }}
+              className="flex gap-4"
+              animate={{ x: [0, `-${100 / 6}%`] }}
               transition={{
-                duration: 60, // حركة أبطأ وأكثر احترافية - 60 ثانية
+                duration: 80, // حركة أبطأ وأكثر سلاسة - 80 ثانية
                 repeat: Infinity,
                 ease: "linear",
                 repeatType: "loop"
               }}
               style={{ 
                 willChange: "transform",
-                width: `${repeatedNews.length * 280}px`
+                width: `${repeatedNews.length * 290}px`
               }}
             >
               {repeatedNews.map((newsItem, index) => (
                 <motion.div
                   key={`${newsItem.id}-${index}`}
-                  className="flex-shrink-0 w-64 md:w-72"
+                  className="flex-shrink-0 w-72 md:w-80"
                   whileHover={{ 
-                    scale: 1.02,
+                    scale: 1.03,
                     transition: { duration: 0.2 }
                   }}
                 >
                   <div className="relative group h-full">
-                    {/* Professional Glow effect */}
-                    <div className="absolute -inset-1 bg-gradient-to-r from-s3m-red/30 to-purple-600/30 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
+                    {/* Enhanced Professional Glow effect */}
+                    <div className="absolute -inset-1.5 bg-gradient-to-r from-s3m-red/40 to-purple-600/40 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-all duration-400"></div>
                     
-                    {/* Enhanced News Card */}
-                    <div className="relative bg-gradient-to-br from-gray-900/99 to-black/99 border border-s3m-red/40 rounded-lg overflow-hidden h-full shadow-lg group-hover:border-s3m-red/60 transition-all duration-200">
+                    {/* Premium News Card */}
+                    <div className="relative bg-gradient-to-br from-gray-900/99 to-black/99 border border-s3m-red/50 rounded-xl overflow-hidden h-full shadow-xl group-hover:border-s3m-red/70 transition-all duration-300">
                       {/* News Image */}
                       {newsItem.image_url && (
                         <div className="aspect-video w-full overflow-hidden relative">
                           <img 
                             src={newsItem.image_url} 
                             alt={newsItem.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
-                          {/* News Badge */}
-                          <div className="absolute top-2 right-2 bg-s3m-red/90 text-white text-xs px-2 py-1 rounded-full font-medium">
-                            جديد
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                          {/* Enhanced News Badge */}
+                          <div className="absolute top-3 right-3 bg-gradient-to-r from-s3m-red to-red-600 text-white text-sm px-3 py-1.5 rounded-full font-bold shadow-lg">
+                            🔥 جديد
                           </div>
                         </div>
                       )}
                       
                       {/* Enhanced News Content */}
-                      <div className="p-3">
-                        <h4 className="text-sm md:text-base font-bold text-s3m-red mb-2 line-clamp-2 leading-tight">
+                      <div className="p-4">
+                        <h4 className="text-base md:text-lg font-bold text-s3m-red mb-3 line-clamp-2 leading-tight">
                           {newsItem.title}
                         </h4>
-                        <p className="text-white/80 text-xs md:text-sm mb-3 line-clamp-2 leading-relaxed">
+                        <p className="text-white/85 text-sm md:text-base mb-4 line-clamp-2 leading-relaxed">
                           {newsItem.description}
                         </p>
                         
-                        {/* Professional News Meta */}
-                        <div className="flex items-center justify-between text-xs text-white/60">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
+                        {/* Enhanced Professional News Meta */}
+                        <div className="flex items-center justify-between text-sm text-white/70">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4" />
                             <span>{new Date(newsItem.created_at).toLocaleDateString('ar-SA')}</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <span className="text-s3m-red font-medium text-xs">S3M</span>
+                            <span className="text-s3m-red font-bold text-sm">S3M</span>
+                            <span className="text-xs">⭐</span>
                           </div>
                         </div>
                       </div>
                       
-                      {/* Professional corner accent */}
-                      <div className="absolute top-0 left-0 w-0 h-0 border-r-[25px] border-r-transparent border-t-[25px] border-t-s3m-red/15"></div>
+                      {/* Premium corner accent */}
+                      <div className="absolute top-0 left-0 w-0 h-0 border-r-[30px] border-r-transparent border-t-[30px] border-t-s3m-red/20"></div>
                     </div>
                   </div>
                 </motion.div>
@@ -182,26 +183,26 @@ const MobileNewsSection = ({ news }: MobileNewsSectionProps) => {
             </motion.div>
           </div>
           
-          {/* Professional Gradient overlays */}
-          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black via-black/98 to-transparent z-10"></div>
-          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black via-black/98 to-transparent z-10"></div>
+          {/* Enhanced Gradient overlays for seamless effect */}
+          <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-black via-black/99 to-transparent z-10"></div>
+          <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-black via-black/99 to-transparent z-10"></div>
         </div>
         
         {/* Enhanced View All News Button */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1 }}
-          className="text-center mt-6"
+          transition={{ delay: 1.2 }}
+          className="text-center mt-8"
         >
           <Button 
             variant="outline"
             onClick={() => navigate('/news')}
-            className="border border-s3m-red text-s3m-red hover:bg-gradient-to-r hover:from-s3m-red hover:to-red-600 hover:text-white hover:border-transparent rounded-lg transition-all duration-300 text-sm px-6 py-2 font-bold shadow-md hover:shadow-lg transform hover:scale-105"
+            className="border-2 border-s3m-red text-s3m-red hover:bg-gradient-to-r hover:from-s3m-red hover:to-red-600 hover:text-white hover:border-transparent rounded-xl transition-all duration-300 text-base px-8 py-3 font-bold shadow-lg hover:shadow-xl transform hover:scale-105"
           >
-            <Newspaper className="w-4 h-4 ml-2" />
+            <Newspaper className="w-5 h-5 ml-2" />
             المزيد من الأخبار
-            <ArrowRight className="w-4 h-4 mr-2" />
+            <ArrowRight className="w-5 h-5 mr-2" />
           </Button>
         </motion.div>
       </div>
