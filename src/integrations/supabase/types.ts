@@ -151,6 +151,7 @@ export type Database = {
           image_url: string | null
           title: string
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           author_id?: string | null
@@ -161,6 +162,7 @@ export type Database = {
           image_url?: string | null
           title: string
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           author_id?: string | null
@@ -171,6 +173,7 @@ export type Database = {
           image_url?: string | null
           title?: string
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: []
       }

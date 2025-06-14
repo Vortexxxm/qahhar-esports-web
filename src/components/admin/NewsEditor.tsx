@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -66,8 +67,8 @@ const NewsEditor = ({ news, onClose }: NewsEditorProps) => {
             title: data.title,
             description: data.description,
             content: data.content,
-            image_url: data.image_url,
-            video_url: data.video_url,
+            image_url: data.image_url || null,
+            video_url: data.video_url || null,
             updated_at: new Date().toISOString()
           })
           .eq('id', news.id);
@@ -80,8 +81,8 @@ const NewsEditor = ({ news, onClose }: NewsEditorProps) => {
             title: data.title,
             description: data.description,
             content: data.content,
-            image_url: data.image_url,
-            video_url: data.video_url,
+            image_url: data.image_url || null,
+            video_url: data.video_url || null,
             author_id: user?.id
           });
 
@@ -97,6 +98,7 @@ const NewsEditor = ({ news, onClose }: NewsEditorProps) => {
       onClose();
     },
     onError: (error: any) => {
+      console.error('Save news error:', error);
       toast({
         title: "خطأ",
         description: error.message,
@@ -146,6 +148,7 @@ const NewsEditor = ({ news, onClose }: NewsEditorProps) => {
         description: "تم رفع صورة الخبر بنجاح",
       });
     } catch (error: any) {
+      console.error('Image upload error:', error);
       toast({
         title: "خطأ في رفع الصورة",
         description: error.message,
@@ -154,6 +157,7 @@ const NewsEditor = ({ news, onClose }: NewsEditorProps) => {
       setImagePreview(null);
     } finally {
       setUploading(false);
+      event.target.value = '';
     }
   };
 
@@ -209,6 +213,7 @@ const NewsEditor = ({ news, onClose }: NewsEditorProps) => {
         description: "تم رفع فيديو الخبر بنجاح",
       });
     } catch (error: any) {
+      console.error('Video upload error:', error);
       toast({
         title: "خطأ في رفع الفيديو",
         description: error.message,
@@ -217,6 +222,7 @@ const NewsEditor = ({ news, onClose }: NewsEditorProps) => {
       setVideoPreview(null);
     } finally {
       setUploadingVideo(false);
+      event.target.value = '';
     }
   };
 
