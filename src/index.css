@@ -172,7 +172,9 @@
 @media (max-width: 768px) {
   /* Mobile admin cards */
   .mobile-admin-card {
-    @apply rounded-xl shadow-lg border border-s3m-red/30 bg-gradient-to-br from-gray-900/95 to-black/95 backdrop-blur-sm;
+    @apply rounded-xl shadow-lg border border-s3m-red/30;
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(0, 0, 0, 0.95));
+    backdrop-filter: blur(8px);
   }
   
   /* Mobile admin tabs */
@@ -182,7 +184,8 @@
   
   /* Mobile admin header */
   .mobile-admin-header {
-    @apply sticky top-0 z-50 bg-black/90 backdrop-blur-md border-b border-s3m-red/30 shadow-lg;
+    @apply sticky top-0 z-50 backdrop-blur-md border-b border-s3m-red/30 shadow-lg;
+    background: rgba(0, 0, 0, 0.9);
   }
   
   /* Mobile admin content spacing */
@@ -197,12 +200,14 @@
   
   /* Mobile admin input */
   .mobile-admin-input {
-    @apply w-full p-3 rounded-lg border border-s3m-red/30 bg-black/40 text-white focus:border-s3m-red focus:ring-1 focus:ring-s3m-red transition-all duration-200;
+    @apply w-full p-3 rounded-lg border border-s3m-red/30 text-white focus:border-s3m-red focus:ring-1 focus:ring-s3m-red transition-all duration-200;
+    background: rgba(0, 0, 0, 0.4);
   }
   
   /* Mobile admin select */
   .mobile-admin-select {
-    @apply w-full p-3 rounded-lg border border-s3m-red/30 bg-black/40 text-white focus:border-s3m-red transition-all duration-200;
+    @apply w-full p-3 rounded-lg border border-s3m-red/30 text-white focus:border-s3m-red transition-all duration-200;
+    background: rgba(0, 0, 0, 0.4);
   }
 }
 
@@ -225,7 +230,8 @@
   
   /* Mobile news container */
   .mobile-news-container {
-    @apply relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-900/96 to-black/96 border border-s3m-red/40 shadow-xl;
+    @apply relative overflow-hidden rounded-xl border border-s3m-red/40 shadow-xl;
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.96), rgba(0, 0, 0, 0.96));
   }
 }
 
@@ -254,11 +260,13 @@
 }
 
 .admin-mobile-card-header {
-  @apply p-4 border-b border-s3m-red/20 bg-gradient-to-r from-s3m-red/5 to-transparent;
+  @apply p-4 border-b border-s3m-red/20;
+  background: linear-gradient(90deg, rgba(220, 20, 60, 0.05), transparent);
 }
 
 .admin-mobile-stat-card {
-  @apply bg-gradient-to-br from-gray-900/90 to-black/90 border border-s3m-red/30 rounded-xl p-4 backdrop-blur-sm shadow-lg;
+  @apply border border-s3m-red/30 rounded-xl p-4 backdrop-blur-sm shadow-lg;
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(0, 0, 0, 0.9));
 }
 
 .admin-mobile-tab-content {
@@ -335,13 +343,18 @@
 
 /* Professional mobile admin enhancements */
 .mobile-admin-panel {
-  @apply min-h-screen bg-gradient-to-br from-black via-gray-900 to-s3m-red/20;
+  background: linear-gradient(135deg, rgb(0, 0, 0), rgb(17, 24, 39), rgba(220, 20, 60, 0.2));
+  min-height: 100vh;
 }
 
 .mobile-admin-sidebar {
-  @apply fixed inset-y-0 left-0 z-50 w-64 bg-black/95 backdrop-blur-md border-r border-s3m-red/30 transform transition-transform duration-300;
+  @apply fixed inset-y-0 left-0 z-50 w-64 border-r border-s3m-red/30 transform transition-transform duration-300;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(16px);
 }
 
 .mobile-admin-overlay {
-  @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-40;
+  @apply fixed inset-0 z-40;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
 }
