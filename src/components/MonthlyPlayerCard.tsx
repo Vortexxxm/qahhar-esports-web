@@ -151,13 +151,6 @@ const MonthlyPlayerCard = ({
         <div className="absolute inset-0 bg-gradient-to-l from-transparent via-blue-300/10 to-transparent animate-pulse delay-500"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-transparent via-cyan-300/10 to-transparent animate-pulse delay-1000"></div>
 
-        {/* Crown */}
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-4 z-30">
-          <div className="bg-gradient-to-r from-purple-400 via-blue-500 to-cyan-500 rounded-full p-3 md:p-4 shadow-2xl border-4 border-purple-200 animate-bounce">
-            <Gem className="h-8 w-8 md:h-10 md:w-10 text-purple-900" />
-          </div>
-        </div>
-
         {/* Header */}
         <div className="relative pt-16 md:pt-20 pb-6 md:pb-8 px-6 md:px-8 text-center bg-gradient-to-b from-purple-600/30 via-blue-600/20 to-transparent">
           <div className="relative">
@@ -190,7 +183,7 @@ const MonthlyPlayerCard = ({
             
             <Badge className="bg-gradient-to-r from-purple-300 via-blue-300 to-cyan-300 text-purple-900 font-bold text-base md:text-lg px-4 md:px-6 py-2 md:py-3 shadow-xl border-2 border-purple-200">
               <Shield className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-              {player.rank_title}
+              لاعب الشهر
               <Star className="w-4 h-4 md:w-5 md:h-5 ml-2" />
             </Badge>
           </div>

@@ -144,13 +144,6 @@ const WeeklyPlayerCard = ({
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-300/10 to-transparent animate-pulse"></div>
         <div className="absolute inset-0 bg-gradient-to-l from-transparent via-orange-300/10 to-transparent animate-pulse delay-500"></div>
 
-        {/* Crown */}
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-3 z-20">
-          <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full p-3 shadow-xl border-4 border-yellow-200 animate-bounce">
-            <Crown className="h-8 w-8 text-yellow-900" />
-          </div>
-        </div>
-
         {/* Header */}
         <div className="relative pt-16 pb-6 px-6 text-center bg-gradient-to-b from-yellow-600/20 to-transparent">
           <div className="relative">
@@ -180,7 +173,7 @@ const WeeklyPlayerCard = ({
             
             <Badge className="bg-gradient-to-r from-yellow-300 to-orange-300 text-orange-900 font-bold text-sm md:text-base px-3 md:px-4 py-1 md:py-2 shadow-lg">
               <Crown className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-              {player.rank_title}
+              لاعب الأسبوع
             </Badge>
           </div>
         </div>

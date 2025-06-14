@@ -17,6 +17,7 @@ interface NewsItem {
   description: string;
   content: string | null;
   image_url: string | null;
+  video_url?: string | null;
   created_at: string;
   updated_at: string;
   author_id: string | null;
@@ -67,27 +68,41 @@ const NewsCard = ({ news, onEdit }: NewsCardProps) => {
   const isAdmin = userRole === 'admin';
 
   return (
-    <Card className="gaming-card overflow-hidden">
+    <Card className="gaming-card overflow-hidden hover:shadow-xl transition-all duration-300 border border-s3m-red/20 bg-gradient-to-br from-black/90 via-gray-900/90 to-black/90 backdrop-blur-sm">
+      {/* Image Section */}
       {news.image_url && (
-        <div className="aspect-video overflow-hidden">
+        <div className="aspect-video overflow-hidden relative">
           <img 
             src={news.image_url} 
             alt={news.title}
             className="w-full h-full object-cover transition-transform hover:scale-105"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+        </div>
+      )}
+
+      {/* Video Section */}
+      {news.video_url && (
+        <div className="aspect-video overflow-hidden relative">
+          <video 
+            src={news.video_url} 
+            controls
+            className="w-full h-full object-cover"
+            poster={news.image_url || undefined}
+          />
         </div>
       )}
       
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <CardTitle className="text-lg text-s3m-red leading-tight">{news.title}</CardTitle>
+        <div className="flex items-start justify-between gap-3">
+          <CardTitle className="text-lg md:text-xl text-s3m-red leading-tight flex-1">{news.title}</CardTitle>
           {isAdmin && onEdit && (
-            <div className="flex gap-2 ml-2">
+            <div className="flex gap-2 flex-shrink-0">
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => onEdit(news)}
-                className="border-s3m-red/30 text-s3m-red hover:bg-s3m-red hover:text-white"
+                className="border-s3m-red/30 text-s3m-red hover:bg-s3m-red hover:text-white transition-all duration-300"
               >
                 <Edit className="h-4 w-4" />
               </Button>
@@ -96,7 +111,7 @@ const NewsCard = ({ news, onEdit }: NewsCardProps) => {
                 variant="outline"
                 onClick={handleDelete}
                 disabled={deleteMutation.isPending}
-                className="border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white"
+                className="border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -118,15 +133,15 @@ const NewsCard = ({ news, onEdit }: NewsCardProps) => {
         </div>
       </CardHeader>
       
-      <CardContent className="pt-0">
-        <p className="text-white/80 mb-4 leading-relaxed">
+      <CardContent className="pt-0 space-y-4">
+        <p className="text-white/80 leading-relaxed text-sm md:text-base">
           {news.description}
         </p>
         
         {news.content && (
           <>
             {isExpanded && (
-              <div className="text-white/80 mb-4 leading-relaxed whitespace-pre-wrap">
+              <div className="text-white/80 leading-relaxed whitespace-pre-wrap text-sm md:text-base bg-black/20 rounded-lg p-4 border border-s3m-red/20">
                 {news.content}
               </div>
             )}
@@ -134,7 +149,7 @@ const NewsCard = ({ news, onEdit }: NewsCardProps) => {
             <Button
               variant="ghost"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-s3m-red hover:bg-s3m-red/10 p-0 h-auto font-normal"
+              className="text-s3m-red hover:bg-s3m-red/10 p-0 h-auto font-normal text-sm md:text-base transition-all duration-300"
             >
               {isExpanded ? (
                 <>
@@ -152,7 +167,7 @@ const NewsCard = ({ news, onEdit }: NewsCardProps) => {
         )}
         
         {news.updated_at !== news.created_at && (
-          <Badge variant="outline" className="mt-4 border-white/20 text-white/60">
+          <Badge variant="outline" className="border-white/20 text-white/60 bg-black/20">
             تم التحديث: {format(new Date(news.updated_at), 'PPP', { locale: ar })}
           </Badge>
         )}
