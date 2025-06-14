@@ -85,7 +85,9 @@ const Footer = () => {
             <h3 className="text-s3m-red font-semibold mb-6">تواصل معنا</h3>
             <div className="flex justify-center">
               <a 
-                href="#" 
+                href="https://www.instagram.com/s3m_esports/" 
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-white/60 hover:text-s3m-red transition-colors"
                 aria-label="Instagram"
               >
