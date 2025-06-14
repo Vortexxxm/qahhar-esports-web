@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import WeeklyPlayerCard from '@/components/WeeklyPlayerCard';
 import MonthlyPlayerCard from '@/components/MonthlyPlayerCard';
 import NewsCard from '@/components/NewsCard';
+import MobileNotifications from '@/components/MobileNotifications';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -58,17 +59,33 @@ const Home = () => {
     }
   });
 
-  // Fetch players preview
-  const { data: playersPreview = [] } = useQuery({
-    queryKey: ['players-preview'],
+  // Fetch admin-selected players (you'll need to create this functionality in admin panel)
+  const { data: adminSelectedPlayers = [] } = useQuery({
+    queryKey: ['admin-selected-players'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
+        .eq('is_featured', true) // This assumes you have an is_featured column
         .order('created_at', { ascending: false })
         .limit(6);
 
       if (error) throw error;
+      return data;
+    }
+  });
+
+  // Fetch homepage trailer video
+  const { data: trailerVideo } = useQuery({
+    queryKey: ['homepage-trailer'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('*')
+        .eq('key', 'homepage_trailer')
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
       return data;
     }
   });
@@ -130,7 +147,10 @@ const Home = () => {
   const tickerNews = news.slice(0, 5);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-s3m-red/20 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-s3m-red/20 overflow-hidden rtl" dir="rtl">
+      {/* Mobile Notifications */}
+      <MobileNotifications />
+
       {/* Hero Video Trailer Section */}
       <motion.section 
         className="relative h-screen flex items-center justify-center overflow-hidden"
@@ -140,12 +160,31 @@ const Home = () => {
       >
         {/* Video Background */}
         <div className="absolute inset-0 bg-black">
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40"
-            style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1920&q=80')`
-            }}
-          />
+          {trailerVideo?.value ? (
+            <video
+              className="absolute inset-0 w-full h-full object-cover opacity-60"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+            >
+              <source src={trailerVideo.value} type="video/mp4" />
+              <div 
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40"
+                style={{
+                  backgroundImage: `url('https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1920&q=80')`
+                }}
+              />
+            </video>
+          ) : (
+            <div 
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40"
+              style={{
+                backgroundImage: `url('https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1920&q=80')`
+              }}
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-s3m-red/30 to-black/80"></div>
         </div>
         
@@ -174,10 +213,10 @@ const Home = () => {
         </div>
 
         <div className="relative z-10 text-center px-4 max-w-6xl mx-auto">
-          {/* Main Title */}
+          {/* Main Title in Arabic */}
           <motion.div variants={itemVariants} className="mb-8">
             <h1 className="text-4xl md:text-8xl font-black mb-6 bg-gradient-to-r from-s3m-red via-red-400 to-orange-500 bg-clip-text text-transparent">
-              Unleashing Power
+              إطلاق القوة
             </h1>
             <div className="flex items-center justify-center gap-3 mb-6">
               <Flame className="w-8 h-8 text-red-500 animate-pulse" />
@@ -187,62 +226,64 @@ const Home = () => {
               <Flame className="w-8 h-8 text-red-500 animate-pulse" />
             </div>
             <p className="text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-              Dominating the battlefield. Redefining victory. Join the legend.
+              نهيمن على ساحة المعركة. نعيد تعريف النصر. انضم إلى الأسطورة.
             </p>
           </motion.div>
 
           {/* Video Trailer Placeholder */}
-          <motion.div variants={itemVariants} className="mb-12">
-            <div className="relative w-full max-w-4xl mx-auto">
-              <div className="relative bg-gradient-to-br from-s3m-red/20 to-purple-600/20 rounded-3xl p-2 border-2 border-s3m-red/50 shadow-2xl shadow-s3m-red/25">
-                <div className="relative bg-black rounded-2xl overflow-hidden aspect-video">
-                  <div className="absolute inset-0 bg-gradient-to-br from-s3m-red/30 via-purple-600/20 to-blue-600/20 flex items-center justify-center">
-                    <div className="text-center">
-                      <motion.div
-                        animate={{
-                          scale: [1, 1.1, 1],
-                          rotate: [0, 5, -5, 0],
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                        }}
-                        className="mb-6"
-                      >
-                        <Play className="w-24 h-24 text-s3m-red mx-auto drop-shadow-2xl" />
-                      </motion.div>
-                      
-                      <h3 className="text-2xl md:text-4xl font-bold text-white mb-4">
-                        🎬 Official S3M Trailer
-                      </h3>
-                      <p className="text-lg text-white/80 mb-6">
-                        Watch our legendary journey to greatness
-                      </p>
-                      
-                      <Button 
-                        size="lg"
-                        className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                      >
-                        <Play className="w-6 h-6 mr-2" />
-                        Play Trailer
-                      </Button>
+          {!trailerVideo?.value && (
+            <motion.div variants={itemVariants} className="mb-12">
+              <div className="relative w-full max-w-4xl mx-auto">
+                <div className="relative bg-gradient-to-br from-s3m-red/20 to-purple-600/20 rounded-3xl p-2 border-2 border-s3m-red/50 shadow-2xl shadow-s3m-red/25">
+                  <div className="relative bg-black rounded-2xl overflow-hidden aspect-video">
+                    <div className="absolute inset-0 bg-gradient-to-br from-s3m-red/30 via-purple-600/20 to-blue-600/20 flex items-center justify-center">
+                      <div className="text-center">
+                        <motion.div
+                          animate={{
+                            scale: [1, 1.1, 1],
+                            rotate: [0, 5, -5, 0],
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                          }}
+                          className="mb-6"
+                        >
+                          <Play className="w-24 h-24 text-s3m-red mx-auto drop-shadow-2xl" />
+                        </motion.div>
+                        
+                        <h3 className="text-2xl md:text-4xl font-bold text-white mb-4">
+                          🎬 المقطع الدعائي الرسمي لـ S3M
+                        </h3>
+                        <p className="text-lg text-white/80 mb-6">
+                          شاهد رحلتنا الأسطورية نحو العظمة
+                        </p>
+                        
+                        <Button 
+                          size="lg"
+                          className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                        >
+                          <Play className="w-6 h-6 ml-2" />
+                          تشغيل المقطع الدعائي
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          )}
 
-          {/* CTA Buttons */}
+          {/* CTA Buttons in Arabic */}
           <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button 
               size="lg"
               onClick={() => navigate('/join-us')}
               className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
-              <Users className="w-6 h-6 mr-2" />
-              Join Our Team
-              <Rocket className="w-5 h-5 ml-2" />
+              <Users className="w-6 h-6 ml-2" />
+              انضم إلى فريقنا
+              <Rocket className="w-5 h-5 mr-2" />
             </Button>
             
             <Button 
@@ -251,8 +292,8 @@ const Home = () => {
               onClick={() => navigate('/tournaments')}
               className="border-2 border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 transform hover:scale-105"
             >
-              <Trophy className="w-6 h-6 mr-2" />
-              Tournaments
+              <Trophy className="w-6 h-6 ml-2" />
+              البطولات
             </Button>
           </motion.div>
         </div>
@@ -268,9 +309,9 @@ const Home = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/10 to-purple-600/10"></div>
         <div className="relative z-10 container mx-auto px-4">
           <div className="flex items-center mb-4">
-            <Bell className="w-6 h-6 text-s3m-red mr-3 animate-pulse" />
-            <h3 className="text-xl font-bold text-white">Latest News</h3>
-            <Globe className="w-5 h-5 text-s3m-red ml-3" />
+            <Bell className="w-6 h-6 text-s3m-red ml-3 animate-pulse" />
+            <h3 className="text-xl font-bold text-white">آخر الأخبار</h3>
+            <Globe className="w-5 h-5 text-s3m-red mr-3" />
           </div>
           
           {tickerNews.length > 0 && (
@@ -282,7 +323,7 @@ const Home = () => {
                 transition={{ duration: 20, ease: 'linear' }}
                 className="absolute inset-0 flex items-center px-6 text-white"
               >
-                <Star className="w-5 h-5 text-yellow-400 mr-3 flex-shrink-0" />
+                <Star className="w-5 h-5 text-yellow-400 ml-3 flex-shrink-0" />
                 <span className="text-lg font-medium whitespace-nowrap">
                   {tickerNews[currentNewsIndex]?.title}
                 </span>
@@ -296,8 +337,8 @@ const Home = () => {
               onClick={() => navigate('/news')}
               className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white rounded-xl"
             >
-              Visit News Page
-              <ArrowRight className="w-4 h-4 ml-2" />
+              زيارة صفحة الأخبار
+              <ArrowRight className="w-4 h-4 mr-2" />
             </Button>
           </div>
         </div>
@@ -318,7 +359,7 @@ const Home = () => {
               transition={{ duration: 0.8 }}
               className="text-3xl md:text-5xl font-bold text-center mb-12 bg-gradient-to-r from-s3m-red to-purple-500 bg-clip-text text-transparent"
             >
-              🚨 Featured Updates
+              🚨 التحديثات المميزة
             </motion.h2>
             
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -352,7 +393,7 @@ const Home = () => {
               transition={{ duration: 0.8 }}
               className="text-3xl md:text-5xl font-bold text-center mb-12 bg-gradient-to-r from-yellow-400 to-purple-500 bg-clip-text text-transparent"
             >
-              🌟 Elite Players 🌟
+              🌟 اللاعبون المميزون 🌟
             </motion.h2>
             
             <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
@@ -365,8 +406,8 @@ const Home = () => {
                 >
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
                     <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold px-4 py-2 rounded-full shadow-lg">
-                      <Crown className="w-4 h-4 mr-1" />
-                      Player of the Month
+                      <Crown className="w-4 h-4 ml-1" />
+                      لاعب الشهر
                     </Badge>
                   </div>
                   <MonthlyPlayerCard 
@@ -393,8 +434,8 @@ const Home = () => {
                 >
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
                     <Badge className="bg-gradient-to-r from-blue-400 to-cyan-500 text-black font-bold px-4 py-2 rounded-full shadow-lg">
-                      <Star className="w-4 h-4 mr-1" />
-                      Player of the Week
+                      <Star className="w-4 h-4 ml-1" />
+                      لاعب الأسبوع
                     </Badge>
                   </div>
                   <WeeklyPlayerCard 
@@ -416,8 +457,8 @@ const Home = () => {
         </motion.section>
       )}
 
-      {/* Players Preview Section */}
-      {playersPreview.length > 0 && (
+      {/* Admin-Selected Players Preview Section - "محاربونا" */}
+      {adminSelectedPlayers.length > 0 && (
         <motion.section 
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -431,11 +472,11 @@ const Home = () => {
               transition={{ duration: 0.8 }}
               className="text-3xl md:text-5xl font-bold text-center mb-12 text-white"
             >
-              💪 Our Warriors
+              💪 محاربونا
             </motion.h2>
             
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-              {playersPreview.map((player, index) => (
+              {adminSelectedPlayers.map((player, index) => (
                 <motion.div
                   key={player.id}
                   initial={{ opacity: 0, y: 30 }}
@@ -455,9 +496,9 @@ const Home = () => {
                         <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-black"></div>
                       </div>
                       <h3 className="text-white font-bold text-sm mb-1 truncate">{player.username}</h3>
-                      <p className="text-xs text-gray-400">{player.rank_title || 'Rookie'}</p>
+                      <p className="text-xs text-gray-400">{player.rank_title || 'مبتدئ'}</p>
                       <div className="flex items-center justify-center mt-2">
-                        <Star className="w-3 h-3 text-yellow-400 mr-1" />
+                        <Star className="w-3 h-3 text-yellow-400 ml-1" />
                         <span className="text-xs text-white">{player.total_likes || 0}</span>
                       </div>
                     </CardContent>
@@ -471,8 +512,8 @@ const Home = () => {
                 onClick={() => navigate('/players')}
                 className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-8 py-3 rounded-xl"
               >
-                View All Players
-                <ArrowRight className="w-4 h-4 ml-2" />
+                عرض جميع اللاعبين
+                <ArrowRight className="w-4 h-4 mr-2" />
               </Button>
             </div>
           </div>
@@ -493,15 +534,15 @@ const Home = () => {
             transition={{ duration: 0.8 }}
             className="text-3xl md:text-5xl font-bold text-center mb-12 text-white"
           >
-            🏆 Victory Stats
+            🏆 إحصائيات النصر
           </motion.h2>
           
           <div className="grid gap-6 md:grid-cols-4">
             {[
-              { icon: Users, label: 'Elite Members', value: '150+', color: 'text-blue-400' },
-              { icon: Trophy, label: 'Championships', value: '25+', color: 'text-yellow-400' },
-              { icon: Target, label: 'Victories', value: '500+', color: 'text-green-400' },
-              { icon: GamepadIcon, label: 'Battles Won', value: '1000+', color: 'text-purple-400' },
+              { icon: Users, label: 'الأعضاء المميزون', value: '150+', color: 'text-blue-400' },
+              { icon: Trophy, label: 'البطولات', value: '25+', color: 'text-yellow-400' },
+              { icon: Target, label: 'الانتصارات', value: '500+', color: 'text-green-400' },
+              { icon: GamepadIcon, label: 'المعارك المكسوبة', value: '1000+', color: 'text-purple-400' },
             ].map((stat, index) => (
               <motion.div
                 key={index}
@@ -524,7 +565,7 @@ const Home = () => {
         </div>
       </motion.section>
 
-      {/* Final CTA Section */}
+      {/* Final CTA Section - "إنشاء حساب" */}
       <motion.section 
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -538,7 +579,7 @@ const Home = () => {
             transition={{ duration: 0.8 }}
             className="text-3xl md:text-5xl font-bold mb-6 text-white"
           >
-            🚀 Ready to Dominate?
+            🚀 هل أنت مستعد للهيمنة؟
           </motion.h2>
           <motion.p 
             initial={{ y: 30, opacity: 0 }}
@@ -546,7 +587,7 @@ const Home = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-xl text-white/80 mb-8"
           >
-            Join the S3M family and become part of the legend
+            انضم إلى عائلة S3M وكن جزءاً من الأسطورة
           </motion.p>
           <motion.div 
             initial={{ y: 30, opacity: 0 }}
@@ -556,11 +597,11 @@ const Home = () => {
           >
             <Button 
               size="lg"
-              onClick={() => navigate('/join-us')}
+              onClick={() => navigate('/signup')}
               className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
-              <Crown className="w-6 h-6 mr-2" />
-              Start Your Journey
+              <Crown className="w-6 h-6 ml-2" />
+              إنشاء حساب
             </Button>
           </motion.div>
         </div>

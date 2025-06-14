@@ -1,228 +1,159 @@
 
-import { useState, useEffect } from "react";
-import { Bell, Trash2, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
-import { ar } from "date-fns/locale";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from 'react';
+import { Bell, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-type Notification = {
+interface Notification {
   id: string;
   title: string;
   message: string;
-  type: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  timestamp: Date;
   read: boolean;
-  created_at: string;
-  deleted_at?: string | null;
-  data?: any;
-};
+}
 
 const MobileNotifications = () => {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
-  const { toast } = useToast();
-
-  const { data: notifications = [] } = useQuery({
-    queryKey: ['notifications', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data as Notification[];
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: '1',
+      title: 'مرحباً بك في S3M',
+      message: 'أهلاً وسهلاً بك في فريق S3M E-Sports!',
+      type: 'success',
+      timestamp: new Date(),
+      read: false
     },
-    enabled: !!user?.id,
-  });
-
-  const markAsReadMutation = useMutation({
-    mutationFn: async (notificationId: string) => {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('id', notificationId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-    },
-  });
-
-  const deleteNotificationMutation = useMutation({
-    mutationFn: async (notificationId: string) => {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('id', notificationId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      toast({
-        title: "تم الحذف",
-        description: "تم حذف الإشعار بنجاح",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "خطأ",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Real-time subscription
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const channel = supabase
-      .channel('mobile-notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['notifications'] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user?.id, queryClient]);
+    {
+      id: '2',
+      title: 'بطولة جديدة',
+      message: 'تم إضافة بطولة جديدة - سجل الآن!',
+      type: 'info',
+      timestamp: new Date(Date.now() - 3600000),
+      read: false
+    }
+  ]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const handleNotificationClick = (notification: Notification) => {
-    if (!notification.read) {
-      markAsReadMutation.mutate(notification.id);
+  const markAsRead = (id: string) => {
+    setNotifications(prev => 
+      prev.map(n => n.id === id ? { ...n, read: true } : n)
+    );
+  };
+
+  const markAllAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const getNotificationColor = (type: string) => {
+    switch (type) {
+      case 'success': return 'border-green-500 bg-green-500/10';
+      case 'warning': return 'border-yellow-500 bg-yellow-500/10';
+      case 'error': return 'border-red-500 bg-red-500/10';
+      default: return 'border-blue-500 bg-blue-500/10';
     }
   };
 
-  const handleDeleteNotification = (e: React.MouseEvent, notificationId: string) => {
-    e.stopPropagation();
-    deleteNotificationMutation.mutate(notificationId);
-  };
-
-  if (!user) return null;
+  if (!isMobile) return null;
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetTrigger asChild>
+    <>
+      {/* Notification Bell Icon */}
+      <div className="fixed top-4 left-4 z-50">
         <Button
           variant="ghost"
           size="icon"
-          className="relative md:hidden"
+          onClick={() => setIsOpen(!isOpen)}
+          className="relative bg-black/50 backdrop-blur-sm border border-s3m-red/30 hover:bg-s3m-red/20"
         >
-          <Bell className="h-5 w-5 text-white/80" />
+          <Bell className="w-5 h-5 text-white" />
           {unreadCount > 0 && (
             <Badge 
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-s3m-red text-xs"
+              variant="destructive" 
+              className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs bg-s3m-red"
             >
-              {unreadCount > 99 ? '99+' : unreadCount}
+              {unreadCount}
             </Badge>
           )}
         </Button>
-      </SheetTrigger>
-      <SheetContent 
-        side="right" 
-        className="w-full sm:w-80 bg-black/95 border-s3m-red/20 p-0"
-      >
-        <SheetHeader className="p-4 border-b border-s3m-red/20">
-          <div className="flex items-center justify-between">
-            <SheetTitle className="text-white text-lg">الإشعارات</SheetTitle>
-            {unreadCount > 0 && (
-              <Badge className="bg-s3m-red text-white">
-                {unreadCount} جديد
-              </Badge>
-            )}
-          </div>
-          <SheetDescription className="text-white/60 text-sm">
-            آخر الإشعارات والتحديثات
-          </SheetDescription>
-        </SheetHeader>
-        
-        <ScrollArea className="h-full">
-          {notifications.length > 0 ? (
-            <div className="divide-y divide-s3m-red/20">
-              {notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`p-4 cursor-pointer transition-colors hover:bg-s3m-red/10 ${
-                    !notification.read ? 'bg-s3m-red/5 border-r-4 border-s3m-red' : ''
-                  }`}
-                  onClick={() => handleNotificationClick(notification)}
+      </div>
+
+      {/* Notifications Panel */}
+      {isOpen && (
+        <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={() => setIsOpen(false)}>
+          <Card className="fixed top-16 left-4 right-4 max-h-96 overflow-y-auto bg-black/90 border-s3m-red/30" onClick={e => e.stopPropagation()}>
+            <div className="p-4 border-b border-s3m-red/30 flex items-center justify-between">
+              <h3 className="text-white font-bold">الإشعارات</h3>
+              <div className="flex items-center gap-2">
+                {unreadCount > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={markAllAsRead}
+                    className="text-s3m-red hover:bg-s3m-red/20 text-xs"
+                  >
+                    قراءة الكل
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsOpen(false)}
+                  className="h-8 w-8 text-white hover:bg-s3m-red/20"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-semibold text-white text-sm truncate">
-                          {notification.title}
-                        </p>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            <CardContent className="p-0">
+              {notifications.length === 0 ? (
+                <div className="p-4 text-center text-gray-400">
+                  لا توجد إشعارات
+                </div>
+              ) : (
+                <div className="space-y-2 p-2">
+                  {notifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      onClick={() => markAsRead(notification.id)}
+                      className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
+                        getNotificationColor(notification.type)
+                      } ${!notification.read ? 'border-opacity-100' : 'border-opacity-50 opacity-70'}`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="text-white font-medium text-sm mb-1">
+                            {notification.title}
+                          </h4>
+                          <p className="text-gray-300 text-xs mb-2">
+                            {notification.message}
+                          </p>
+                          <span className="text-gray-500 text-xs">
+                            {notification.timestamp.toLocaleTimeString('ar-SA', {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                        </div>
                         {!notification.read && (
-                          <div className="w-2 h-2 rounded-full bg-s3m-red flex-shrink-0" />
+                          <div className="w-2 h-2 bg-s3m-red rounded-full ml-2 mt-1"></div>
                         )}
                       </div>
-                      <p className="text-sm text-white/70 leading-relaxed mb-2">
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-white/50">
-                        {format(new Date(notification.created_at), 'PPp', { locale: ar })}
-                      </p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => handleDeleteNotification(e, notification.id)}
-                      className="p-1 h-auto text-white/50 hover:text-red-400 hover:bg-red-500/10 flex-shrink-0"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="p-8 text-center">
-              <Bell className="h-12 w-12 text-white/30 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">
-                لا توجد إشعارات
-              </h3>
-              <p className="text-white/60 text-sm">
-                ستظهر الإشعارات الجديدة هنا
-              </p>
-            </div>
-          )}
-        </ScrollArea>
-      </SheetContent>
-    </Sheet>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </>
   );
 };
 
