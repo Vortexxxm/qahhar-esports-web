@@ -1,11 +1,12 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Heart, Trophy, Target, Gamepad2, Star, Crown, Edit, Eye, EyeOff, Calendar } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Trophy, Target, Gamepad2, Crown, Medal, Award, Star, Calendar, Edit, Eye, EyeOff } from 'lucide-react';
+import LikeButton from '@/components/LikeButton';
 
 interface PlayerCardData {
   id: string;
@@ -44,82 +45,6 @@ const PlayerCard = ({
   isAdmin = false 
 }: PlayerCardProps) => {
   const { user } = useAuth();
-  const { toast } = useToast();
-  const [isLiked, setIsLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(player.total_likes || 0);
-
-  useEffect(() => {
-    if (user) {
-      checkIfLiked();
-    }
-  }, [player.id, user]);
-
-  const checkIfLiked = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('user_likes')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('liked_user_id', player.id)
-        .single();
-
-      setIsLiked(!!data);
-    } catch (error) {
-      setIsLiked(false);
-    }
-  };
-
-  const toggleLike = async () => {
-    if (!user) {
-      toast({
-        title: "تسجيل الدخول مطلوب",
-        description: "يجب تسجيل الدخول للتفاعل مع الملفات الشخصية",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (user.id === player.id) {
-      toast({
-        title: "غير مسموح",
-        description: "لا يمكنك الإعجاب بملفك الشخصي",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      if (isLiked) {
-        await supabase
-          .from('user_likes')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('liked_user_id', player.id);
-
-        setIsLiked(false);
-        setLikesCount(prev => prev - 1);
-      } else {
-        await supabase
-          .from('user_likes')
-          .insert({
-            user_id: user.id,
-            liked_user_id: player.id
-          });
-
-        setIsLiked(true);
-        setLikesCount(prev => prev + 1);
-      }
-    } catch (error) {
-      console.error('Error toggling like:', error);
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء التفاعل مع الملف الشخصي",
-        variant: "destructive",
-      });
-    }
-  };
 
   const getCardStyles = () => {
     switch (cardStyle) {
@@ -193,7 +118,7 @@ const PlayerCard = ({
 
   return (
     <div className={`${styles.containerClass} ${styles.glowEffect} ${styles.specialEffect} w-full max-w-sm mx-auto`}>
-      {/* Special Effects */}
+      {/* Special Effects for weekly and monthly players */}
       {cardStyle === 'weekly' && (
         <>
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-300/20 to-transparent animate-pulse"></div>
@@ -286,17 +211,11 @@ const PlayerCard = ({
 
         {/* Action Buttons */}
         <div className="flex justify-between items-center pt-2">
-          <Button
-            onClick={toggleLike}
-            variant="ghost"
-            size="sm"
-            className={`flex items-center space-x-2 ${
-              isLiked ? 'text-red-500 hover:text-red-400' : 'text-gray-400 hover:text-red-500'
-            }`}
-          >
-            <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
-            <span className="font-semibold">{likesCount}</span>
-          </Button>
+          <LikeButton 
+            targetUserId={player.id}
+            initialLikes={player.total_likes}
+            variant="card"
+          />
 
           {/* Admin Controls */}
           {isAdmin && (
@@ -351,14 +270,13 @@ const PlayerCard = ({
         </div>
       </div>
 
-      {/* Special Weekly Card Footer */}
+      {/* Special footers for weekly and monthly cards */}
       {cardStyle === 'weekly' && (
         <div className="bg-gradient-to-r from-yellow-600 to-orange-700 p-2 text-center">
           <p className="text-yellow-100 text-xs font-bold">⭐ متميز هذا الأسبوع ⭐</p>
         </div>
       )}
 
-      {/* Special Monthly Card Footer */}
       {cardStyle === 'monthly' && (
         <div className="bg-gradient-to-r from-purple-600 to-pink-700 p-2 text-center">
           <p className="text-purple-100 text-xs font-bold">👑 متميز هذا الشهر 👑</p>

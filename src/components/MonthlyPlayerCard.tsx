@@ -4,9 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Heart, Trophy, Target, Gamepad2, Star, Crown, Flame, Zap, Sparkles, Award, Shield, Gem } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Trophy, Target, Gamepad2, Star, Crown, Flame, Zap, Sparkles, Award, Shield, Gem } from 'lucide-react';
+import LikeButton from '@/components/LikeButton';
 
 interface MonthlyPlayerData {
   id: string;
@@ -39,82 +38,6 @@ const MonthlyPlayerCard = ({
   isAdmin = false 
 }: MonthlyPlayerCardProps) => {
   const { user } = useAuth();
-  const { toast } = useToast();
-  const [isLiked, setIsLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(player.total_likes || 0);
-
-  useEffect(() => {
-    if (user) {
-      checkIfLiked();
-    }
-  }, [player.id, user]);
-
-  const checkIfLiked = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('user_likes')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('liked_user_id', player.id)
-        .single();
-
-      setIsLiked(!!data);
-    } catch (error) {
-      setIsLiked(false);
-    }
-  };
-
-  const toggleLike = async () => {
-    if (!user) {
-      toast({
-        title: "تسجيل الدخول مطلوب",
-        description: "يجب تسجيل الدخول للتفاعل مع الملفات الشخصية",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (user.id === player.id) {
-      toast({
-        title: "غير مسموح",
-        description: "لا يمكنك الإعجاب بملفك الشخصي",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      if (isLiked) {
-        await supabase
-          .from('user_likes')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('liked_user_id', player.id);
-
-        setIsLiked(false);
-        setLikesCount(prev => prev - 1);
-      } else {
-        await supabase
-          .from('user_likes')
-          .insert({
-            user_id: user.id,
-            liked_user_id: player.id
-          });
-
-        setIsLiked(true);
-        setLikesCount(prev => prev + 1);
-      }
-    } catch (error) {
-      console.error('Error toggling like:', error);
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء التفاعل مع الملف الشخصي",
-        variant: "destructive",
-      });
-    }
-  };
 
   const { leaderboard_scores } = player;
   const stats = leaderboard_scores || { points: 0, wins: 0, kills: 0, deaths: 0, visible_in_leaderboard: false };
@@ -218,25 +141,14 @@ const MonthlyPlayerCard = ({
             </div>
           )}
 
-          {/* Action Button */}
+          {/* Like Button */}
           <div className="flex justify-center pt-2 md:pt-4">
-            <Button
-              onClick={toggleLike}
-              variant="ghost"
-              size="lg"
-              className={`relative overflow-hidden group/btn transition-all duration-500 ${
-                isLiked 
-                  ? 'text-purple-200 hover:text-purple-100 bg-purple-500/20 hover:bg-purple-500/30' 
-                  : 'text-purple-300 hover:text-purple-200 hover:bg-purple-500/20'
-              } rounded-xl px-6 md:px-8 py-3 md:py-4 border-2 border-purple-400/50 hover:border-purple-300/70`}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-400/20 to-purple-500/0 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative flex items-center space-x-3 md:space-x-4 rtl:space-x-reverse">
-                <Heart className={`h-6 w-6 md:h-7 md:w-7 transition-all duration-300 ${isLiked ? 'fill-current scale-110 text-red-300' : 'group-hover/btn:scale-110'}`} />
-                <span className="font-bold text-xl md:text-2xl">{likesCount}</span>
-                <Gem className="h-5 h-5 md:h-6 md:w-6 animate-pulse" />
-              </div>
-            </Button>
+            <LikeButton 
+              targetUserId={player.id}
+              initialLikes={player.total_likes}
+              variant="large"
+              className="relative overflow-hidden group/btn transition-all duration-500 text-purple-200 hover:text-purple-100 bg-purple-500/20 hover:bg-purple-500/30 rounded-xl px-6 md:px-8 py-3 md:py-4 border-2 border-purple-400/50 hover:border-purple-300/70"
+            />
           </div>
         </div>
 
