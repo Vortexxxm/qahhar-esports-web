@@ -24,7 +24,10 @@ const Home = () => {
             username,
             full_name,
             avatar_url,
-            game_id
+            game_id,
+            rank_title,
+            bio,
+            total_likes
           )
         `)
         .eq('is_active', true)
@@ -58,8 +61,40 @@ const Home = () => {
     }
   });
 
-  const weeklyPlayer = specialPlayers?.find(p => p.type === 'weekly');
-  const monthlyPlayer = specialPlayers?.find(p => p.type === 'monthly');
+  const { data: newsData } = useQuery({
+    queryKey: ['homepage-news'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('news')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  // تحويل البيانات للتنسيق المطلوب
+  const transformPlayerData = (player: any) => {
+    if (!player || !player.profiles) return null;
+    
+    return {
+      id: player.user_id,
+      username: player.profiles.username,
+      full_name: player.profiles.full_name,
+      avatar_url: player.profiles.avatar_url,
+      rank_title: player.profiles.rank_title || 'Rookie',
+      total_likes: player.profiles.total_likes || 0,
+      bio: player.profiles.bio || '',
+    };
+  };
+
+  const weeklyPlayerRaw = specialPlayers?.find(p => p.type === 'weekly');
+  const monthlyPlayerRaw = specialPlayers?.find(p => p.type === 'monthly');
+
+  const weeklyPlayer = weeklyPlayerRaw ? transformPlayerData(weeklyPlayerRaw) : null;
+  const monthlyPlayer = monthlyPlayerRaw ? transformPlayerData(monthlyPlayerRaw) : null;
 
   const features = [
     {
@@ -291,7 +326,7 @@ const Home = () => {
       {/* News Section */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <MobileNewsSection />
+          <MobileNewsSection news={newsData || []} />
         </div>
       </section>
     </div>
