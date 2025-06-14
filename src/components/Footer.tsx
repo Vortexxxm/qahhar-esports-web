@@ -11,7 +11,7 @@ const Footer = () => {
           <div className="text-center md:text-right">
             <div className="flex items-center justify-center md:justify-end space-x-3 space-x-reverse mb-4">
               <img 
-                src="/lovable-uploads/a86a4d8e-9ce2-4e98-abf2-53b4386ab6ec.png" 
+                src="/lovable-uploads/876694d5-ec41-469d-9b93-b1c067364893.png" 
                 alt="S3M Logo" 
                 className="h-12 w-12"
               />
@@ -28,7 +28,7 @@ const Footer = () => {
 
           {/* Quick Links - Second Column */}
           <div className="text-center md:text-right">
-            <h3 className="text-white font-semibold mb-6">روابط سريعة</h3>
+            <h3 className="text-s3m-red font-semibold mb-6">روابط سريعة</h3>
             <ul className="space-y-3">
               <li>
                 <Link to="/" className="text-white/70 hover:text-s3m-red transition-colors text-sm">
@@ -46,12 +46,12 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/leaderboard" className="text-white/70 hover:text-s3m-red transition-colors text-sm">
+                <Link to="/about" className="text-white/70 hover:text-s3m-red transition-colors text-sm">
                   من نحن
                 </Link>
               </li>
               <li>
-                <Link to="/team" className="text-white/70 hover:text-s3m-red transition-colors text-sm">
+                <Link to="/leaderboard" className="text-white/70 hover:text-s3m-red transition-colors text-sm">
                   المتصدرين
                 </Link>
               </li>
@@ -65,7 +65,7 @@ const Footer = () => {
 
           {/* Legal Links - Third Column */}
           <div className="text-center md:text-right">
-            <h3 className="text-white font-semibold mb-6">قانوني</h3>
+            <h3 className="text-s3m-red font-semibold mb-6">قانوني</h3>
             <ul className="space-y-3">
               <li>
                 <Link to="/terms" className="text-white/70 hover:text-s3m-red transition-colors text-sm">
@@ -82,8 +82,8 @@ const Footer = () => {
 
           {/* Social Media - Fourth Column */}
           <div className="text-center md:text-right">
-            <h3 className="text-white font-semibold mb-6">تواصل معنا</h3>
-            <div className="flex justify-center md:justify-end">
+            <h3 className="text-s3m-red font-semibold mb-6">تواصل معنا</h3>
+            <div className="flex justify-center">
               <a 
                 href="#" 
                 className="text-white/60 hover:text-s3m-red transition-colors"
