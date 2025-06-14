@@ -37,7 +37,7 @@ const Players = () => {
     }
   });
 
-  // Fetch special players with real-time updates
+  // Fetch special players with corrected query
   const { data: specialPlayers } = useQuery({
     queryKey: ['special-players'],
     queryFn: async () => {
@@ -45,7 +45,7 @@ const Players = () => {
         .from('special_players')
         .select(`
           *,
-          profiles:user_id (
+          profiles!special_players_user_id_fkey (
             id,
             username,
             full_name,
@@ -53,16 +53,22 @@ const Players = () => {
             rank_title,
             total_likes,
             bio
-          ),
-          leaderboard_scores:user_id (
-            points,
-            wins,
-            kills,
-            deaths,
-            visible_in_leaderboard
           )
         `)
         .eq('is_active', true);
+
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  // Fetch leaderboard scores separately
+  const { data: leaderboardScores } = useQuery({
+    queryKey: ['leaderboard-scores'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('leaderboard_scores')
+        .select('*');
 
       if (error) throw error;
       return data;
@@ -94,6 +100,11 @@ const Players = () => {
 
   const weeklyPlayer = specialPlayers?.find(p => p.type === 'weekly');
   const monthlyPlayer = specialPlayers?.find(p => p.type === 'monthly');
+
+  // Get leaderboard data for special players
+  const getPlayerLeaderboardData = (userId: string) => {
+    return leaderboardScores?.find(score => score.user_id === userId) || null;
+  };
 
   const filteredPlayers = players.filter(player =>
     player.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -168,7 +179,7 @@ const Players = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid gap-8 md:grid-cols-2 max-w-6xl mx-auto">
-                  {weeklyPlayer && (
+                  {weeklyPlayer && weeklyPlayer.profiles && (
                     <motion.div
                       initial={{ opacity: 0, x: -50 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -189,13 +200,13 @@ const Players = () => {
                           rank_title: weeklyPlayer.profiles.rank_title,
                           total_likes: weeklyPlayer.profiles.total_likes,
                           bio: weeklyPlayer.profiles.bio,
-                          leaderboard_scores: weeklyPlayer.leaderboard_scores
+                          leaderboard_scores: getPlayerLeaderboardData(weeklyPlayer.user_id)
                         }}
                       />
                     </motion.div>
                   )}
                   
-                  {monthlyPlayer && (
+                  {monthlyPlayer && monthlyPlayer.profiles && (
                     <motion.div
                       initial={{ opacity: 0, x: 50 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -216,7 +227,7 @@ const Players = () => {
                           rank_title: monthlyPlayer.profiles.rank_title,
                           total_likes: monthlyPlayer.profiles.total_likes,
                           bio: monthlyPlayer.profiles.bio,
-                          leaderboard_scores: monthlyPlayer.leaderboard_scores
+                          leaderboard_scores: getPlayerLeaderboardData(monthlyPlayer.user_id)
                         }}
                       />
                     </motion.div>

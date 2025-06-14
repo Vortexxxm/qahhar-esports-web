@@ -32,7 +32,7 @@ const Home = () => {
     }
   });
 
-  // Fetch special players
+  // Fetch special players with corrected query
   const { data: specialPlayers } = useQuery({
     queryKey: ['special-players'],
     queryFn: async () => {
@@ -40,7 +40,7 @@ const Home = () => {
         .from('special_players')
         .select(`
           *,
-          profiles:user_id (
+          profiles!special_players_user_id_fkey (
             id,
             username,
             full_name,
@@ -48,13 +48,6 @@ const Home = () => {
             rank_title,
             total_likes,
             bio
-          ),
-          leaderboard_scores:user_id (
-            points,
-            wins,
-            kills,
-            deaths,
-            visible_in_leaderboard
           )
         `)
         .eq('is_active', true);
@@ -64,8 +57,26 @@ const Home = () => {
     }
   });
 
+  // Fetch leaderboard scores separately
+  const { data: leaderboardScores } = useQuery({
+    queryKey: ['leaderboard-scores'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('leaderboard_scores')
+        .select('*');
+
+      if (error) throw error;
+      return data;
+    }
+  });
+
   const weeklyPlayer = specialPlayers?.find(p => p.type === 'weekly');
   const monthlyPlayer = specialPlayers?.find(p => p.type === 'monthly');
+
+  // Get leaderboard data for special players
+  const getPlayerLeaderboardData = (userId: string) => {
+    return leaderboardScores?.find(score => score.user_id === userId) || null;
+  };
 
   // Auto-scroll news
   useEffect(() => {
@@ -77,7 +88,7 @@ const Home = () => {
     }
   }, [news.length]);
 
-  // Animation variants with proper types
+  // Animation variants with correct types
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -95,7 +106,7 @@ const Home = () => {
       opacity: 1,
       transition: {
         duration: 0.6,
-        ease: "easeOut"
+        ease: [0.25, 0.1, 0.25, 1] // Using array format for ease
       }
     }
   };
@@ -231,7 +242,7 @@ const Home = () => {
         className="relative py-6 bg-black/80 border-y border-s3m-red/30 overflow-hidden"
       >
         <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/10 to-purple-600/10"></div>
-        <div className="relative z-10">
+        <div className="relative z-10 container mx-auto px-4">
           <div className="flex items-center mb-4">
             <Bell className="w-6 h-6 text-s3m-red mr-3 animate-pulse" />
             <h3 className="text-xl font-bold text-white">آخر الأخبار</h3>
@@ -302,7 +313,7 @@ const Home = () => {
                       rank_title: weeklyPlayer.profiles.rank_title,
                       total_likes: weeklyPlayer.profiles.total_likes,
                       bio: weeklyPlayer.profiles.bio,
-                      leaderboard_scores: weeklyPlayer.leaderboard_scores
+                      leaderboard_scores: getPlayerLeaderboardData(weeklyPlayer.user_id)
                     }}
                   />
                 </motion.div>
@@ -323,7 +334,7 @@ const Home = () => {
                       rank_title: monthlyPlayer.profiles.rank_title,
                       total_likes: monthlyPlayer.profiles.total_likes,
                       bio: monthlyPlayer.profiles.bio,
-                      leaderboard_scores: monthlyPlayer.leaderboard_scores
+                      leaderboard_scores: getPlayerLeaderboardData(monthlyPlayer.user_id)
                     }}
                   />
                 </motion.div>
