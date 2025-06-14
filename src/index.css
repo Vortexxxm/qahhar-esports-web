@@ -61,6 +61,39 @@
     direction: rtl;
   }
   
+  /* Enhanced mobile-first news animations */
+  @keyframes mobile-scroll-rtl {
+    0% {
+      transform: translateX(100vw);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+  
+  .animate-mobile-scroll-rtl {
+    animation: mobile-scroll-rtl 20s linear infinite;
+  }
+  
+  /* Smooth mobile news carousel */
+  @keyframes mobile-news-flow {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+  
+  .animate-mobile-news-flow {
+    animation: mobile-news-flow 25s linear infinite;
+  }
+  
+  /* Pause animation on touch for mobile */
+  .animate-mobile-news-flow:active {
+    animation-play-state: paused;
+  }
+  
   /* Enhanced news scroll animation */
   @keyframes scroll-right {
     0% {
@@ -83,7 +116,11 @@
   /* Responsive scroll speed for mobile */
   @media (max-width: 768px) {
     .animate-scroll-right {
-      animation: scroll-right 30s linear infinite;
+      animation: scroll-right 20s linear infinite;
+    }
+    
+    .animate-mobile-scroll-rtl {
+      animation: mobile-scroll-rtl 15s linear infinite;
     }
   }
   
@@ -104,7 +141,7 @@
   /* Mobile marquee speed adjustment */
   @media (max-width: 768px) {
     .animate-marquee {
-      animation: marquee 20s linear infinite;
+      animation: marquee 18s linear infinite;
     }
   }
   
@@ -125,8 +162,23 @@
   /* Enhanced mobile continuous scroll */
   @media (max-width: 768px) {
     .animate-continuous-scroll {
-      animation: continuous-scroll 30s linear infinite;
+      animation: continuous-scroll 25s linear infinite;
     }
+  }
+  
+  /* Text clamp utilities for mobile news cards */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 }
 
@@ -191,14 +243,21 @@
     @apply px-2;
   }
   
-  /* Enhanced mobile player cards */
-  .mobile-player-card {
-    @apply p-4 rounded-2xl bg-gradient-to-br from-gray-900/90 to-black/90 border border-s3m-red/30 shadow-xl;
-  }
-  
-  /* Mobile-optimized news cards */
+  /* Enhanced mobile news cards */
   .mobile-news-card {
     @apply transform-gpu will-change-transform;
+  }
+  
+  /* Mobile-optimized news display */
+  .mobile-news-container {
+    @apply relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-900/90 to-black/90 border border-s3m-red/30;
+  }
+  
+  /* Mobile news animation optimization */
+  .mobile-news-scroll {
+    will-change: transform;
+    backface-visibility: hidden;
+    perspective: 1000px;
   }
 }
 
@@ -220,4 +279,22 @@
     rgba(0, 0, 0, 0.8) 50%, 
     rgba(239, 68, 68, 0.05) 75%, 
     rgba(0, 0, 0, 0.9) 100%);
+}
+
+/* Touch-friendly mobile interactions */
+@media (max-width: 768px) {
+  .touch-friendly {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Improved mobile tap targets */
+  button, .clickable {
+    @apply touch-friendly;
+  }
+  
+  /* Mobile news card enhancements */
+  .mobile-news-card {
+    @apply min-h-[200px] max-w-[320px];
+  }
 }

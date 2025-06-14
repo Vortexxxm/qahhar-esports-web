@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Users, Trophy, Target, Star, Crown, Calendar, ArrowRight, Bell, Globe, Rocket, Newspaper } from 'lucide-react';
@@ -279,19 +278,19 @@ const Home = () => {
         </div>
       </motion.section>
 
-      {/* Enhanced Featured News Section */}
+      {/* Enhanced Mobile-First News Section */}
       {news.length > 0 && (
         <motion.section 
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="relative py-16 bg-gradient-to-br from-black/95 via-s3m-red/10 to-purple-900/20 border-y border-s3m-red/30"
+          className="relative py-12 md:py-16 bg-gradient-to-br from-black/95 via-s3m-red/10 to-purple-900/20 border-y border-s3m-red/30"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/5 to-purple-600/5"></div>
           
           {/* Floating particles for enhanced visual appeal */}
           <div className="absolute inset-0 overflow-hidden">
-            {[...Array(20)].map((_, i) => (
+            {[...Array(15)].map((_, i) => (
               <motion.div
                 key={i}
                 className="absolute w-1 h-1 bg-s3m-red/40 rounded-full"
@@ -313,74 +312,138 @@ const Home = () => {
             ))}
           </div>
           
-          <div className="relative z-10 container mx-auto px-4">
-            <div className="flex items-center justify-center mb-12">
+          <div className="relative z-10 container mx-auto px-3 md:px-4">
+            <div className="flex items-center justify-center mb-8 md:mb-12">
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.6 }}
                 className="text-center"
               >
-                <div className="flex items-center justify-center mb-6">
+                <div className="flex items-center justify-center mb-4 md:mb-6">
                   <motion.div
                     animate={{ rotate: [0, 360] }}
                     transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                    className="mr-4"
+                    className="mr-3 md:mr-4"
                   >
-                    <Bell className="w-10 h-10 text-s3m-red" />
+                    <Bell className="w-8 h-8 md:w-10 md:h-10 text-s3m-red" />
                   </motion.div>
-                  <h3 className="text-3xl md:text-5xl font-black bg-gradient-to-r from-s3m-red via-red-400 to-orange-500 bg-clip-text text-transparent">
+                  <h3 className="text-2xl md:text-3xl lg:text-5xl font-black bg-gradient-to-r from-s3m-red via-red-400 to-orange-500 bg-clip-text text-transparent">
                     الأخبار المميزة
                   </h3>
                   <motion.div
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 2, repeat: Infinity }}
-                    className="mr-4"
+                    className="mr-3 md:mr-4"
                   >
-                    <Globe className="w-8 h-8 text-s3m-red" />
+                    <Globe className="w-6 h-6 md:w-8 md:h-8 text-s3m-red" />
                   </motion.div>
                 </div>
-                <div className="w-24 h-1 bg-gradient-to-r from-s3m-red to-orange-500 rounded-full mx-auto mb-6"></div>
-                <p className="text-white/80 text-lg font-medium">آخر الأخبار والتطورات من عالم S3M E-Sports</p>
+                <div className="w-16 md:w-24 h-1 bg-gradient-to-r from-s3m-red to-orange-500 rounded-full mx-auto mb-4 md:mb-6"></div>
+                <p className="text-white/80 text-base md:text-lg font-medium px-4">آخر الأخبار والتطورات من عالم S3M E-Sports</p>
               </motion.div>
             </div>
             
-            {/* Enhanced Mobile-Friendly News Cards */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-black/60 to-gray-900/60 border-2 border-s3m-red/40 backdrop-blur-sm">
+            {/* Mobile-Optimized News Carousel */}
+            <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-r from-black/70 to-gray-900/70 border border-s3m-red/40 backdrop-blur-sm">
               <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/10 via-transparent to-purple-600/10"></div>
               
-              <div className="relative py-8 px-4">
-                <motion.div
-                  className="flex space-x-6 rtl:space-x-reverse md:space-x-8"
-                  animate={{ x: ["100%", "-100%"] }}
-                  transition={{
-                    duration: 25,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                  style={{ willChange: "transform" }}
-                >
-                  {[...news, ...news].map((newsItem, index) => (
-                    <motion.div
-                      key={`${newsItem.id}-${index}`}
-                      className="flex-shrink-0 w-72 md:w-96"
-                      whileHover={{ scale: 1.05, y: -5 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <div className="relative group">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-s3m-red/60 to-purple-600/60 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div className="relative bg-gradient-to-br from-gray-900/80 to-black/80 border border-s3m-red/30 rounded-2xl p-1">
-                          <NewsCard news={newsItem} />
+              <div className="relative py-6 md:py-8">
+                {/* Mobile News Display */}
+                <div className="block md:hidden">
+                  <motion.div
+                    className="flex gap-4 px-4"
+                    animate={{ x: [0, -100 * news.length + "%"] }}
+                    transition={{
+                      duration: news.length * 8,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                    style={{ width: `${news.length * 100}%` }}
+                  >
+                    {[...news, ...news].map((newsItem, index) => (
+                      <motion.div
+                        key={`${newsItem.id}-${index}`}
+                        className="flex-shrink-0 w-80"
+                        whileHover={{ scale: 1.02 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="relative group h-full">
+                          <div className="absolute -inset-0.5 bg-gradient-to-r from-s3m-red/50 to-purple-600/50 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          <div className="relative bg-gradient-to-br from-gray-900/90 to-black/90 border border-s3m-red/30 rounded-xl overflow-hidden h-full">
+                            {/* News Image */}
+                            {newsItem.image_url && (
+                              <div className="aspect-video w-full overflow-hidden">
+                                <img 
+                                  src={newsItem.image_url} 
+                                  alt={newsItem.title}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            )}
+                            
+                            {/* News Content */}
+                            <div className="p-4">
+                              <h4 className="text-lg font-bold text-s3m-red mb-2 line-clamp-2 leading-tight">
+                                {newsItem.title}
+                              </h4>
+                              <p className="text-white/80 text-sm mb-3 line-clamp-3 leading-relaxed">
+                                {newsItem.description}
+                              </p>
+                              
+                              <div className="flex items-center justify-between text-xs text-white/60">
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" />
+                                  <span>{new Date(newsItem.created_at).toLocaleDateString('ar-SA')}</span>
+                                </div>
+                                {newsItem.author_id && (
+                                  <div className="flex items-center gap-1">
+                                    <span>الإدارة</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </motion.div>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </div>
+
+                {/* Desktop News Display */}
+                <div className="hidden md:block">
+                  <motion.div
+                    className="flex space-x-6 rtl:space-x-reverse"
+                    animate={{ x: ["100%", "-100%"] }}
+                    transition={{
+                      duration: 25,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                    style={{ willChange: "transform" }}
+                  >
+                    {[...news, ...news].map((newsItem, index) => (
+                      <motion.div
+                        key={`${newsItem.id}-${index}`}
+                        className="flex-shrink-0 w-96"
+                        whileHover={{ scale: 1.05, y: -5 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="relative group">
+                          <div className="absolute -inset-1 bg-gradient-to-r from-s3m-red/60 to-purple-600/60 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          <div className="relative bg-gradient-to-br from-gray-900/80 to-black/80 border border-s3m-red/30 rounded-2xl p-1">
+                            <NewsCard news={newsItem} />
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </div>
               </div>
               
-              {/* Enhanced Gradient overlays */}
-              <div className="absolute left-0 top-0 bottom-0 w-40 bg-gradient-to-r from-black via-black/90 to-transparent z-10"></div>
-              <div className="absolute right-0 top-0 bottom-0 w-40 bg-gradient-to-l from-black via-black/90 to-transparent z-10"></div>
+              {/* Enhanced Gradient overlays - Mobile Optimized */}
+              <div className="absolute left-0 top-0 bottom-0 w-8 md:w-40 bg-gradient-to-r from-black via-black/90 to-transparent z-10"></div>
+              <div className="absolute right-0 top-0 bottom-0 w-8 md:w-40 bg-gradient-to-l from-black via-black/90 to-transparent z-10"></div>
             </div>
             
             {/* Enhanced View All News Button */}
@@ -388,16 +451,16 @@ const Home = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
-              className="text-center mt-10"
+              className="text-center mt-8 md:mt-10"
             >
               <Button 
                 variant="outline"
                 onClick={() => navigate('/news')}
-                className="border-2 border-s3m-red text-s3m-red hover:bg-gradient-to-r hover:from-s3m-red hover:to-red-600 hover:text-white hover:border-transparent rounded-xl transition-all duration-300 text-lg px-10 py-4 font-bold shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="border-2 border-s3m-red text-s3m-red hover:bg-gradient-to-r hover:from-s3m-red hover:to-red-600 hover:text-white hover:border-transparent rounded-xl transition-all duration-300 text-base md:text-lg px-8 md:px-10 py-3 md:py-4 font-bold shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                <Newspaper className="w-6 h-6 ml-2" />
+                <Newspaper className="w-5 h-5 md:w-6 md:h-6 ml-2" />
                 جميع الأخبار
-                <ArrowRight className="w-6 h-6 mr-2" />
+                <ArrowRight className="w-5 h-5 md:w-6 md:h-6 mr-2" />
               </Button>
             </motion.div>
           </div>
