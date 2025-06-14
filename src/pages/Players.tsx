@@ -276,7 +276,9 @@ const Players = () => {
                           rank_title: player.rank_title || 'Rookie',
                           total_likes: player.total_likes || 0,
                           bio: player.bio || '',
-                          leaderboard_scores: player.leaderboard_scores || null
+                          leaderboard_scores: Array.isArray(player.leaderboard_scores) && player.leaderboard_scores.length > 0 
+                            ? player.leaderboard_scores[0] 
+                            : null
                         }}
                         cardStyle="classic"
                       />
