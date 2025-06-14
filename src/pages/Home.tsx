@@ -38,6 +38,24 @@ const Home = () => {
     }
   });
 
+  // Get leaderboard scores for special players
+  const { data: specialPlayersScores } = useQuery({
+    queryKey: ['special-players-scores'],
+    queryFn: async () => {
+      if (!specialPlayers?.length) return [];
+      
+      const userIds = specialPlayers.map(p => p.user_id);
+      const { data, error } = await supabase
+        .from('leaderboard_scores')
+        .select('*')
+        .in('user_id', userIds);
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!specialPlayers?.length
+  });
+
   const { data: leaderboardData } = useQuery({
     queryKey: ['leaderboard-preview'],
     queryFn: async () => {
@@ -94,9 +112,11 @@ const Home = () => {
     }
   });
 
-  // تحويل البيانات للتنسيق المطلوب
+  // Transform player data with leaderboard scores
   const transformPlayerData = (player: any) => {
     if (!player || !player.profiles) return null;
+    
+    const leaderboardScore = specialPlayersScores?.find(score => score.user_id === player.user_id);
     
     return {
       id: player.user_id,
@@ -106,6 +126,13 @@ const Home = () => {
       rank_title: player.profiles.rank_title || 'Rookie',
       total_likes: player.profiles.total_likes || 0,
       bio: player.profiles.bio || '',
+      leaderboard_scores: leaderboardScore ? {
+        points: leaderboardScore.points || 0,
+        wins: leaderboardScore.wins || 0,
+        kills: leaderboardScore.kills || 0,
+        deaths: leaderboardScore.deaths || 0,
+        visible_in_leaderboard: leaderboardScore.visible_in_leaderboard || false
+      } : null
     };
   };
 
@@ -269,7 +296,32 @@ const Home = () => {
           </motion.p>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {features.map((feature, index) => (
+            {[
+              {
+                icon: Trophy,
+                title: "البطولات",
+                description: "شارك في البطولات واربح جوائز قيمة",
+                link: "/tournaments"
+              },
+              {
+                icon: Users,
+                title: "الفريق",
+                description: "تعرف على أعضاء الفريق المحترفين",
+                link: "/team"
+              },
+              {
+                icon: Target,
+                title: "المتصدرين",
+                description: "اطلع على ترتيب أفضل اللاعبين",
+                link: "/leaderboard"
+              },
+              {
+                icon: Gamepad2,
+                title: "انضم إلينا",
+                description: "كن جزءاً من عائلة S3M",
+                link: "/join-us"
+              }
+            ].map((feature, index) => (
               <motion.div
                 key={feature.title}
                 initial={{ opacity: 0, y: 20 }}
