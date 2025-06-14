@@ -25,8 +25,8 @@ const MobileNewsSection = ({ news }: MobileNewsSectionProps) => {
 
   if (news.length === 0) return null;
 
-  // تكرار الأخبار 8 مرات للحصول على حركة مستمرة بدون فراغات أو اختفاء
-  const repeatedNews = Array(8).fill([...news]).flat();
+  // تكرار الأخبار 12 مرة لضمان عدم الاختفاء أبداً
+  const repeatedNews = Array(12).fill([...news]).flat();
 
   return (
     <motion.section 
@@ -101,112 +101,82 @@ const MobileNewsSection = ({ news }: MobileNewsSectionProps) => {
           </motion.div>
         </div>
         
-        {/* Enhanced Professional Mobile News Container */}
-        <div className="relative overflow-hidden rounded-2xl border border-s3m-red/40 backdrop-blur-sm shadow-2xl" style={{
-          background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.96), rgba(17, 24, 39, 0.96))'
-        }}>
+        {/* حاوي الأخبار المحسّن للهواتف - بدون اختفاء */}
+        <div className="relative overflow-hidden rounded-2xl border border-s3m-red/40 backdrop-blur-sm shadow-2xl bg-black/95">
           <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/10 via-transparent to-purple-600/10"></div>
           
-          {/* حاوي التمرير المستمر للأخبار بدون اختفاء */}
-          <div className="relative py-6 min-h-[280px]">
-            {/* طبقة حماية إضافية لضمان عدم اختفاء الأخبار */}
-            <div className="absolute inset-0 bg-black/5 z-0"></div>
-            
-            <motion.div
-              className="flex gap-4 relative z-10"
-              animate={{ 
-                x: [`0%`, `-${(100 * repeatedNews.length) / 8}%`] 
-              }}
-              transition={{
-                duration: 120, // حركة أبطأ لضمان وضوح الأخبار
-                repeat: Infinity,
-                ease: "linear",
-                repeatType: "loop"
-              }}
+          {/* منطقة التمرير الآمنة بدون اختفاء */}
+          <div className="relative py-6 min-h-[300px] bg-black/90">
+            <div 
+              className="flex gap-4 animate-seamless-scroll"
               style={{ 
-                willChange: "transform",
-                width: `${repeatedNews.length * 300}px`,
-                minWidth: '100%'
+                width: `${repeatedNews.length * 320}px`,
+                willChange: 'transform'
               }}
             >
               {repeatedNews.map((newsItem, index) => (
-                <motion.div
-                  key={`news-${newsItem.id}-${Math.floor(index / news.length)}-${index % news.length}`}
-                  className="flex-shrink-0 w-72 md:w-80 opacity-100"
+                <div
+                  key={`mobile-news-${newsItem.id}-${index}`}
+                  className="flex-shrink-0 w-80 max-w-80 opacity-100 visible"
                   style={{ 
-                    minWidth: '288px',
-                    visibility: 'visible'
-                  }}
-                  whileHover={{ 
-                    scale: 1.02,
-                    transition: { duration: 0.2 }
+                    minWidth: '320px',
+                    maxWidth: '320px'
                   }}
                 >
-                  <div className="relative group h-full min-h-[260px]">
-                    {/* Enhanced Professional Glow effect */}
-                    <div className="absolute -inset-1.5 bg-gradient-to-r from-s3m-red/40 to-purple-600/40 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-all duration-400"></div>
+                  <div className="relative group h-full min-h-[280px] bg-gradient-to-br from-gray-900 to-black rounded-xl overflow-hidden shadow-xl border border-s3m-red/50 hover:border-s3m-red/70 transition-all duration-300">
                     
-                    {/* Premium News Card - محسّن للوضوح */}
-                    <div className="relative h-full rounded-xl overflow-hidden shadow-xl border border-s3m-red/50 group-hover:border-s3m-red/70 transition-all duration-300" style={{
-                      background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.99), rgba(0, 0, 0, 0.99))',
-                      backdropFilter: 'blur(8px)'
-                    }}>
-                      {/* News Image */}
-                      {newsItem.image_url && (
-                        <div className="aspect-video w-full overflow-hidden relative">
-                          <img 
-                            src={newsItem.image_url} 
-                            alt={newsItem.title}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                            loading="lazy"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                          {/* Enhanced News Badge */}
-                          <div className="absolute top-3 right-3 bg-gradient-to-r from-s3m-red to-red-600 text-white text-sm px-3 py-1.5 rounded-full font-bold shadow-lg z-10">
-                            🔥 جديد
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Enhanced News Content */}
-                      <div className="p-4 flex-1 flex flex-col justify-between">
-                        <div>
-                          <h4 className="text-base md:text-lg font-bold text-s3m-red mb-3 line-clamp-2 leading-tight">
-                            {newsItem.title}
-                          </h4>
-                          <p className="text-white/85 text-sm md:text-base mb-4 line-clamp-2 leading-relaxed">
-                            {newsItem.description}
-                          </p>
-                        </div>
+                    {/* صورة الخبر */}
+                    {newsItem.image_url && (
+                      <div className="aspect-video w-full overflow-hidden relative">
+                        <img 
+                          src={newsItem.image_url} 
+                          alt={newsItem.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
                         
-                        {/* Enhanced Professional News Meta */}
-                        <div className="flex items-center justify-between text-sm text-white/70 mt-auto">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4 flex-shrink-0" />
-                            <span className="text-xs">{new Date(newsItem.created_at).toLocaleDateString('ar-SA')}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <span className="text-s3m-red font-bold text-sm">S3M</span>
-                            <span className="text-xs">⭐</span>
-                          </div>
+                        {/* شارة الخبر الجديد */}
+                        <div className="absolute top-3 right-3 bg-gradient-to-r from-s3m-red to-red-600 text-white text-sm px-3 py-1.5 rounded-full font-bold shadow-lg z-10">
+                          🔥 جديد
                         </div>
                       </div>
+                    )}
+                    
+                    {/* محتوى الخبر */}
+                    <div className="p-4 flex-1 flex flex-col justify-between bg-black/95">
+                      <div>
+                        <h4 className="text-lg font-bold text-s3m-red mb-3 line-clamp-2 leading-tight">
+                          {newsItem.title}
+                        </h4>
+                        <p className="text-white/85 text-base mb-4 line-clamp-2 leading-relaxed">
+                          {newsItem.description}
+                        </p>
+                      </div>
                       
-                      {/* Premium corner accent */}
-                      <div className="absolute top-0 left-0 w-0 h-0 border-r-[30px] border-r-transparent border-t-[30px] border-t-s3m-red/20"></div>
+                      {/* معلومات الخبر */}
+                      <div className="flex items-center justify-between text-sm text-white/70 mt-auto">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 flex-shrink-0" />
+                          <span className="text-xs">{new Date(newsItem.created_at).toLocaleDateString('ar-SA')}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-s3m-red font-bold text-sm">S3M</span>
+                          <span className="text-xs">⭐</span>
+                        </div>
+                      </div>
                     </div>
+                    
+                    {/* لمسة تصميمية */}
+                    <div className="absolute top-0 left-0 w-0 h-0 border-r-[30px] border-r-transparent border-t-[30px] border-t-s3m-red/20"></div>
                   </div>
-                </motion.div>
+                </div>
               ))}
-            </motion.div>
+            </div>
           </div>
-          
-          {/* Enhanced Gradient overlays للتأثير السلس بدون إخفاء الأخبار */}
-          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-20 pointer-events-none"></div>
-          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black/80 via-black/40 to-transparent z-20 pointer-events-none"></div>
         </div>
         
-        {/* Enhanced View All News Button */}
+        {/* زر عرض المزيد */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
