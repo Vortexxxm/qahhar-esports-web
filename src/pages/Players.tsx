@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Users, Trophy, Filter, ArrowUpDown, Settings, Crown } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Search, Users, Trophy, Filter, ArrowUpDown, Settings, Crown, Award } from 'lucide-react';
 import PlayerCard from '@/components/PlayerCard';
 import WeeklyPlayerCard from '@/components/WeeklyPlayerCard';
+import MonthlyPlayerCard from '@/components/MonthlyPlayerCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -53,16 +54,40 @@ const Players = () => {
   const [sortBy, setSortBy] = useState<'total_likes' | 'rank_title' | 'username' | 'points'>('total_likes');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [filterRank, setFilterRank] = useState<string>('all');
-  const [cardStyleFilter, setCardStyleFilter] = useState<string>('all');
   const [weeklyPlayer, setWeeklyPlayer] = useState<string | null>(null);
+  const [monthlyPlayer, setMonthlyPlayer] = useState<string | null>(null);
 
   const isAdmin = userRole === 'admin';
 
   useEffect(() => {
     fetchPlayers();
     if (isAdmin) {
-      fetchWeeklyPlayer();
+      fetchSpecialPlayers();
     }
+  }, [isAdmin]);
+
+  // Real-time subscription for weekly/monthly player updates
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const channel = supabase
+      .channel('special-players-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles',
+        },
+        () => {
+          fetchSpecialPlayers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [isAdmin]);
 
   useEffect(() => {
@@ -139,20 +164,19 @@ const Players = () => {
     }
   };
 
-  const fetchWeeklyPlayer = async () => {
+  const fetchSpecialPlayers = async () => {
     try {
-      // In a real app, you'd have a separate table for weekly players
-      // For now, we'll use a simple approach
       const savedWeeklyPlayer = localStorage.getItem('weeklyPlayer');
+      const savedMonthlyPlayer = localStorage.getItem('monthlyPlayer');
       setWeeklyPlayer(savedWeeklyPlayer);
+      setMonthlyPlayer(savedMonthlyPlayer);
     } catch (error) {
-      console.error('Error fetching weekly player:', error);
+      console.error('Error fetching special players:', error);
     }
   };
 
   const setWeeklyPlayerMutation = useMutation({
     mutationFn: async (playerId: string) => {
-      // In a real app, you'd update this in the database
       if (playerId === 'none') {
         localStorage.removeItem('weeklyPlayer');
         setWeeklyPlayer(null);
@@ -161,11 +185,32 @@ const Players = () => {
         setWeeklyPlayer(playerId);
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, playerId) => {
       toast({
         title: "تم التحديث",
-        description: "تم تحديد لاعب الأسبوع بنجاح",
+        description: playerId === 'none' ? "تم إلغاء لاعب الأسبوع" : "تم تحديد لاعب الأسبوع بنجاح",
       });
+      // Trigger real-time update for all users
+      queryClient.invalidateQueries({ queryKey: ['special-players'] });
+    },
+  });
+
+  const setMonthlyPlayerMutation = useMutation({
+    mutationFn: async (playerId: string) => {
+      if (playerId === 'none') {
+        localStorage.removeItem('monthlyPlayer');
+        setMonthlyPlayer(null);
+      } else {
+        localStorage.setItem('monthlyPlayer', playerId);
+        setMonthlyPlayer(playerId);
+      }
+    },
+    onSuccess: (_, playerId) => {
+      toast({
+        title: "تم التحديث",
+        description: playerId === 'none' ? "تم إلغاء لاعب الشهر" : "تم تحديد لاعب الشهر بنجاح",
+      });
+      queryClient.invalidateQueries({ queryKey: ['special-players'] });
     },
   });
 
@@ -223,7 +268,6 @@ const Players = () => {
     setSortBy('total_likes');
     setSortOrder('desc');
     setFilterRank('all');
-    setCardStyleFilter('all');
   };
 
   const handleToggleVisibility = (playerId: string, currentVisibility: boolean) => {
@@ -244,27 +288,34 @@ const Players = () => {
     setWeeklyPlayerMutation.mutate(playerId);
   };
 
-  // Filter out weekly player from regular grid
-  const regularPlayers = filteredPlayers.filter(player => player.id !== weeklyPlayer);
+  const handleSetMonthlyPlayer = (playerId: string) => {
+    setMonthlyPlayerMutation.mutate(playerId);
+  };
+
+  // Filter out special players from regular grid
+  const regularPlayers = filteredPlayers.filter(player => 
+    player.id !== weeklyPlayer && player.id !== monthlyPlayer
+  );
   const weeklyPlayerData = filteredPlayers.find(player => player.id === weeklyPlayer);
+  const monthlyPlayerData = filteredPlayers.find(player => player.id === monthlyPlayer);
 
   return (
-    <div className="min-h-screen py-12 bg-gradient-to-b from-black to-gray-900">
+    <div className="min-h-screen py-6 md:py-12 bg-gradient-to-b from-black to-gray-900">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8 md:mb-12">
           <div className="flex items-center justify-center mb-4">
-            <Users className="h-12 w-12 text-s3m-red mr-4" />
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-s3m-red to-red-600 bg-clip-text text-transparent">
+            <Users className="h-8 md:h-12 w-8 md:w-12 text-s3m-red mr-4" />
+            <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-s3m-red to-red-600 bg-clip-text text-transparent">
               لاعبي الفريق
             </h1>
           </div>
-          <p className="text-xl text-white/80">اكتشف أفضل اللاعبين وتفاعل معهم</p>
+          <p className="text-lg md:text-xl text-white/80">اكتشف أفضل اللاعبين وتفاعل معهم</p>
         </div>
 
         {/* Search and Filters */}
-        <Card className="gaming-card mb-8 max-w-6xl mx-auto">
-          <CardContent className="p-6">
+        <Card className="gaming-card mb-6 md:mb-8">
+          <CardContent className="p-4 md:p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -348,6 +399,22 @@ const Players = () => {
                       </SelectContent>
                     </Select>
                   </div>
+                  <div>
+                    <label className="text-white/80 text-sm block mb-2">تحديد لاعب الشهر:</label>
+                    <Select value={monthlyPlayer || "none"} onValueChange={(value) => setMonthlyPlayerMutation.mutate(value)}>
+                      <SelectTrigger className="bg-black/20 border-s3m-red/30 text-white">
+                        <SelectValue placeholder="اختر لاعب الشهر" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">بدون لاعب شهر</SelectItem>
+                        {players.map((player) => (
+                          <SelectItem key={player.id} value={player.id}>
+                            {player.username || player.full_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
             )}
@@ -355,49 +422,77 @@ const Players = () => {
         </Card>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
           <Card className="gaming-card">
-            <CardContent className="p-6 text-center">
-              <Users className="h-8 w-8 text-s3m-red mx-auto mb-2" />
-              <div className="text-2xl font-bold text-white">{players.length}</div>
-              <div className="text-gray-400">إجمالي اللاعبين</div>
+            <CardContent className="p-4 md:p-6 text-center">
+              <Users className="h-6 md:h-8 w-6 md:w-8 text-s3m-red mx-auto mb-2" />
+              <div className="text-xl md:text-2xl font-bold text-white">{players.length}</div>
+              <div className="text-xs md:text-sm text-gray-400">إجمالي اللاعبين</div>
             </CardContent>
           </Card>
           
           <Card className="gaming-card">
-            <CardContent className="p-6 text-center">
-              <Trophy className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-white">
+            <CardContent className="p-4 md:p-6 text-center">
+              <Trophy className="h-6 md:h-8 w-6 md:w-8 text-yellow-500 mx-auto mb-2" />
+              <div className="text-xl md:text-2xl font-bold text-white">
                 {players.filter(p => p.rank_title === 'Heroic').length}
               </div>
-              <div className="text-gray-400">أبطال مميزون</div>
+              <div className="text-xs md:text-sm text-gray-400">أبطال مميزون</div>
             </CardContent>
           </Card>
           
           <Card className="gaming-card">
-            <CardContent className="p-6 text-center">
-              <Crown className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-white">
+            <CardContent className="p-4 md:p-6 text-center">
+              <Crown className="h-6 md:h-8 w-6 md:w-8 text-yellow-500 mx-auto mb-2" />
+              <div className="text-xl md:text-2xl font-bold text-white">
                 {weeklyPlayer ? '1' : '0'}
               </div>
-              <div className="text-gray-400">لاعب الأسبوع</div>
+              <div className="text-xs md:text-sm text-gray-400">لاعب الأسبوع</div>
+            </CardContent>
+          </Card>
+
+          <Card className="gaming-card">
+            <CardContent className="p-4 md:p-6 text-center">
+              <Award className="h-6 md:h-8 w-6 md:w-8 text-purple-500 mx-auto mb-2" />
+              <div className="text-xl md:text-2xl font-bold text-white">
+                {monthlyPlayer ? '1' : '0'}
+              </div>
+              <div className="text-xs md:text-sm text-gray-400">لاعب الشهر</div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Weekly Player Card - Displayed at top if exists */}
+        {/* Monthly Player Card - Displayed at top if exists */}
+        {monthlyPlayerData && (
+          <div className="mb-8 md:mb-12">
+            <div className="text-center mb-6 md:mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-400 via-blue-500 to-cyan-500 bg-clip-text text-transparent mb-2">
+                👑 لاعب الشهر 👑
+              </h2>
+              <p className="text-white/80 text-sm md:text-base">اللاعب المتميز لهذا الشهر</p>
+            </div>
+            <MonthlyPlayerCard
+              player={monthlyPlayerData}
+              isAdmin={isAdmin}
+              onEdit={(player) => console.log('Edit monthly player:', player)}
+              onToggleVisibility={handleToggleVisibility}
+            />
+          </div>
+        )}
+
+        {/* Weekly Player Card - Displayed after monthly if exists */}
         {weeklyPlayerData && (
-          <div className="mb-12">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent mb-2">
+          <div className="mb-8 md:mb-12">
+            <div className="text-center mb-6 md:mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent mb-2">
                 🏆 لاعب الأسبوع 🏆
               </h2>
-              <p className="text-white/80">اللاعب المتميز لهذا الأسبوع</p>
+              <p className="text-white/80 text-sm md:text-base">اللاعب المتميز لهذا الأسبوع</p>
             </div>
             <WeeklyPlayerCard
               player={weeklyPlayerData}
               isAdmin={isAdmin}
-              onEdit={handleEditFromWeeklyPlayerCard}
+              onEdit={(player) => console.log('Edit weekly player:', player)}
               onToggleVisibility={handleToggleVisibility}
             />
           </div>
@@ -405,20 +500,20 @@ const Players = () => {
 
         {/* Regular Players Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="animate-pulse bg-gray-800 rounded-lg h-96"></div>
+              <div key={i} className="animate-pulse bg-gray-800 rounded-lg h-80 md:h-96"></div>
             ))}
           </div>
         ) : (
           <>
-            {regularPlayers.length === 0 && !weeklyPlayerData ? (
-              <div className="text-center py-12">
-                <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2">
+            {regularPlayers.length === 0 && !weeklyPlayerData && !monthlyPlayerData ? (
+              <div className="text-center py-8 md:py-12">
+                <Search className="h-12 md:h-16 w-12 md:w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg md:text-xl font-semibold text-white mb-2">
                   لا توجد نتائج
                 </h3>
-                <p className="text-gray-400">
+                <p className="text-gray-400 text-sm md:text-base">
                   جرب البحث بكلمات مختلفة أو تغيير الفلاتر
                 </p>
               </div>
@@ -426,11 +521,11 @@ const Players = () => {
               <>
                 {regularPlayers.length > 0 && (
                   <div>
-                    <div className="text-center mb-8">
-                      <h2 className="text-2xl font-bold text-white mb-2">الأعضاء</h2>
-                      <p className="text-white/60">جميع أعضاء الفريق</p>
+                    <div className="text-center mb-6 md:mb-8">
+                      <h2 className="text-xl md:text-2xl font-bold text-white mb-2">الأعضاء</h2>
+                      <p className="text-white/60 text-sm md:text-base">جميع أعضاء الفريق</p>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                       {regularPlayers.map((player) => (
                         <PlayerCard
                           key={player.id}

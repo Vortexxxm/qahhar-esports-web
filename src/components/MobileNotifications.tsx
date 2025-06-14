@@ -1,11 +1,15 @@
+
 import { useState, useEffect } from "react";
-import { Bell, Trash2 } from "lucide-react";
+import { Bell, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,7 +18,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
-import MobileNotifications from "./MobileNotifications";
 
 type Notification = {
   id: string;
@@ -27,7 +30,7 @@ type Notification = {
   data?: any;
 };
 
-const NotificationsPopover = () => {
+const MobileNotifications = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
@@ -95,7 +98,7 @@ const NotificationsPopover = () => {
     if (!user?.id) return;
 
     const channel = supabase
-      .channel('notifications')
+      .channel('mobile-notifications')
       .on(
         'postgres_changes',
         {
@@ -131,85 +134,96 @@ const NotificationsPopover = () => {
   if (!user) return null;
 
   return (
-    <>
-      {/* Mobile Notifications */}
-      <MobileNotifications />
-      
-      {/* Desktop Notifications */}
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative hidden md:flex"
-          >
-            <Bell className="h-5 w-5 text-white/80" />
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <SheetTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative md:hidden"
+        >
+          <Bell className="h-5 w-5 text-white/80" />
+          {unreadCount > 0 && (
+            <Badge 
+              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-s3m-red text-xs"
+            >
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </Badge>
+          )}
+        </Button>
+      </SheetTrigger>
+      <SheetContent 
+        side="right" 
+        className="w-full sm:w-80 bg-black/95 border-s3m-red/20 p-0"
+      >
+        <SheetHeader className="p-4 border-b border-s3m-red/20">
+          <div className="flex items-center justify-between">
+            <SheetTitle className="text-white text-lg">الإشعارات</SheetTitle>
             {unreadCount > 0 && (
-              <Badge 
-                className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-s3m-red"
-              >
-                {unreadCount}
+              <Badge className="bg-s3m-red text-white">
+                {unreadCount} جديد
               </Badge>
             )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent 
-          className="w-80 p-0 bg-black/90 border-s3m-red/20" 
-          align="end"
-        >
-          <div className="p-2 border-b border-s3m-red/20">
-            <h3 className="text-lg font-semibold text-white">الإشعارات</h3>
           </div>
-          <ScrollArea className="h-[400px]">
-            {notifications.length > 0 ? (
-              <div className="divide-y divide-s3m-red/20">
-                {notifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`p-4 cursor-pointer transition-colors hover:bg-s3m-red/10 ${
-                      !notification.read ? 'bg-s3m-red/5' : ''
-                    }`}
-                    onClick={() => handleNotificationClick(notification)}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <p className="font-semibold text-white">
+          <SheetDescription className="text-white/60 text-sm">
+            آخر الإشعارات والتحديثات
+          </SheetDescription>
+        </SheetHeader>
+        
+        <ScrollArea className="h-full">
+          {notifications.length > 0 ? (
+            <div className="divide-y divide-s3m-red/20">
+              {notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`p-4 cursor-pointer transition-colors hover:bg-s3m-red/10 ${
+                    !notification.read ? 'bg-s3m-red/5 border-r-4 border-s3m-red' : ''
+                  }`}
+                  onClick={() => handleNotificationClick(notification)}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-semibold text-white text-sm truncate">
                           {notification.title}
                         </p>
-                        <p className="text-sm text-white/70 mt-1">
-                          {notification.message}
-                        </p>
-                        <p className="text-xs text-white/50 mt-2">
-                          {format(new Date(notification.created_at), 'PPp', { locale: ar })}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
                         {!notification.read && (
-                          <div className="w-2 h-2 rounded-full bg-s3m-red" />
+                          <div className="w-2 h-2 rounded-full bg-s3m-red flex-shrink-0" />
                         )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => handleDeleteNotification(e, notification.id)}
-                          className="p-1 h-auto text-white/50 hover:text-red-400 hover:bg-red-500/10"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
                       </div>
+                      <p className="text-sm text-white/70 leading-relaxed mb-2">
+                        {notification.message}
+                      </p>
+                      <p className="text-xs text-white/50">
+                        {format(new Date(notification.created_at), 'PPp', { locale: ar })}
+                      </p>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => handleDeleteNotification(e, notification.id)}
+                      className="p-1 h-auto text-white/50 hover:text-red-400 hover:bg-red-500/10 flex-shrink-0"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="p-4 text-center text-white/50">
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-8 text-center">
+              <Bell className="h-12 w-12 text-white/30 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-white mb-2">
                 لا توجد إشعارات
-              </div>
-            )}
-          </ScrollArea>
-        </PopoverContent>
-      </Popover>
-    </>
+              </h3>
+              <p className="text-white/60 text-sm">
+                ستظهر الإشعارات الجديدة هنا
+              </p>
+            </div>
+          )}
+        </ScrollArea>
+      </SheetContent>
+    </Sheet>
   );
 };
 
-export default NotificationsPopover;
+export default MobileNotifications;

@@ -255,6 +255,48 @@ export type Database = {
         }
         Relationships: []
       }
+      special_players: {
+        Row: {
+          assigned_at: string | null
+          id: string
+          is_active: boolean | null
+          type: string | null
+          updated_by: string | null
+          user_id: string | null
+        }
+        Insert: {
+          assigned_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          type?: string | null
+          updated_by?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          assigned_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          type?: string | null
+          updated_by?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "special_players_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "special_players_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_members: {
         Row: {
           created_at: string
