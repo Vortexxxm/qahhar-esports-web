@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/theme-provider";
 import Navbar from "@/components/Navbar";
@@ -42,6 +42,7 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/home" element={<Home />} />
+                  <Route path="/index" element={<Navigate to="/" replace />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/team" element={<Team />} />
                   <Route path="/news" element={<News />} />
@@ -57,6 +58,7 @@ function App() {
                   <Route path="/reset-password-page" element={<ResetPasswordPage />} />
                   <Route path="/terms" element={<Terms />} />
                   <Route path="/privacy" element={<Privacy />} />
+                  <Route path="/404" element={<NotFound />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </div>
