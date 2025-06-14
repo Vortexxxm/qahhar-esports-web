@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Users, Trophy, Target, Star, Flame, Zap, GamepadIcon, Crown, Calendar, ArrowRight, Bell, Globe, Rocket, Newspaper } from 'lucide-react';
+import { Play, Users, Trophy, Target, Star, Crown, Calendar, ArrowRight, Bell, Globe, Rocket, Newspaper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -203,11 +203,9 @@ const Home = () => {
               إطلاق القوة
             </h1>
             <div className="flex items-center justify-center gap-3 mb-6">
-              <Flame className="w-8 h-8 text-red-500 animate-pulse" />
               <p className="text-2xl md:text-4xl text-white font-bold">
                 S3M E-Sports
               </p>
-              <Flame className="w-8 h-8 text-red-500 animate-pulse" />
             </div>
             <p className="text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto">
               نهيمن على ساحة المعركة. نعيد تعريف النصر. انضم إلى الأسطورة.
@@ -281,7 +279,7 @@ const Home = () => {
         </div>
       </motion.section>
 
-      {/* Featured News Section */}
+      {/* Enhanced Featured News Section */}
       {news.length > 0 && (
         <motion.section 
           initial={{ opacity: 0, y: 50 }}
@@ -293,7 +291,7 @@ const Home = () => {
           
           {/* Floating particles for enhanced visual appeal */}
           <div className="absolute inset-0 overflow-hidden">
-            {[...Array(15)].map((_, i) => (
+            {[...Array(20)].map((_, i) => (
               <motion.div
                 key={i}
                 className="absolute w-1 h-1 bg-s3m-red/40 rounded-full"
@@ -302,7 +300,7 @@ const Home = () => {
                   top: `${Math.random() * 100}%`,
                 }}
                 animate={{
-                  y: [0, -10, 0],
+                  y: [0, -15, 0],
                   opacity: [0.2, 0.8, 0.2],
                   scale: [1, 1.5, 1],
                 }}
@@ -323,7 +321,7 @@ const Home = () => {
                 transition={{ duration: 0.6 }}
                 className="text-center"
               >
-                <div className="flex items-center justify-center mb-4">
+                <div className="flex items-center justify-center mb-6">
                   <motion.div
                     animate={{ rotate: [0, 360] }}
                     transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
@@ -342,21 +340,21 @@ const Home = () => {
                     <Globe className="w-8 h-8 text-s3m-red" />
                   </motion.div>
                 </div>
-                <div className="w-20 h-1 bg-gradient-to-r from-s3m-red to-orange-500 rounded-full mx-auto mb-6"></div>
+                <div className="w-24 h-1 bg-gradient-to-r from-s3m-red to-orange-500 rounded-full mx-auto mb-6"></div>
                 <p className="text-white/80 text-lg font-medium">آخر الأخبار والتطورات من عالم S3M E-Sports</p>
               </motion.div>
             </div>
             
-            {/* Moving News Cards */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-black/50 to-gray-900/50 border border-s3m-red/30 backdrop-blur-sm">
-              <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/5 via-transparent to-purple-600/5"></div>
+            {/* Enhanced Mobile-Friendly News Cards */}
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-black/60 to-gray-900/60 border-2 border-s3m-red/40 backdrop-blur-sm">
+              <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/10 via-transparent to-purple-600/10"></div>
               
-              <div className="relative py-8">
+              <div className="relative py-8 px-4">
                 <motion.div
-                  className="flex space-x-8 rtl:space-x-reverse"
+                  className="flex space-x-6 rtl:space-x-reverse md:space-x-8"
                   animate={{ x: ["100%", "-100%"] }}
                   transition={{
-                    duration: 30,
+                    duration: 25,
                     repeat: Infinity,
                     ease: "linear",
                   }}
@@ -365,13 +363,13 @@ const Home = () => {
                   {[...news, ...news].map((newsItem, index) => (
                     <motion.div
                       key={`${newsItem.id}-${index}`}
-                      className="flex-shrink-0 w-80 md:w-96"
+                      className="flex-shrink-0 w-72 md:w-96"
                       whileHover={{ scale: 1.05, y: -5 }}
                       transition={{ duration: 0.3 }}
                     >
                       <div className="relative group">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-s3m-red/50 to-purple-600/50 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div className="relative">
+                        <div className="absolute -inset-1 bg-gradient-to-r from-s3m-red/60 to-purple-600/60 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div className="relative bg-gradient-to-br from-gray-900/80 to-black/80 border border-s3m-red/30 rounded-2xl p-1">
                           <NewsCard news={newsItem} />
                         </div>
                       </div>
@@ -380,33 +378,33 @@ const Home = () => {
                 </motion.div>
               </div>
               
-              {/* Gradient overlays for smooth fade effect */}
-              <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-black via-black/80 to-transparent z-10"></div>
-              <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-black via-black/80 to-transparent z-10"></div>
+              {/* Enhanced Gradient overlays */}
+              <div className="absolute left-0 top-0 bottom-0 w-40 bg-gradient-to-r from-black via-black/90 to-transparent z-10"></div>
+              <div className="absolute right-0 top-0 bottom-0 w-40 bg-gradient-to-l from-black via-black/90 to-transparent z-10"></div>
             </div>
             
-            {/* View All News Button */}
+            {/* Enhanced View All News Button */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
-              className="text-center mt-8"
+              className="text-center mt-10"
             >
               <Button 
                 variant="outline"
                 onClick={() => navigate('/news')}
-                className="border-2 border-s3m-red text-s3m-red hover:bg-gradient-to-r hover:from-s3m-red hover:to-red-600 hover:text-white hover:border-transparent rounded-xl transition-all duration-300 text-lg px-8 py-3 font-bold shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="border-2 border-s3m-red text-s3m-red hover:bg-gradient-to-r hover:from-s3m-red hover:to-red-600 hover:text-white hover:border-transparent rounded-xl transition-all duration-300 text-lg px-10 py-4 font-bold shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                <Newspaper className="w-5 h-5 ml-2" />
+                <Newspaper className="w-6 h-6 ml-2" />
                 جميع الأخبار
-                <ArrowRight className="w-5 h-5 mr-2" />
+                <ArrowRight className="w-6 h-6 mr-2" />
               </Button>
             </motion.div>
           </div>
         </motion.section>
       )}
 
-      {/* Enhanced Player of the Month/Week Section */}
+      {/* Enhanced Player of the Month/Week Section - Mobile Optimized */}
       {(weeklyPlayer || monthlyPlayer) && (
         <motion.section 
           initial={{ opacity: 0, y: 50 }}
@@ -432,13 +430,7 @@ const Home = () => {
                   transition={{ duration: 0.8, delay: 0.5 }}
                   className="relative"
                 >
-                  <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 z-10">
-                    <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold px-6 py-3 rounded-full shadow-lg text-base">
-                      <Crown className="w-5 h-5 ml-2" />
-                      لاعب الشهر
-                    </Badge>
-                  </div>
-                  <div className="mt-4">
+                  <div className="mb-4">
                     <MonthlyPlayerCard 
                       player={{
                         id: monthlyPlayer.profiles.id,
@@ -462,13 +454,7 @@ const Home = () => {
                   transition={{ duration: 0.8, delay: 0.6 }}
                   className="relative"
                 >
-                  <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 z-10">
-                    <Badge className="bg-gradient-to-r from-blue-400 to-cyan-500 text-black font-bold px-6 py-3 rounded-full shadow-lg text-base">
-                      <Star className="w-5 h-5 ml-2" />
-                      لاعب الأسبوع
-                    </Badge>
-                  </div>
-                  <div className="mt-4">
+                  <div className="mb-4">
                     <WeeklyPlayerCard 
                       player={{
                         id: weeklyPlayer.profiles.id,
@@ -511,7 +497,6 @@ const Home = () => {
               { icon: Users, label: 'الأعضاء المميزون', value: '150+', color: 'text-blue-400' },
               { icon: Trophy, label: 'البطولات', value: '25+', color: 'text-yellow-400' },
               { icon: Target, label: 'الانتصارات', value: '500+', color: 'text-green-400' },
-              { icon: GamepadIcon, label: 'المعارك المكسوبة', value: '1000+', color: 'text-purple-400' },
             ].map((stat, index) => (
               <motion.div
                 key={index}
