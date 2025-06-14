@@ -42,16 +42,36 @@ const VideoManager = () => {
 
       if (uploadError) throw uploadError;
 
-      // Update site settings
-      const { error: settingsError } = await supabase
+      // Check if record exists first
+      const { data: existingRecord } = await supabase
         .from('site_settings')
-        .upsert({
-          key: 'homepage_video_file',
-          value: fileName,
-          description: 'Uploaded video file for homepage trailer'
-        });
+        .select('*')
+        .eq('key', 'homepage_video_file')
+        .maybeSingle();
 
-      if (settingsError) throw settingsError;
+      if (existingRecord) {
+        // Update existing record
+        const { error: updateError } = await supabase
+          .from('site_settings')
+          .update({ 
+            value: fileName,
+            updated_at: new Date().toISOString()
+          })
+          .eq('key', 'homepage_video_file');
+
+        if (updateError) throw updateError;
+      } else {
+        // Insert new record
+        const { error: insertError } = await supabase
+          .from('site_settings')
+          .insert({
+            key: 'homepage_video_file',
+            value: fileName,
+            description: 'Uploaded video file for homepage trailer'
+          });
+
+        if (insertError) throw insertError;
+      }
 
       return uploadData;
     },
@@ -64,6 +84,7 @@ const VideoManager = () => {
       });
     },
     onError: (error: any) => {
+      console.error('Video upload error:', error);
       toast({
         title: "خطأ في الرفع",
         description: error.message,
@@ -86,7 +107,10 @@ const VideoManager = () => {
       // Remove from settings
       const { error: settingsError } = await supabase
         .from('site_settings')
-        .update({ value: null })
+        .update({ 
+          value: null,
+          updated_at: new Date().toISOString()
+        })
         .eq('key', 'homepage_video_file');
 
       if (settingsError) throw settingsError;
@@ -100,6 +124,7 @@ const VideoManager = () => {
       });
     },
     onError: (error: any) => {
+      console.error('Video delete error:', error);
       toast({
         title: "خطأ في الحذف",
         description: error.message,
@@ -138,6 +163,8 @@ const VideoManager = () => {
       await uploadVideoMutation.mutateAsync(file);
     } finally {
       setUploading(false);
+      // Reset the input
+      event.target.value = '';
     }
   };
 
