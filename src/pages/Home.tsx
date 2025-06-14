@@ -77,7 +77,7 @@ const Home = () => {
     }
   }, [news.length]);
 
-  // Animation variants
+  // Animation variants with proper types
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -95,7 +95,7 @@ const Home = () => {
       opacity: 1,
       transition: {
         duration: 0.6,
-        ease: [0.25, 0.46, 0.45, 0.94]
+        ease: "easeOut"
       }
     }
   };
@@ -225,7 +225,9 @@ const Home = () => {
 
       {/* Moving News Ticker */}
       <motion.section 
-        variants={itemVariants}
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
         className="relative py-6 bg-black/80 border-y border-s3m-red/30 overflow-hidden"
       >
         <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/10 to-purple-600/10"></div>
@@ -269,12 +271,16 @@ const Home = () => {
       {/* Special Players Section */}
       {(weeklyPlayer || monthlyPlayer) && (
         <motion.section 
-          variants={itemVariants}
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
           className="py-16 px-4"
         >
           <div className="container mx-auto max-w-6xl">
             <motion.h2 
-              variants={itemVariants}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.8 }}
               className="text-3xl md:text-5xl font-bold text-center mb-12 bg-gradient-to-r from-s3m-red to-purple-500 bg-clip-text text-transparent"
             >
               🌟 اللاعبون المميزون 🌟
@@ -282,7 +288,11 @@ const Home = () => {
             
             <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
               {weeklyPlayer && weeklyPlayer.profiles && (
-                <motion.div variants={itemVariants}>
+                <motion.div 
+                  initial={{ opacity: 0, x: -50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                >
                   <WeeklyPlayerCard 
                     player={{
                       id: weeklyPlayer.profiles.id,
@@ -299,7 +309,11 @@ const Home = () => {
               )}
               
               {monthlyPlayer && monthlyPlayer.profiles && (
-                <motion.div variants={itemVariants}>
+                <motion.div 
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8, delay: 0.4 }}
+                >
                   <MonthlyPlayerCard 
                     player={{
                       id: monthlyPlayer.profiles.id,
@@ -321,12 +335,16 @@ const Home = () => {
 
       {/* Team Stats Section */}
       <motion.section 
-        variants={itemVariants}
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.5 }}
         className="py-16 px-4 bg-black/50"
       >
         <div className="container mx-auto max-w-6xl">
           <motion.h2 
-            variants={itemVariants}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
             className="text-3xl md:text-5xl font-bold text-center mb-12 text-white"
           >
             🏆 إحصائيات الفريق
@@ -341,7 +359,9 @@ const Home = () => {
             ].map((stat, index) => (
               <motion.div
                 key={index}
-                variants={itemVariants}
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.7 + index * 0.1 }}
                 whileHover={{ scale: 1.05, y: -5 }}
                 className="text-center"
               >
@@ -360,24 +380,32 @@ const Home = () => {
 
       {/* Final CTA Section */}
       <motion.section 
-        variants={itemVariants}
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.8 }}
         className="py-16 px-4 text-center bg-gradient-to-r from-s3m-red/20 to-purple-600/20"
       >
         <div className="container mx-auto max-w-4xl">
           <motion.h2 
-            variants={itemVariants}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.9 }}
             className="text-3xl md:text-5xl font-bold mb-6 text-white"
           >
             🚀 هل أنت مستعد للانضمام؟
           </motion.h2>
           <motion.p 
-            variants={itemVariants}
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8, delay: 1.0 }}
             className="text-xl text-white/80 mb-8"
           >
             انضم إلى عائلة قهار وكن جزءاً من الأسطورة
           </motion.p>
           <motion.div 
-            variants={itemVariants}
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8, delay: 1.1 }}
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
             <Button 
