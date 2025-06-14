@@ -1,10 +1,14 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Trophy, Target, Gamepad2, Zap, Crown, Medal, Award } from "lucide-react";
+import { Trophy, Target, Gamepad2, Zap, Crown, Medal, Award, Star, Calendar } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
+import { motion } from "framer-motion";
+import WeeklyPlayerCard from '@/components/WeeklyPlayerCard';
+import MonthlyPlayerCard from '@/components/MonthlyPlayerCard';
 
 type LeaderboardEntry = {
   user_id: string;
@@ -51,6 +55,52 @@ const Leaderboard = () => {
       return combinedData;
     },
   });
+
+  // Fetch special players
+  const { data: specialPlayers } = useQuery({
+    queryKey: ['special-players'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('special_players')
+        .select(`
+          *,
+          profiles!special_players_user_id_fkey (
+            id,
+            username,
+            full_name,
+            avatar_url,
+            rank_title,
+            total_likes,
+            bio
+          )
+        `)
+        .eq('is_active', true);
+
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  // Fetch leaderboard scores for special players
+  const { data: leaderboardScores } = useQuery({
+    queryKey: ['leaderboard-scores'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('leaderboard_scores')
+        .select('*');
+
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const weeklyPlayer = specialPlayers?.find(p => p.type === 'weekly');
+  const monthlyPlayer = specialPlayers?.find(p => p.type === 'monthly');
+
+  // Get leaderboard data for special players
+  const getPlayerLeaderboardData = (userId: string) => {
+    return leaderboardScores?.find(score => score.user_id === userId) || null;
+  };
 
   // Real-time subscription for leaderboard updates
   useEffect(() => {
@@ -245,6 +295,83 @@ const Leaderboard = () => {
             <p className="text-lg md:text-xl text-white/90">أساطير فريق S3M</p>
           </div>
         </div>
+
+        {/* Special Players Section */}
+        {(weeklyPlayer || monthlyPlayer) && (
+          <motion.section 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="mb-16"
+          >
+            <Card className="gaming-card mb-8">
+              <CardHeader className="text-center">
+                <CardTitle className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-yellow-400 to-purple-500 bg-clip-text text-transparent flex items-center justify-center gap-3">
+                  <Star className="w-8 h-8 text-yellow-400" />
+                  اللاعبون المميزون
+                  <Star className="w-8 h-8 text-yellow-400" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-8 md:grid-cols-2 max-w-6xl mx-auto">
+                  {monthlyPlayer && monthlyPlayer.profiles && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.8, delay: 0.4 }}
+                    >
+                      <div className="text-center mb-4">
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <Crown className="w-6 h-6 text-yellow-400" />
+                          <h3 className="text-xl font-bold text-yellow-400">لاعب الشهر</h3>
+                        </div>
+                      </div>
+                      <MonthlyPlayerCard 
+                        player={{
+                          id: monthlyPlayer.profiles.id,
+                          username: monthlyPlayer.profiles.username,
+                          full_name: monthlyPlayer.profiles.full_name,
+                          avatar_url: monthlyPlayer.profiles.avatar_url,
+                          rank_title: monthlyPlayer.profiles.rank_title,
+                          total_likes: monthlyPlayer.profiles.total_likes,
+                          bio: monthlyPlayer.profiles.bio,
+                          leaderboard_scores: getPlayerLeaderboardData(monthlyPlayer.user_id)
+                        }}
+                      />
+                    </motion.div>
+                  )}
+                  
+                  {weeklyPlayer && weeklyPlayer.profiles && (
+                    <motion.div
+                      initial={{ opacity: 0, x: 50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.8, delay: 0.6 }}
+                    >
+                      <div className="text-center mb-4">
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <Calendar className="w-6 h-6 text-purple-400" />
+                          <h3 className="text-xl font-bold text-purple-400">لاعب الأسبوع</h3>
+                        </div>
+                      </div>
+                      <WeeklyPlayerCard 
+                        player={{
+                          id: weeklyPlayer.profiles.id,
+                          username: weeklyPlayer.profiles.username,
+                          full_name: weeklyPlayer.profiles.full_name,
+                          avatar_url: weeklyPlayer.profiles.avatar_url,
+                          rank_title: weeklyPlayer.profiles.rank_title,
+                          total_likes: weeklyPlayer.profiles.total_likes,
+                          bio: weeklyPlayer.profiles.bio,
+                          leaderboard_scores: getPlayerLeaderboardData(weeklyPlayer.user_id)
+                        }}
+                      />
+                    </motion.div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.section>
+        )}
 
         <div className="max-w-6xl mx-auto">
           <div className="grid gap-4 md:gap-6">

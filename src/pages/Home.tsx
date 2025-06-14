@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Users, Trophy, Target, Star, Flame, Zap, GamepadIcon, Crown, Calendar, ArrowRight, Bell, Globe, Rocket } from 'lucide-react';
@@ -74,24 +75,19 @@ const Home = () => {
     }
   });
 
-  // Fetch homepage trailer video using raw query to avoid TypeScript issues
+  // Fetch homepage trailer video - simplified approach
   const { data: trailerVideo } = useQuery({
     queryKey: ['homepage-trailer'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .rpc('get_site_setting', { setting_key: 'homepage_trailer' })
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        // If function doesn't exist, fallback to direct query
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from('site_settings' as any)
-          .select('*')
-          .eq('key', 'homepage_trailer')
-          .maybeSingle();
-        
-        if (fallbackError) return null;
-        return fallbackData;
+        .from('site_settings')
+        .select('*')
+        .eq('key', 'homepage_trailer')
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Error fetching trailer:', error);
+        return null;
       }
       return data;
     }
@@ -155,8 +151,8 @@ const Home = () => {
 
   // Get trailer video URL safely
   const getTrailerVideoUrl = () => {
-    if (!trailerVideo) return null;
-    return trailerVideo.value || null;
+    if (!trailerVideo || !trailerVideo.value) return null;
+    return trailerVideo.value;
   };
 
   return (
@@ -308,11 +304,20 @@ const Home = () => {
               <Trophy className="w-6 h-6 ml-2" />
               البطولات
             </Button>
+            
+            <Button 
+              size="lg"
+              onClick={() => navigate('/signup')}
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              <Crown className="w-6 h-6 ml-2" />
+              إنشاء حساب
+            </Button>
           </motion.div>
         </div>
       </motion.section>
 
-      {/* News Ticker Section */}
+      {/* Featured Updates Ticker Section */}
       <motion.section 
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -323,7 +328,7 @@ const Home = () => {
         <div className="relative z-10 container mx-auto px-4">
           <div className="flex items-center mb-4">
             <Bell className="w-6 h-6 text-s3m-red ml-3 animate-pulse" />
-            <h3 className="text-xl font-bold text-white">آخر الأخبار</h3>
+            <h3 className="text-xl font-bold text-white">التحديثات المميزة</h3>
             <Globe className="w-5 h-5 text-s3m-red mr-3" />
           </div>
           
@@ -495,7 +500,7 @@ const Home = () => {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.7 + index * 0.1 }}
-                  onClick={() => navigate('/players')}
+                  onClick={() => navigate('/leaderboard')}
                   className="cursor-pointer group"
                 >
                   <Card className="gaming-card hover:scale-105 transition-all duration-300 group-hover:border-s3m-red/60">
@@ -522,10 +527,10 @@ const Home = () => {
             
             <div className="text-center mt-8">
               <Button 
-                onClick={() => navigate('/players')}
+                onClick={() => navigate('/leaderboard')}
                 className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-8 py-3 rounded-xl"
               >
-                عرض جميع اللاعبين
+                عرض قائمة المتصدرين
                 <ArrowRight className="w-4 h-4 mr-2" />
               </Button>
             </div>
@@ -575,48 +580,6 @@ const Home = () => {
               </motion.div>
             ))}
           </div>
-        </div>
-      </motion.section>
-
-      {/* Final CTA Section - "إنشاء حساب" */}
-      <motion.section 
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 1.0 }}
-        className="py-16 px-4 text-center bg-black/80"
-      >
-        <div className="container mx-auto max-w-4xl">
-          <motion.h2 
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            className="text-3xl md:text-5xl font-bold mb-6 text-white"
-          >
-            🚀 هل أنت مستعد للهيمنة؟
-          </motion.h2>
-          <motion.p 
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-xl text-white/80 mb-8"
-          >
-            انضم إلى عائلة S3M وكن جزءاً من الأسطورة
-          </motion.p>
-          <motion.div 
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
-          >
-            <Button 
-              size="lg"
-              onClick={() => navigate('/signup')}
-              className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            >
-              <Crown className="w-6 h-6 ml-2" />
-              إنشاء حساب
-            </Button>
-          </motion.div>
         </div>
       </motion.section>
     </div>
