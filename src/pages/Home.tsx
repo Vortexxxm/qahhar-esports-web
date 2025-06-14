@@ -95,7 +95,7 @@ const Home = () => {
       opacity: 1,
       transition: {
         duration: 0.6,
-        ease: "easeOut"
+        ease: [0.25, 0.46, 0.45, 0.94]
       }
     }
   };
@@ -281,7 +281,7 @@ const Home = () => {
             </motion.h2>
             
             <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
-              {weeklyPlayer && (
+              {weeklyPlayer && weeklyPlayer.profiles && (
                 <motion.div variants={itemVariants}>
                   <WeeklyPlayerCard 
                     player={{
@@ -298,7 +298,7 @@ const Home = () => {
                 </motion.div>
               )}
               
-              {monthlyPlayer && (
+              {monthlyPlayer && monthlyPlayer.profiles && (
                 <motion.div variants={itemVariants}>
                   <MonthlyPlayerCard 
                     player={{
