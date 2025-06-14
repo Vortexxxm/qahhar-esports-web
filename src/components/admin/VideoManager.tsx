@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Upload, X, Play, Link, Youtube, Instagram } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -142,65 +141,41 @@ const VideoManager = () => {
   const saveVideoUrlMutation = useMutation({
     mutationFn: async (url: string) => {
       try {
-        console.log('Saving video URL:', url);
+        console.log('Starting saveVideoUrlMutation with URL:', url);
         
-        // Clear any existing file setting first
-        const { error: clearFileError } = await supabase
+        // First, let's try to use upsert instead of manual check and update
+        const { data: upsertData, error: upsertError } = await supabase
           .from('site_settings')
-          .update({ 
-            value: null,
+          .upsert({
+            key: 'homepage_trailer',
+            value: url,
+            description: 'Video URL for homepage trailer',
             updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'key'
           })
-          .eq('key', 'homepage_video_file');
+          .select();
 
-        if (clearFileError) {
-          console.error('Error clearing file setting:', clearFileError);
+        if (upsertError) {
+          console.error('Upsert error:', upsertError);
+          throw upsertError;
         }
 
-        // Check if URL record exists
-        const { data: existingRecord, error: fetchError } = await supabase
+        console.log('Upsert successful:', upsertData);
+
+        // Clear any existing file setting
+        await supabase
           .from('site_settings')
-          .select('*')
-          .eq('key', 'homepage_trailer')
-          .maybeSingle();
+          .upsert({
+            key: 'homepage_video_file',
+            value: null,
+            description: 'Uploaded video file for homepage trailer',
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'key'
+          });
 
-        if (fetchError) {
-          console.error('Error fetching existing record:', fetchError);
-          throw fetchError;
-        }
-
-        if (existingRecord) {
-          console.log('Updating existing record');
-          // Update existing record
-          const { error: updateError } = await supabase
-            .from('site_settings')
-            .update({ 
-              value: url,
-              updated_at: new Date().toISOString()
-            })
-            .eq('key', 'homepage_trailer');
-
-          if (updateError) {
-            console.error('Error updating record:', updateError);
-            throw updateError;
-          }
-        } else {
-          console.log('Inserting new record');
-          // Insert new record
-          const { error: insertError } = await supabase
-            .from('site_settings')
-            .insert({
-              key: 'homepage_trailer',
-              value: url,
-              description: 'Video URL for homepage trailer'
-            });
-
-          if (insertError) {
-            console.error('Error inserting record:', insertError);
-            throw insertError;
-          }
-        }
-
+        console.log('Video URL saved successfully');
         return url;
       } catch (error) {
         console.error('Error in saveVideoUrlMutation:', error);
@@ -208,6 +183,7 @@ const VideoManager = () => {
       }
     },
     onSuccess: () => {
+      console.log('saveVideoUrlMutation success callback');
       queryClient.invalidateQueries({ queryKey: ['homepage-video-file'] });
       queryClient.invalidateQueries({ queryKey: ['homepage-video-url'] });
       queryClient.invalidateQueries({ queryKey: ['homepage-trailer'] });
@@ -219,7 +195,7 @@ const VideoManager = () => {
       });
     },
     onError: (error: any) => {
-      console.error('Video URL save error:', error);
+      console.error('Video URL save error in onError:', error);
       toast({
         title: "خطأ في الحفظ",
         description: error.message || "حدث خطأ أثناء حفظ رابط الفيديو",
@@ -314,6 +290,8 @@ const VideoManager = () => {
   };
 
   const handleUrlSubmit = async () => {
+    console.log('handleUrlSubmit called with URL:', videoUrl);
+    
     if (!videoUrl.trim()) {
       toast({
         title: "رابط فارغ",
@@ -348,10 +326,12 @@ const VideoManager = () => {
       return;
     }
 
+    console.log('Validation passed, calling mutation');
     try {
       await saveVideoUrlMutation.mutateAsync(videoUrl);
+      console.log('Mutation completed successfully');
     } catch (error) {
-      console.error('Error submitting URL:', error);
+      console.error('Error in handleUrlSubmit:', error);
     }
   };
 
