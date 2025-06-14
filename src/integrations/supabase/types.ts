@@ -545,6 +545,14 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      set_monthly_player: {
+        Args: { player_id: string }
+        Returns: undefined
+      }
+      set_weekly_player: {
+        Args: { player_id: string }
+        Returns: undefined
+      }
       update_leaderboard_rankings: {
         Args: Record<PropertyKey, never>
         Returns: undefined

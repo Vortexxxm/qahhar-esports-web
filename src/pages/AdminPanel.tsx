@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect, useState } from "react";
@@ -170,6 +169,48 @@ const AdminPanel = () => {
     },
   });
 
+  const setWeeklyPlayerMutation = useMutation({
+    mutationFn: async (playerId: string) => {
+      const { error } = await supabase.rpc('set_weekly_player', { player_id: playerId });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['special-players'] });
+      toast({
+        title: "تم التحديث",
+        description: "تم تحديد لاعب الأسبوع بنجاح",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const setMonthlyPlayerMutation = useMutation({
+    mutationFn: async (playerId: string) => {
+      const { error } = await supabase.rpc('set_monthly_player', { player_id: playerId });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['special-players'] });
+      toast({
+        title: "تم التحديث",
+        description: "تم تحديد لاعب الشهر بنجاح",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAddPoints = (userId: string, points: number) => {
     updatePointsMutation.mutate({ userId, points });
   };
@@ -181,6 +222,14 @@ const AdminPanel = () => {
 
   const handleToggleVisibility = (userId: string, currentVisibility: boolean) => {
     toggleVisibilityMutation.mutate({ userId, visibility: !currentVisibility });
+  };
+
+  const handleSetWeeklyPlayer = (playerId: string) => {
+    setWeeklyPlayerMutation.mutate(playerId);
+  };
+
+  const handleSetMonthlyPlayer = (playerId: string) => {
+    setMonthlyPlayerMutation.mutate(playerId);
   };
 
   // Transform UserWithProfile to PlayerCardData
@@ -277,6 +326,9 @@ const AdminPanel = () => {
               <TabsTrigger value="players" className="data-[state=active]:bg-s3m-red text-xs md:text-sm px-3 py-2 whitespace-nowrap">
                 إدارة اللاعبين
               </TabsTrigger>
+              <TabsTrigger value="special" className="data-[state=active]:bg-s3m-red text-xs md:text-sm px-3 py-2 whitespace-nowrap">
+                اللاعبون المميزون
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -347,6 +399,32 @@ const AdminPanel = () => {
                       isAdmin={true}
                       onEdit={handleEditFromPlayerCard}
                       onToggleVisibility={handleToggleVisibility}
+                      onSetWeeklyPlayer={handleSetWeeklyPlayer}
+                      onSetMonthlyPlayer={handleSetMonthlyPlayer}
+                    />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="special">
+            <Card className="gaming-card">
+              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
+                <CardTitle className="text-s3m-red text-base md:text-xl">إدارة اللاعبين المميزين</CardTitle>
+              </CardHeader>
+              <CardContent className="p-2 md:p-6">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {users?.map((user) => (
+                    <PlayerCard
+                      key={user.id}
+                      player={transformToPlayerCardData(user)}
+                      cardStyle="classic"
+                      isAdmin={true}
+                      onEdit={handleEditFromPlayerCard}
+                      onToggleVisibility={handleToggleVisibility}
+                      onSetWeeklyPlayer={handleSetWeeklyPlayer}
+                      onSetMonthlyPlayer={handleSetMonthlyPlayer}
                     />
                   ))}
                 </div>

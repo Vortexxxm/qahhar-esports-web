@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Heart, Trophy, Target, Gamepad2, Star, Crown, Edit, Eye, EyeOff } from 'lucide-react';
+import { Heart, Trophy, Target, Gamepad2, Star, Crown, Edit, Eye, EyeOff, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface PlayerCardData {
@@ -26,10 +26,11 @@ interface PlayerCardData {
 
 interface PlayerCardProps {
   player: PlayerCardData;
-  cardStyle?: 'classic' | 'hero' | 'legend' | 'champion' | 'elite' | 'weekly';
+  cardStyle?: 'classic' | 'hero' | 'legend' | 'champion' | 'elite' | 'weekly' | 'monthly';
   onEdit?: (player: PlayerCardData) => void;
   onToggleVisibility?: (playerId: string, currentVisibility: boolean) => void;
   onSetWeeklyPlayer?: (playerId: string) => void;
+  onSetMonthlyPlayer?: (playerId: string) => void;
   isAdmin?: boolean;
 }
 
@@ -39,6 +40,7 @@ const PlayerCard = ({
   onEdit, 
   onToggleVisibility,
   onSetWeeklyPlayer,
+  onSetMonthlyPlayer,
   isAdmin = false 
 }: PlayerCardProps) => {
   const { user } = useAuth();
@@ -129,6 +131,14 @@ const PlayerCard = ({
           glowEffect: "shadow-yellow-500/50",
           specialEffect: "animate-pulse"
         };
+      case 'monthly':
+        return {
+          containerClass: "relative overflow-hidden rounded-3xl shadow-2xl transform hover:scale-105 transition-all duration-500 bg-gradient-to-br from-purple-400 via-purple-500 to-pink-600 border-4 border-purple-300",
+          headerGradient: "bg-gradient-to-r from-purple-600 to-pink-700",
+          accentColor: "text-purple-100",
+          glowEffect: "shadow-purple-500/50",
+          specialEffect: "animate-pulse"
+        };
       case 'hero':
         return {
           containerClass: "relative overflow-hidden rounded-3xl shadow-2xl transform hover:scale-105 transition-all duration-500 bg-gradient-to-br from-red-600 via-red-700 to-red-800 border-4 border-red-400",
@@ -183,7 +193,7 @@ const PlayerCard = ({
 
   return (
     <div className={`${styles.containerClass} ${styles.glowEffect} ${styles.specialEffect} w-full max-w-sm mx-auto`}>
-      {/* Special Effects for Weekly Card */}
+      {/* Special Effects */}
       {cardStyle === 'weekly' && (
         <>
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-300/20 to-transparent animate-pulse"></div>
@@ -196,11 +206,29 @@ const PlayerCard = ({
         </>
       )}
 
+      {cardStyle === 'monthly' && (
+        <>
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-300/20 to-transparent animate-pulse"></div>
+          <div className="absolute top-4 right-4">
+            <Calendar className="h-8 w-8 text-purple-200 animate-bounce" />
+          </div>
+          <div className="absolute top-4 left-4">
+            <Star className="h-6 w-6 text-purple-200 animate-pulse" />
+          </div>
+        </>
+      )}
+
       {/* Header */}
       <div className={`${styles.headerGradient} p-4 text-center relative`}>
         {cardStyle === 'weekly' && (
           <Badge className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-yellow-200 text-yellow-900 font-bold text-xs">
             لاعب الأسبوع ⭐
+          </Badge>
+        )}
+        
+        {cardStyle === 'monthly' && (
+          <Badge className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-purple-200 text-purple-900 font-bold text-xs">
+            لاعب الشهر 👑
           </Badge>
         )}
         
@@ -285,6 +313,18 @@ const PlayerCard = ({
                 </Button>
               )}
               
+              {onSetMonthlyPlayer && cardStyle !== 'monthly' && (
+                <Button
+                  onClick={() => onSetMonthlyPlayer(player.id)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-purple-400 hover:text-purple-300"
+                  title="تحديد كلاعب شهر"
+                >
+                  <Calendar className="h-4 w-4" />
+                </Button>
+              )}
+              
               <Button
                 onClick={() => onEdit?.(player)}
                 variant="ghost"
@@ -315,6 +355,13 @@ const PlayerCard = ({
       {cardStyle === 'weekly' && (
         <div className="bg-gradient-to-r from-yellow-600 to-orange-700 p-2 text-center">
           <p className="text-yellow-100 text-xs font-bold">⭐ متميز هذا الأسبوع ⭐</p>
+        </div>
+      )}
+
+      {/* Special Monthly Card Footer */}
+      {cardStyle === 'monthly' && (
+        <div className="bg-gradient-to-r from-purple-600 to-pink-700 p-2 text-center">
+          <p className="text-purple-100 text-xs font-bold">👑 متميز هذا الشهر 👑</p>
         </div>
       )}
     </div>
