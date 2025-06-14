@@ -22,9 +22,19 @@ interface UsersTableProps {
   onEditPlayer: (user: UserWithProfile) => void;
   onToggleRole: (userId: string, currentRole: string) => void;
   onToggleVisibility: (userId: string, currentVisibility: boolean) => void;
+  onSetWeeklyPlayer: (playerId: string) => void;
+  onSetMonthlyPlayer: (playerId: string) => void;
 }
 
-const UsersTable = ({ users, currentUserId, onEditPlayer, onToggleRole, onToggleVisibility }: UsersTableProps) => {
+const UsersTable = ({ 
+  users, 
+  currentUserId, 
+  onEditPlayer, 
+  onToggleRole, 
+  onToggleVisibility,
+  onSetWeeklyPlayer,
+  onSetMonthlyPlayer 
+}: UsersTableProps) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredUsers = users?.filter(user => {

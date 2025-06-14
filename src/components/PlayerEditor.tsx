@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Edit, Save, X, Eye, EyeOff } from "lucide-react";
+import { Edit, Save, X, Eye, EyeOff, Crown, Star } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type PlayerData = {
@@ -22,9 +22,11 @@ type PlayerData = {
 interface PlayerEditorProps {
   player: PlayerData;
   onClose: () => void;
+  onSetWeeklyPlayer: (playerId: string) => void;
+  onSetMonthlyPlayer: (playerId: string) => void;
 }
 
-const PlayerEditor = ({ player, onClose }: PlayerEditorProps) => {
+const PlayerEditor = ({ player, onClose, onSetWeeklyPlayer, onSetMonthlyPlayer }: PlayerEditorProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -239,6 +241,26 @@ const PlayerEditor = ({ player, onClose }: PlayerEditorProps) => {
                   {editData.games_played > 0 ? ((editData.wins / editData.games_played) * 100).toFixed(1) : '0.0'}%
                 </span>
               </div>
+            </div>
+          </div>
+
+          <div className="bg-black/20 p-4 rounded-lg">
+            <h4 className="text-white font-semibold mb-3">الألقاب المميزة</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Button
+                onClick={() => onSetWeeklyPlayer(player.id)}
+                className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-500 text-black font-bold"
+              >
+                <Star className="h-4 w-4 mr-2" />
+                تعيين كلاعب الأسبوع
+              </Button>
+              <Button
+                onClick={() => onSetMonthlyPlayer(player.id)}
+                className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-500 text-white font-bold"
+              >
+                <Crown className="h-4 w-4 mr-2" />
+                تعيين كلاعب الشهر
+              </Button>
             </div>
           </div>
         </div>
