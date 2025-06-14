@@ -42,18 +42,23 @@ const Home = () => {
     queryKey: ['leaderboard-preview'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('leaderboard_scores')
+        .from('profiles')
         .select(`
-          *,
-          profiles (
-            username,
-            full_name,
-            avatar_url,
-            game_id
+          id,
+          username,
+          full_name,
+          avatar_url,
+          game_id,
+          leaderboard_scores!inner (
+            points,
+            wins,
+            kills,
+            deaths,
+            visible_in_leaderboard
           )
         `)
-        .eq('visible_in_leaderboard', true)
-        .order('points', { ascending: false })
+        .eq('leaderboard_scores.visible_in_leaderboard', true)
+        .order('leaderboard_scores.points', { ascending: false })
         .limit(3);
 
       if (error) throw error;
@@ -309,10 +314,10 @@ const Home = () => {
                         #{index + 1}
                       </div>
                       <h3 className="text-lg font-bold text-white mb-1">
-                        {player.profiles?.username || 'مجهول'}
+                        {player.username || 'مجهول'}
                       </h3>
                       <p className="text-yellow-400 font-bold text-xl">
-                        {player.points.toLocaleString()} نقطة
+                        {player.leaderboard_scores?.[0]?.points?.toLocaleString() || 0} نقطة
                       </p>
                     </CardContent>
                   </Card>
