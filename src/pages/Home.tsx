@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Users, Trophy, Target, Star, Flame, Zap, GamepadIcon, Crown, Calendar, ArrowRight, Bell, Globe, Rocket } from 'lucide-react';
@@ -53,21 +54,6 @@ const Home = () => {
 
       if (error) throw error;
       return data;
-    }
-  });
-
-  // Fetch admin-selected players by directly querying profiles table
-  const { data: adminSelectedPlayers = [] } = useQuery({
-    queryKey: ['admin-selected-players'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('total_likes', { ascending: false })
-        .limit(6);
-
-      if (error) throw error;
-      return data || [];
     }
   });
 
@@ -291,91 +277,144 @@ const Home = () => {
               <Trophy className="w-6 h-6 ml-2" />
               البطولات
             </Button>
-            
-            <Button 
-              size="lg"
-              onClick={() => navigate('/signup')}
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            >
-              <Crown className="w-6 h-6 ml-2" />
-              إنشاء حساب
-            </Button>
           </motion.div>
         </div>
       </motion.section>
 
-      {/* Featured News Section - Enhanced with mobile-responsive cards */}
+      {/* Featured News Section - Only moving news from right to left */}
       {news.length > 0 && (
         <motion.section 
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="relative py-12 bg-gradient-to-br from-black/95 via-s3m-red/10 to-purple-900/20 border-y border-s3m-red/30"
+          className="relative py-16 bg-gradient-to-br from-black/95 via-s3m-red/10 to-purple-900/20 border-y border-s3m-red/30"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/5 to-purple-600/5"></div>
+          
+          {/* Floating particles for enhanced visual appeal */}
+          <div className="absolute inset-0 overflow-hidden">
+            {[...Array(15)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-1 h-1 bg-s3m-red/40 rounded-full"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                }}
+                animate={{
+                  y: [0, -10, 0],
+                  opacity: [0.2, 0.8, 0.2],
+                  scale: [1, 1.5, 1],
+                }}
+                transition={{
+                  duration: 4 + Math.random() * 2,
+                  repeat: Infinity,
+                  delay: Math.random() * 3,
+                }}
+              />
+            ))}
+          </div>
+          
           <div className="relative z-10 container mx-auto px-4">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center">
-                <Bell className="w-8 h-8 text-s3m-red ml-3 animate-pulse" />
-                <h3 className="text-2xl md:text-3xl font-bold text-white">🔥 التحديثات المميزة</h3>
-                <Globe className="w-6 h-6 text-s3m-red mr-3" />
+            <div className="flex items-center justify-center mb-12">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.6 }}
+                className="text-center"
+              >
+                <div className="flex items-center justify-center mb-4">
+                  <motion.div
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                    className="mr-4"
+                  >
+                    <Bell className="w-10 h-10 text-s3m-red" />
+                  </motion.div>
+                  <h3 className="text-3xl md:text-5xl font-black bg-gradient-to-r from-s3m-red via-red-400 to-orange-500 bg-clip-text text-transparent">
+                    التحديثات المميزة
+                  </h3>
+                  <motion.div
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="mr-4"
+                  >
+                    <Globe className="w-8 h-8 text-s3m-red" />
+                  </motion.div>
+                </div>
+                <div className="w-20 h-1 bg-gradient-to-r from-s3m-red to-orange-500 rounded-full mx-auto mb-6"></div>
+                <p className="text-gray-300 text-lg font-medium">آخر الأخبار والتطورات من عالم S3M E-Sports</p>
+              </motion.div>
+            </div>
+            
+            {/* Enhanced Moving News Cards - Right to Left only */}
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-black/50 to-gray-900/50 border border-s3m-red/30 backdrop-blur-sm">
+              <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/5 via-transparent to-purple-600/5"></div>
+              
+              <div className="relative py-8">
+                <motion.div
+                  className="flex space-x-8 rtl:space-x-reverse"
+                  animate={{ x: ["100%", "-100%"] }}
+                  transition={{
+                    duration: 40,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                  style={{ willChange: "transform" }}
+                >
+                  {/* Duplicate news for seamless loop */}
+                  {[...news, ...news, ...news].map((newsItem, index) => (
+                    <motion.div
+                      key={`${newsItem.id}-${index}`}
+                      className="flex-shrink-0 w-80 md:w-96"
+                      whileHover={{ scale: 1.05, y: -5 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="relative group">
+                        {/* Glow effect on hover */}
+                        <div className="absolute -inset-1 bg-gradient-to-r from-s3m-red/50 to-purple-600/50 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div className="relative">
+                          <NewsCard news={newsItem} />
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
               </div>
+              
+              {/* Gradient overlays for smooth fade effect */}
+              <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-black via-black/80 to-transparent z-10"></div>
+              <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-black via-black/80 to-transparent z-10"></div>
+            </div>
+            
+            {/* View All News Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="text-center mt-8"
+            >
               <Button 
                 variant="outline"
                 onClick={() => navigate('/news')}
-                className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white rounded-xl transition-all duration-300 text-sm md:text-base"
+                className="border-2 border-s3m-red text-s3m-red hover:bg-gradient-to-r hover:from-s3m-red hover:to-red-600 hover:text-white hover:border-transparent rounded-xl transition-all duration-300 text-lg px-8 py-3 font-bold shadow-lg hover:shadow-xl transform hover:scale-105"
               >
+                <Newspaper className="w-5 h-5 ml-2" />
                 جميع الأخبار
-                <ArrowRight className="w-4 h-4 mr-2" />
+                <ArrowRight className="w-5 h-5 mr-2" />
               </Button>
-            </div>
-            
-            {/* Enhanced News Cards with RTL scroll */}
-            <div className="relative overflow-hidden rounded-2xl">
-              <div className="flex space-x-6 rtl:space-x-reverse animate-scroll-right pb-4">
-                {/* Duplicate news for seamless loop */}
-                {[...news, ...news, ...news].map((newsItem, index) => (
-                  <motion.div
-                    key={`${newsItem.id}-${index}`}
-                    className="flex-shrink-0 w-80 md:w-96"
-                    initial={{ opacity: 0, x: 50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: (index % 3) * 0.1 }}
-                  >
-                    <div className="h-full">
-                      <NewsCard news={newsItem} />
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-            
-            {/* Mobile-specific news grid for better readability */}
-            <div className="md:hidden mt-8">
-              <div className="grid gap-4 sm:grid-cols-1">
-                {news.map((newsItem, index) => (
-                  <motion.div
-                    key={newsItem.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.2 }}
-                  >
-                    <NewsCard news={newsItem} />
-                  </motion.div>
-                ))}
-              </div>
-            </div>
+            </motion.div>
           </div>
         </motion.section>
       )}
 
-      {/* Dynamic Player of the Month/Week */}
+      {/* Enhanced Player of the Month/Week Section for Mobile */}
       {(weeklyPlayer || monthlyPlayer) && (
         <motion.section 
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="py-16 px-4 bg-black/50"
+          className="py-16 px-4 bg-gradient-to-br from-black/80 via-gray-900/80 to-s3m-red/20"
         >
           <div className="container mx-auto max-w-6xl">
             <motion.h2 
@@ -387,7 +426,7 @@ const Home = () => {
               🌟 اللاعبون المميزون 🌟
             </motion.h2>
             
-            <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
+            <div className="grid gap-8 md:grid-cols-2 max-w-5xl mx-auto">
               {monthlyPlayer && monthlyPlayer.profiles && (
                 <motion.div 
                   initial={{ opacity: 0, x: -50 }}
@@ -395,24 +434,26 @@ const Home = () => {
                   transition={{ duration: 0.8, delay: 0.5 }}
                   className="relative"
                 >
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                    <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold px-4 py-2 rounded-full shadow-lg">
-                      <Crown className="w-4 h-4 ml-1" />
+                  <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 z-10">
+                    <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold px-6 py-3 rounded-full shadow-lg text-base">
+                      <Crown className="w-5 h-5 ml-2" />
                       لاعب الشهر
                     </Badge>
                   </div>
-                  <MonthlyPlayerCard 
-                    player={{
-                      id: monthlyPlayer.profiles.id,
-                      username: monthlyPlayer.profiles.username,
-                      full_name: monthlyPlayer.profiles.full_name,
-                      avatar_url: monthlyPlayer.profiles.avatar_url,
-                      rank_title: monthlyPlayer.profiles.rank_title,
-                      total_likes: monthlyPlayer.profiles.total_likes,
-                      bio: monthlyPlayer.profiles.bio,
-                      leaderboard_scores: getPlayerLeaderboardData(monthlyPlayer.user_id)
-                    }}
-                  />
+                  <div className="mt-4">
+                    <MonthlyPlayerCard 
+                      player={{
+                        id: monthlyPlayer.profiles.id,
+                        username: monthlyPlayer.profiles.username,
+                        full_name: monthlyPlayer.profiles.full_name,
+                        avatar_url: monthlyPlayer.profiles.avatar_url,
+                        rank_title: monthlyPlayer.profiles.rank_title,
+                        total_likes: monthlyPlayer.profiles.total_likes,
+                        bio: monthlyPlayer.profiles.bio,
+                        leaderboard_scores: getPlayerLeaderboardData(monthlyPlayer.user_id)
+                      }}
+                    />
+                  </div>
                 </motion.div>
               )}
               
@@ -423,89 +464,28 @@ const Home = () => {
                   transition={{ duration: 0.8, delay: 0.6 }}
                   className="relative"
                 >
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                    <Badge className="bg-gradient-to-r from-blue-400 to-cyan-500 text-black font-bold px-4 py-2 rounded-full shadow-lg">
-                      <Star className="w-4 h-4 ml-1" />
+                  <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 z-10">
+                    <Badge className="bg-gradient-to-r from-blue-400 to-cyan-500 text-black font-bold px-6 py-3 rounded-full shadow-lg text-base">
+                      <Star className="w-5 h-5 ml-2" />
                       لاعب الأسبوع
                     </Badge>
                   </div>
-                  <WeeklyPlayerCard 
-                    player={{
-                      id: weeklyPlayer.profiles.id,
-                      username: weeklyPlayer.profiles.username,
-                      full_name: weeklyPlayer.profiles.full_name,
-                      avatar_url: weeklyPlayer.profiles.avatar_url,
-                      rank_title: weeklyPlayer.profiles.rank_title,
-                      total_likes: weeklyPlayer.profiles.total_likes,
-                      bio: weeklyPlayer.profiles.bio,
-                      leaderboard_scores: getPlayerLeaderboardData(weeklyPlayer.user_id)
-                    }}
-                  />
+                  <div className="mt-4">
+                    <WeeklyPlayerCard 
+                      player={{
+                        id: weeklyPlayer.profiles.id,
+                        username: weeklyPlayer.profiles.username,
+                        full_name: weeklyPlayer.profiles.full_name,
+                        avatar_url: weeklyPlayer.profiles.avatar_url,
+                        rank_title: weeklyPlayer.profiles.rank_title,
+                        total_likes: weeklyPlayer.profiles.total_likes,
+                        bio: weeklyPlayer.profiles.bio,
+                        leaderboard_scores: getPlayerLeaderboardData(weeklyPlayer.user_id)
+                      }}
+                    />
+                  </div>
                 </motion.div>
               )}
-            </div>
-          </div>
-        </motion.section>
-      )}
-
-      {/* Admin-Selected Players Preview Section */}
-      {adminSelectedPlayers.length > 0 && (
-        <motion.section 
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="py-16 px-4"
-        >
-          <div className="container mx-auto max-w-7xl">
-            <motion.h2 
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.8 }}
-              className="text-3xl md:text-5xl font-bold text-center mb-12 text-white"
-            >
-              💪 محاربونا
-            </motion.h2>
-            
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-              {adminSelectedPlayers.map((player, index) => (
-                <motion.div
-                  key={player.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.7 + index * 0.1 }}
-                  onClick={() => navigate('/leaderboard')}
-                  className="cursor-pointer group"
-                >
-                  <Card className="gaming-card hover:scale-105 transition-all duration-300 group-hover:border-s3m-red/60">
-                    <CardContent className="p-4 text-center">
-                      <div className="relative mb-4">
-                        <img 
-                          src={player.avatar_url || `https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=150&q=80`}
-                          alt={player.username}
-                          className="w-16 h-16 rounded-full mx-auto object-cover border-2 border-s3m-red/30 group-hover:border-s3m-red transition-colors"
-                        />
-                        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-black"></div>
-                      </div>
-                      <h3 className="text-white font-bold text-sm mb-1 truncate">{player.username}</h3>
-                      <p className="text-xs text-gray-400">{player.rank_title || 'مبتدئ'}</p>
-                      <div className="flex items-center justify-center mt-2">
-                        <Star className="w-3 h-3 text-yellow-400 ml-1" />
-                        <span className="text-xs text-white">{player.total_likes || 0}</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-            
-            <div className="text-center mt-8">
-              <Button 
-                onClick={() => navigate('/leaderboard')}
-                className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-8 py-3 rounded-xl"
-              >
-                عرض قائمة المتصدرين
-                <ArrowRight className="w-4 h-4 mr-2" />
-              </Button>
             </div>
           </div>
         </motion.section>

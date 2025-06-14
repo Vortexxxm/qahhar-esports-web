@@ -87,7 +87,7 @@
     }
   }
   
-  /* Marquee animation for news ticker */
+  /* Enhanced marquee animation for news ticker */
   @keyframes marquee {
     0% {
       transform: translateX(100%);
@@ -105,6 +105,27 @@
   @media (max-width: 768px) {
     .animate-marquee {
       animation: marquee 20s linear infinite;
+    }
+  }
+  
+  /* Smooth continuous news scroll */
+  @keyframes continuous-scroll {
+    0% {
+      transform: translateX(100vw);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+  
+  .animate-continuous-scroll {
+    animation: continuous-scroll 40s linear infinite;
+  }
+  
+  /* Enhanced mobile continuous scroll */
+  @media (max-width: 768px) {
+    .animate-continuous-scroll {
+      animation: continuous-scroll 30s linear infinite;
     }
   }
 }
@@ -146,7 +167,7 @@
   transition: all 0.3s ease;
 }
 
-/* News card enhancements */
+/* Enhanced news card animations */
 @keyframes news-glow {
   0%, 100% {
     box-shadow: 0 0 5px rgba(239, 68, 68, 0.3);
@@ -160,7 +181,7 @@
   animation: news-glow 3s ease-in-out infinite;
 }
 
-/* Mobile-specific improvements */
+/* Enhanced mobile improvements */
 @media (max-width: 768px) {
   .gaming-card {
     @apply shadow-lg;
@@ -169,4 +190,34 @@
   .news-section-mobile {
     @apply px-2;
   }
+  
+  /* Enhanced mobile player cards */
+  .mobile-player-card {
+    @apply p-4 rounded-2xl bg-gradient-to-br from-gray-900/90 to-black/90 border border-s3m-red/30 shadow-xl;
+  }
+  
+  /* Mobile-optimized news cards */
+  .mobile-news-card {
+    @apply transform-gpu will-change-transform;
+  }
+}
+
+/* Performance optimizations */
+.will-change-transform {
+  will-change: transform;
+}
+
+/* Smooth hardware acceleration */
+.transform-gpu {
+  transform: translateZ(0);
+}
+
+/* Enhanced gradient backgrounds */
+.bg-enhanced-gradient {
+  background: linear-gradient(135deg, 
+    rgba(239, 68, 68, 0.1) 0%, 
+    rgba(147, 51, 234, 0.05) 25%, 
+    rgba(0, 0, 0, 0.8) 50%, 
+    rgba(239, 68, 68, 0.05) 75%, 
+    rgba(0, 0, 0, 0.9) 100%);
 }

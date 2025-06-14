@@ -70,6 +70,7 @@ const MobileNavigation = () => {
     { path: '/tournaments', label: 'البطولات', icon: Crown },
     { path: '/team', label: 'الفريق', icon: Users },
     { path: '/news', label: 'الأخبار', icon: Newspaper },
+    { path: '/join-us', label: 'انضم إلينا', icon: Users },
   ];
 
   return (
@@ -234,12 +235,6 @@ const MobileNavigation = () => {
                       className="w-full justify-center border-gray-600/50 text-gray-300 hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-600 hover:text-white rounded-xl py-3 transition-all duration-300"
                     >
                       دخول
-                    </Button>
-                    <Button
-                      onClick={() => { navigate('/signup'); closeMenu(); }}
-                      className="w-full justify-center bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl py-3 shadow-lg shadow-s3m-red/30 transition-all duration-300"
-                    >
-                      إنشاء حساب
                     </Button>
                   </div>
                 )}
