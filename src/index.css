@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700;800;900&display=swap');
 
@@ -67,12 +66,12 @@
       transform: translateX(0);
     }
     100% {
-      transform: translateX(-16.666%);
+      transform: translateX(-12.5%);
     }
   }
   
   .animate-seamless-news-scroll {
-    animation: seamless-news-scroll 80s linear infinite;
+    animation: seamless-news-scroll 120s linear infinite;
   }
   
   /* Ultra-smooth continuous news flow */
@@ -81,22 +80,44 @@
       transform: translateX(0);
     }
     to {
-      transform: translateX(-16.666%);
+      transform: translateX(-12.5%);
     }
   }
   
   .animate-ultra-smooth-news-flow {
-    animation: ultra-smooth-news-flow 80s linear infinite;
+    animation: ultra-smooth-news-flow 120s linear infinite;
   }
   
   /* Mobile-optimized seamless scroll */
   @media (max-width: 768px) {
     .animate-seamless-news-scroll {
-      animation: seamless-news-scroll 70s linear infinite;
+      animation: seamless-news-scroll 100s linear infinite;
     }
     
     .animate-ultra-smooth-news-flow {
-      animation: ultra-smooth-news-flow 70s linear infinite;
+      animation: ultra-smooth-news-flow 100s linear infinite;
+    }
+    
+    /* تحسينات خاصة للهواتف لضمان وضوح الأخبار */
+    .mobile-news-visibility-enhanced {
+      min-height: 280px;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+    
+    .mobile-news-card-enhanced {
+      min-width: 288px;
+      max-width: 320px;
+      opacity: 1;
+      visibility: visible;
+      will-change: transform;
+      backface-visibility: hidden;
+    }
+    
+    .mobile-news-text-clarity {
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
   }
   
@@ -232,6 +253,7 @@
   .mobile-news-container {
     @apply relative overflow-hidden rounded-xl border border-s3m-red/40 shadow-xl;
     background: linear-gradient(135deg, rgba(17, 24, 39, 0.96), rgba(0, 0, 0, 0.96));
+    min-height: 280px;
   }
 }
 
@@ -327,17 +349,38 @@
   transition: all 0.2s ease;
 }
 
-/* Enhanced mobile news scroll performance */
+/* Enhanced mobile news scroll performance with better visibility */
 @media (max-width: 768px) {
   .mobile-news-scroll-container {
     will-change: transform;
     backface-visibility: hidden;
     perspective: 1000px;
     transform: translateZ(0);
+    min-height: 280px;
+    opacity: 1;
   }
   
   .mobile-news-item {
     @apply transform-gpu will-change-transform;
+    opacity: 1 !important;
+    visibility: visible !important;
+    min-width: 288px;
+    flex-shrink: 0;
+  }
+  
+  /* تحسين وضوح النص في الهواتف */
+  .mobile-news-text {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* ضمان استمرارية الأخبار بدون فراغات */
+  .mobile-news-continuous {
+    display: flex;
+    gap: 1rem;
+    width: max-content;
+    min-width: 100%;
   }
 }
 
