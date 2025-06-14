@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,7 +13,7 @@ import { Separator } from "@/components/ui/separator";
 
 const Login = () => {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -31,10 +30,26 @@ const Login = () => {
   });
   const [resetEmail, setResetEmail] = useState("");
 
-  // Redirect if already logged in
-  if (user) {
-    navigate('/');
-    return null;
+  // Enhanced redirect logic for authenticated users
+  useEffect(() => {
+    if (user && !loading) {
+      // Give a moment for profile initialization
+      setTimeout(() => {
+        navigate('/', { replace: true });
+      }, 500);
+    }
+  }, [user, loading, navigate]);
+
+  // Don't show login form if user is logged in
+  if (user && !loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-white text-xl mb-4">جاري التوجيه...</div>
+          <div className="text-white/60">سيتم توجيهك للصفحة الرئيسية</div>
+        </div>
+      </div>
+    );
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -137,11 +152,17 @@ const Login = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`
+          redirectTo: `${window.location.origin}/`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
         }
       });
 
       if (error) throw error;
+      
+      // Don't show loading toast as the redirect will happen
     } catch (error: any) {
       toast({
         title: "خطأ في تسجيل الدخول",
@@ -247,7 +268,7 @@ const Login = () => {
                           <path d="M12,21.3c-3.72,0-6.98-1-9-2.6l3.8-2.77C8.21,16.79,10.03,17.5,12,17.5c1.97,0,3.79-0.71,5.2-1.88l3.8,2.77C18.98,20.3,15.72,21.3,12,21.3z" fill="#FBBC05"></path>
                         </g>
                       </svg>
-                      <span>تسجيل الدخول باستخدام جوجل</span>
+                      <span>{isLoading ? "جاري التوجيه..." : "تسجيل الدخول باستخدام جوجل"}</span>
                     </Button>
 
                     <div className="relative my-6">
@@ -341,7 +362,7 @@ const Login = () => {
                           <path d="M12,21.3c-3.72,0-6.98-1-9-2.6l3.8-2.77C8.21,16.79,10.03,17.5,12,17.5c1.97,0,3.79-0.71,5.2-1.88l3.8,2.77C18.98,20.3,15.72,21.3,12,21.3z" fill="#FBBC05"></path>
                         </g>
                       </svg>
-                      <span>التسجيل باستخدام جوجل</span>
+                      <span>{isLoading ? "جاري التوجيه..." : "التسجيل باستخدام جوجل"}</span>
                     </Button>
 
                     <div className="relative my-6">

@@ -58,8 +58,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Function to initialize user profile
-  const initializeUserProfile = async (userId: string, userData?: any) => {
+  // Function to initialize user profile with Google Auth support
+  const initializeUserProfile = async (userId: string, userData?: any, isGoogleAuth = false) => {
     try {
       // Check if profile exists
       const { data: existingProfile } = await supabase
@@ -69,13 +69,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .single();
 
       if (!existingProfile) {
+        // Extract name from Google user data
+        let username = 'مستخدم';
+        let fullName = '';
+        
+        if (isGoogleAuth && user?.user_metadata) {
+          username = user.user_metadata.name?.split(' ')[0] || user.user_metadata.email?.split('@')[0] || 'مستخدم';
+          fullName = user.user_metadata.name || user.user_metadata.full_name || '';
+        } else if (userData) {
+          username = userData.username || user?.email?.split('@')[0] || 'مستخدم';
+          fullName = userData.full_name || '';
+        }
+
         // Create new profile
         const { error: profileError } = await supabase
           .from('profiles')
           .insert({
             id: userId,
-            username: userData?.username || user?.email?.split('@')[0] || 'مستخدم',
-            full_name: userData?.full_name || '',
+            username: username,
+            full_name: fullName,
             rank_title: 'Rookie',
             total_likes: 0,
             activity_score: 0,
@@ -113,6 +125,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           });
 
         if (roleError) throw roleError;
+
+        // Show welcome message for new Google users
+        if (isGoogleAuth) {
+          toast({
+            title: "مرحباً بك في S3M!",
+            description: "تم إنشاء حسابك بنجاح باستخدام Google",
+          });
+        }
       }
     } catch (error) {
       console.error('Error initializing user profile:', error);
@@ -132,12 +152,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          // Check if this is a Google Auth sign-in
+          const isGoogleAuth = session.user.app_metadata?.provider === 'google';
+          
           // Track user activity and fetch data
           setTimeout(async () => {
             if (mounted) {
               await Promise.all([
                 fetchUserRole(session.user.id),
-                initializeUserProfile(session.user.id),
+                initializeUserProfile(session.user.id, undefined, isGoogleAuth),
                 trackUserActivity(session.user.id)
               ]);
               // Force invalidate all queries to refresh data
@@ -167,9 +190,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          const isGoogleAuth = session.user.app_metadata?.provider === 'google';
           await Promise.all([
             fetchUserRole(session.user.id),
-            initializeUserProfile(session.user.id),
+            initializeUserProfile(session.user.id, undefined, isGoogleAuth),
             trackUserActivity(session.user.id)
           ]);
           // Ensure queries are fresh
@@ -189,7 +213,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [queryClient]);
+  }, [queryClient, toast, user]);
 
   const signUp = async (email: string, password: string, userData: any) => {
     try {
