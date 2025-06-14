@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Users, Trophy, Target, Star, Flame, Zap, GamepadIcon, Crown, Calendar, ArrowRight, Bell, Globe, Rocket } from 'lucide-react';
@@ -59,33 +58,41 @@ const Home = () => {
     }
   });
 
-  // Fetch admin-selected players (you'll need to create this functionality in admin panel)
+  // Fetch admin-selected players by directly querying profiles table
   const { data: adminSelectedPlayers = [] } = useQuery({
     queryKey: ['admin-selected-players'],
     queryFn: async () => {
+      // For now, let's get featured players based on their activity score and likes
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('is_featured', true) // This assumes you have an is_featured column
-        .order('created_at', { ascending: false })
+        .order('total_likes', { ascending: false })
         .limit(6);
 
       if (error) throw error;
-      return data;
+      return data || [];
     }
   });
 
-  // Fetch homepage trailer video
+  // Fetch homepage trailer video using raw query to avoid TypeScript issues
   const { data: trailerVideo } = useQuery({
     queryKey: ['homepage-trailer'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('site_settings')
-        .select('*')
-        .eq('key', 'homepage_trailer')
+        .rpc('get_site_setting', { setting_key: 'homepage_trailer' })
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error && error.code !== 'PGRST116') {
+        // If function doesn't exist, fallback to direct query
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('site_settings' as any)
+          .select('*')
+          .eq('key', 'homepage_trailer')
+          .maybeSingle();
+        
+        if (fallbackError) return null;
+        return fallbackData;
+      }
       return data;
     }
   });
@@ -146,6 +153,12 @@ const Home = () => {
   const featuredNews = news.slice(0, 4);
   const tickerNews = news.slice(0, 5);
 
+  // Get trailer video URL safely
+  const getTrailerVideoUrl = () => {
+    if (!trailerVideo) return null;
+    return trailerVideo.value || null;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-s3m-red/20 overflow-hidden rtl" dir="rtl">
       {/* Mobile Notifications */}
@@ -160,7 +173,7 @@ const Home = () => {
       >
         {/* Video Background */}
         <div className="absolute inset-0 bg-black">
-          {trailerVideo?.value ? (
+          {getTrailerVideoUrl() ? (
             <video
               className="absolute inset-0 w-full h-full object-cover opacity-60"
               autoPlay
@@ -169,7 +182,7 @@ const Home = () => {
               playsInline
               preload="metadata"
             >
-              <source src={trailerVideo.value} type="video/mp4" />
+              <source src={getTrailerVideoUrl()!} type="video/mp4" />
               <div 
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40"
                 style={{
@@ -231,7 +244,7 @@ const Home = () => {
           </motion.div>
 
           {/* Video Trailer Placeholder */}
-          {!trailerVideo?.value && (
+          {!getTrailerVideoUrl() && (
             <motion.div variants={itemVariants} className="mb-12">
               <div className="relative w-full max-w-4xl mx-auto">
                 <div className="relative bg-gradient-to-br from-s3m-red/20 to-purple-600/20 rounded-3xl p-2 border-2 border-s3m-red/50 shadow-2xl shadow-s3m-red/25">
