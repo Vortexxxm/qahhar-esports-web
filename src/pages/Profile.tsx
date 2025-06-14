@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Trophy, Target, Users, Gamepad2, Edit, Phone, User, Mail, Upload, Save, X, AlertCircle, Heart, Star, Crown, Award } from "lucide-react";
+import { Loader2, Trophy, Target, Users, Gamepad2, Edit, Phone, User, Mail, Upload, Save, X, AlertCircle, Heart, Star, Crown, Award, Camera, ImageIcon } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const Profile = () => {
@@ -294,14 +293,28 @@ const Profile = () => {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
+      // Check file size (100MB = 100 * 1024 * 1024 bytes)
+      const maxSize = 100 * 1024 * 1024;
+      if (file.size > maxSize) {
         toast({
-          title: "حجم الملف كبير",
-          description: "يجب أن يكون حجم الصورة أقل من 2 ميجابايت",
+          title: "حجم الملف كبير جداً",
+          description: "يجب أن يكون حجم الصورة أقل من 100 ميجابايت",
           variant: "destructive",
         });
         return;
       }
+
+      // Check file type (images and GIFs)
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: "نوع الملف غير مدعوم",
+          description: "يرجى اختيار صورة بصيغة JPG, PNG, GIF أو WebP",
+          variant: "destructive",
+        });
+        return;
+      }
+
       uploadAvatarMutation.mutate(file);
     }
   };
@@ -430,7 +443,7 @@ const Profile = () => {
           </Card>
         )}
 
-        {/* Enhanced Header Section with Likes */}
+        {/* Enhanced Header Section with Avatar Upload */}
         <div className="relative w-full mb-8">
           <div 
             className="h-64 md:h-80 w-full rounded-2xl bg-cover bg-center relative overflow-hidden shadow-2xl"
@@ -442,35 +455,71 @@ const Profile = () => {
             <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
               <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
                 <div className="flex flex-col md:flex-row md:items-end space-y-4 md:space-y-0 md:space-x-8 md:space-x-reverse">
-                  <div className="relative">
-                    <Avatar className="w-24 h-24 md:w-32 md:h-32 border-4 border-white/30 shadow-2xl backdrop-blur-sm">
-                      <AvatarImage 
-                        src={getAvatarUrl() || ""} 
-                        key={getAvatarUrl() || 'no-avatar'}
-                        onError={(e) => {
-                          console.error('Avatar failed to load:', e);
-                        }}
-                      />
-                      <AvatarFallback className="bg-s3m-red text-white text-3xl">
-                        {(profile.username || profile.full_name || 'U').slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <label htmlFor="avatar-upload" className="absolute -bottom-2 -right-2 bg-s3m-red rounded-full p-3 cursor-pointer hover:bg-red-600 transition-all duration-200 shadow-lg">
+                  
+                  {/* Enhanced Avatar Section */}
+                  <div className="relative group">
+                    <div className="relative">
+                      <Avatar className="w-24 h-24 md:w-32 md:h-32 border-4 border-white/30 shadow-2xl backdrop-blur-sm ring-4 ring-s3m-red/20">
+                        <AvatarImage 
+                          src={getAvatarUrl() || ""} 
+                          key={getAvatarUrl() || 'no-avatar'}
+                          className="object-cover"
+                          onError={(e) => {
+                            console.error('Avatar failed to load:', e);
+                          }}
+                        />
+                        <AvatarFallback className="bg-gradient-to-br from-s3m-red to-red-600 text-white text-2xl md:text-3xl font-bold">
+                          {(profile.username || profile.full_name || 'U').slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      
+                      {/* Upload Overlay */}
+                      <div className="absolute inset-0 bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+                        <div className="text-center">
+                          <Camera className="h-6 w-6 text-white mx-auto mb-1" />
+                          <p className="text-xs text-white font-medium">تغيير الصورة</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Upload Button */}
+                    <label 
+                      htmlFor="avatar-upload" 
+                      className="absolute -bottom-2 -right-2 bg-gradient-to-r from-s3m-red to-red-600 rounded-full p-3 cursor-pointer hover:from-red-600 hover:to-s3m-red transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-110"
+                    >
                       {uploading ? (
                         <Loader2 className="h-5 w-5 text-white animate-spin" />
                       ) : (
                         <Upload className="h-5 w-5 text-white" />
                       )}
                     </label>
+                    
                     <input
                       id="avatar-upload"
                       type="file"
-                      accept="image/*"
+                      accept="image/*,.gif"
                       className="hidden"
                       onChange={handleFileUpload}
                       disabled={uploading}
                     />
+                    
+                    {/* Upload Instructions */}
+                    <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-black/80 backdrop-blur-sm rounded-lg px-3 py-2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-10">
+                      <div className="text-center">
+                        <div className="flex items-center justify-center gap-2 mb-1">
+                          <ImageIcon className="h-4 w-4 text-s3m-red" />
+                          <span className="text-xs text-white font-medium">رفع صورة شخصية</span>
+                        </div>
+                        <p className="text-xs text-white/70">
+                          JPG, PNG, GIF, WebP
+                        </p>
+                        <p className="text-xs text-s3m-red font-medium">
+                          حتى 100 ميجابايت
+                        </p>
+                      </div>
+                    </div>
                   </div>
+
                   <div className="text-white">
                     <h1 className="text-3xl md:text-4xl font-bold mb-2 drop-shadow-lg">
                       {profile.username || 'مستخدم جديد'}
