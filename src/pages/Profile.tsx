@@ -443,7 +443,7 @@ const Profile = () => {
           </Card>
         )}
 
-        {/* Enhanced Header Section with Avatar Upload */}
+        {/* Enhanced Header Section with Mobile-Optimized Avatar Upload */}
         <div className="relative w-full mb-8">
           <div 
             className="h-64 md:h-80 w-full rounded-2xl bg-cover bg-center relative overflow-hidden shadow-2xl"
@@ -452,14 +452,14 @@ const Profile = () => {
             }}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-s3m-red/40 via-transparent to-black/60" />
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-              <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-                <div className="flex flex-col md:flex-row md:items-end space-y-4 md:space-y-0 md:space-x-8 md:space-x-reverse">
+            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 lg:p-8">
+              <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 md:gap-6">
+                <div className="flex flex-col md:flex-row md:items-end space-y-4 md:space-y-0 md:space-x-6 md:space-x-reverse">
                   
-                  {/* Enhanced Avatar Section */}
+                  {/* Mobile-Optimized Avatar Section */}
                   <div className="relative group">
                     <div className="relative">
-                      <Avatar className="w-24 h-24 md:w-32 md:h-32 border-4 border-white/30 shadow-2xl backdrop-blur-sm ring-4 ring-s3m-red/20">
+                      <Avatar className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 border-4 border-white/30 shadow-2xl backdrop-blur-sm ring-4 ring-s3m-red/20">
                         <AvatarImage 
                           src={getAvatarUrl() || ""} 
                           key={getAvatarUrl() || 'no-avatar'}
@@ -468,29 +468,29 @@ const Profile = () => {
                             console.error('Avatar failed to load:', e);
                           }}
                         />
-                        <AvatarFallback className="bg-gradient-to-br from-s3m-red to-red-600 text-white text-2xl md:text-3xl font-bold">
+                        <AvatarFallback className="bg-gradient-to-br from-s3m-red to-red-600 text-white text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
                           {(profile.username || profile.full_name || 'U').slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       
-                      {/* Upload Overlay */}
+                      {/* Mobile-Friendly Upload Overlay */}
                       <div className="absolute inset-0 bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
                         <div className="text-center">
-                          <Camera className="h-6 w-6 text-white mx-auto mb-1" />
-                          <p className="text-xs text-white font-medium">تغيير الصورة</p>
+                          <Camera className="h-5 w-5 sm:h-6 sm:w-6 text-white mx-auto mb-1" />
+                          <p className="text-xs text-white font-medium">تغيير</p>
                         </div>
                       </div>
                     </div>
                     
-                    {/* Upload Button */}
+                    {/* Mobile-Optimized Upload Button */}
                     <label 
                       htmlFor="avatar-upload" 
-                      className="absolute -bottom-2 -right-2 bg-gradient-to-r from-s3m-red to-red-600 rounded-full p-3 cursor-pointer hover:from-red-600 hover:to-s3m-red transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-110"
+                      className="absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2 bg-gradient-to-r from-s3m-red to-red-600 rounded-full p-2 sm:p-3 cursor-pointer hover:from-red-600 hover:to-s3m-red transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-110 active:scale-95"
                     >
                       {uploading ? (
-                        <Loader2 className="h-5 w-5 text-white animate-spin" />
+                        <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 text-white animate-spin" />
                       ) : (
-                        <Upload className="h-5 w-5 text-white" />
+                        <Upload className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                       )}
                     </label>
                     
@@ -503,12 +503,12 @@ const Profile = () => {
                       disabled={uploading}
                     />
                     
-                    {/* Upload Instructions */}
-                    <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-black/80 backdrop-blur-sm rounded-lg px-3 py-2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-10">
+                    {/* Mobile-Friendly Upload Instructions */}
+                    <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-black/90 backdrop-blur-sm rounded-lg px-3 py-2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-10 min-w-max">
                       <div className="text-center">
                         <div className="flex items-center justify-center gap-2 mb-1">
-                          <ImageIcon className="h-4 w-4 text-s3m-red" />
-                          <span className="text-xs text-white font-medium">رفع صورة شخصية</span>
+                          <ImageIcon className="h-3 w-3 sm:h-4 sm:w-4 text-s3m-red" />
+                          <span className="text-xs text-white font-medium">رفع صورة</span>
                         </div>
                         <p className="text-xs text-white/70">
                           JPG, PNG, GIF, WebP
@@ -521,59 +521,59 @@ const Profile = () => {
                   </div>
 
                   <div className="text-white">
-                    <h1 className="text-3xl md:text-4xl font-bold mb-2 drop-shadow-lg">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 drop-shadow-lg">
                       {profile.username || 'مستخدم جديد'}
                     </h1>
-                    <p className="text-lg md:text-xl opacity-90 mb-3 drop-shadow">
+                    <p className="text-base sm:text-lg md:text-xl opacity-90 mb-3 drop-shadow">
                       {profile.full_name || 'مرحباً بك في فريق S3M'}
                     </p>
-                    <div className="flex flex-wrap gap-3">
-                      <Badge className="bg-gradient-to-r from-s3m-red to-red-600 text-white px-4 py-2 text-sm font-bold shadow-lg">
-                        <Trophy className="h-4 w-4 mr-2" />
+                    <div className="flex flex-wrap gap-2 sm:gap-3">
+                      <Badge className="bg-gradient-to-r from-s3m-red to-red-600 text-white px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold shadow-lg">
+                        <Trophy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                         {stats.points?.toLocaleString() || 0} نقطة
                       </Badge>
-                      <Badge className="bg-gradient-to-r from-pink-500 to-red-500 text-white px-4 py-2 text-sm font-bold shadow-lg">
-                        <Heart className="h-4 w-4 mr-2" />
+                      <Badge className="bg-gradient-to-r from-pink-500 to-red-500 text-white px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold shadow-lg">
+                        <Heart className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                         {profile.total_likes || 0} إعجاب
                       </Badge>
                       {stats.rank_position && (
-                        <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-2 text-sm font-bold shadow-lg">
-                          <Crown className="h-4 w-4 mr-2" />
+                        <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold shadow-lg">
+                          <Crown className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                           #{stats.rank_position}
                         </Badge>
                       )}
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex gap-2 sm:gap-3">
                   {isEditing ? (
                     <>
                       <Button
                         onClick={handleSave}
                         disabled={updateProfileMutation.isPending}
-                        className="bg-green-600 hover:bg-green-700 text-white shadow-lg"
+                        className="bg-green-600 hover:bg-green-700 text-white shadow-lg text-xs sm:text-sm px-3 sm:px-4 py-1 sm:py-2"
                         size="sm"
                       >
-                        <Save className="h-4 w-4 mr-2" />
+                        <Save className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                         {updateProfileMutation.isPending ? "جاري الحفظ..." : "حفظ"}
                       </Button>
                       <Button
                         onClick={() => setIsEditing(false)}
                         variant="outline"
-                        className="border-white/30 text-white hover:bg-white/10 shadow-lg backdrop-blur-sm"
+                        className="border-white/30 text-white hover:bg-white/10 shadow-lg backdrop-blur-sm text-xs sm:text-sm px-3 sm:px-4 py-1 sm:py-2"
                         size="sm"
                       >
-                        <X className="h-4 w-4 mr-2" />
+                        <X className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                         إلغاء
                       </Button>
                     </>
                   ) : (
                     <Button
                       onClick={() => setIsEditing(true)}
-                      className="bg-white/20 backdrop-blur-md text-white border border-white/30 hover:bg-white/30 shadow-lg"
+                      className="bg-white/20 backdrop-blur-md text-white border border-white/30 hover:bg-white/30 shadow-lg text-xs sm:text-sm px-3 sm:px-4 py-1 sm:py-2"
                       size="sm"
                     >
-                      <Edit className="h-4 w-4 mr-2" />
+                      <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                       تعديل
                     </Button>
                   )}
