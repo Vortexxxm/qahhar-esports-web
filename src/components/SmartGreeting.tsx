@@ -4,7 +4,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Moon, Star, Trophy, Crown, Zap } from 'lucide-react';
+import { Moon, Star, Trophy, Crown, Zap, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface UserActivity {
   last_login: string;
@@ -28,6 +30,7 @@ const SmartGreeting = () => {
     bgGradient: string;
     textColor: string;
   } | null>(null);
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     if (!user) return;
@@ -134,31 +137,56 @@ const SmartGreeting = () => {
     };
   };
 
-  if (!greetingData || !user) return null;
+  const handleDismiss = () => {
+    setIsVisible(false);
+  };
+
+  if (!greetingData || !user || !isVisible) return null;
 
   return (
-    <Card className={`mb-6 border-none ${greetingData.bgGradient} backdrop-blur-sm relative overflow-hidden`}>
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 rounded-full bg-black/20">
-              {greetingData.icon}
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0, y: -20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -20, scale: 0.95 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Card className={`mb-6 border-none ${greetingData.bgGradient} backdrop-blur-sm relative overflow-hidden shadow-lg`}>
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
+          <CardContent className="p-4 relative">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3 rtl:space-x-reverse flex-1">
+                <motion.div 
+                  className="p-3 rounded-full bg-black/20"
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {greetingData.icon}
+                </motion.div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-base font-semibold ${greetingData.textColor} mb-1 leading-tight`}>
+                    {greetingData.message}
+                  </p>
+                  {greetingData.badge && (
+                    <Badge className="bg-gradient-to-r from-s3m-red to-red-600 text-white text-xs">
+                      {greetingData.badge}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              <Button
+                onClick={handleDismiss}
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-white/20 rounded-full transition-all duration-200 flex-shrink-0"
+              >
+                <X className="w-4 h-4" />
+              </Button>
             </div>
-            <div>
-              <p className={`text-lg font-semibold ${greetingData.textColor} mb-1`}>
-                {greetingData.message}
-              </p>
-              {greetingData.badge && (
-                <Badge className="bg-gradient-to-r from-s3m-red to-red-600 text-white">
-                  {greetingData.badge}
-                </Badge>
-              )}
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </AnimatePresence>
   );
 };
 

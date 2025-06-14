@@ -16,7 +16,6 @@ import NewsCard from '@/components/NewsCard';
 const Home = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
 
   // Fetch latest news with images
   const { data: news = [] } = useQuery({
@@ -26,7 +25,7 @@ const Home = () => {
         .from('news')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(3); // Only 3 cards as requested
+        .limit(3);
       
       if (error) throw error;
       return data;
@@ -62,7 +61,6 @@ const Home = () => {
   const { data: adminSelectedPlayers = [] } = useQuery({
     queryKey: ['admin-selected-players'],
     queryFn: async () => {
-      // For now, let's get featured players based on their activity score and likes
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -78,7 +76,6 @@ const Home = () => {
   const { data: trailerVideo } = useQuery({
     queryKey: ['homepage-trailer'],
     queryFn: async () => {
-      // First check for uploaded video file
       const { data: videoFile, error: videoError } = await supabase
         .from('site_settings')
         .select('*')
@@ -86,14 +83,12 @@ const Home = () => {
         .maybeSingle();
       
       if (videoFile && videoFile.value) {
-        // Get the public URL for the uploaded video
         const { data: urlData } = supabase.storage
           .from('admin-videos')
           .getPublicUrl(videoFile.value);
         return { type: 'file', url: urlData.publicUrl };
       }
 
-      // Fallback to URL setting
       const { data: urlSetting, error: urlError } = await supabase
         .from('site_settings')
         .select('*')
@@ -124,20 +119,9 @@ const Home = () => {
   const weeklyPlayer = specialPlayers?.find(p => p.type === 'weekly');
   const monthlyPlayer = specialPlayers?.find(p => p.type === 'monthly');
 
-  // Get leaderboard data for special players
   const getPlayerLeaderboardData = (userId: string) => {
     return leaderboardScores?.find(score => score.user_id === userId) || null;
   };
-
-  // Auto-scroll news ticker - only for 3 news items moving right to left
-  useEffect(() => {
-    if (news.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentNewsIndex((prev) => (prev + 1) % news.length);
-      }, 4000);
-      return () => clearInterval(interval);
-    }
-  }, [news.length]);
 
   // Animation variants
   const containerVariants = {
@@ -161,7 +145,6 @@ const Home = () => {
     }
   };
 
-  // Get trailer video URL safely
   const getTrailerVideoUrl = () => {
     return trailerVideo?.url || null;
   };
@@ -230,7 +213,6 @@ const Home = () => {
         </div>
 
         <div className="relative z-10 text-center px-4 max-w-6xl mx-auto">
-          {/* Main Title in Arabic */}
           <motion.div variants={itemVariants} className="mb-8">
             <h1 className="text-4xl md:text-8xl font-black mb-6 bg-gradient-to-r from-s3m-red via-red-400 to-orange-500 bg-clip-text text-transparent">
               إطلاق القوة
@@ -247,7 +229,6 @@ const Home = () => {
             </p>
           </motion.div>
 
-          {/* Video Trailer Placeholder */}
           {!getTrailerVideoUrl() && (
             <motion.div variants={itemVariants} className="mb-12">
               <div className="relative w-full max-w-4xl mx-auto">
@@ -291,7 +272,6 @@ const Home = () => {
             </motion.div>
           )}
 
-          {/* CTA Buttons in Arabic */}
           <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button 
               size="lg"
@@ -325,59 +305,44 @@ const Home = () => {
         </div>
       </motion.section>
 
-      {/* Featured Updates Ticker Section - 3 cards moving right to left */}
+      {/* Enhanced News Section - Cards with right to left scroll */}
       {news.length > 0 && (
         <motion.section 
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="relative py-6 bg-black/90 border-y border-s3m-red/30 overflow-hidden"
+          className="relative py-12 bg-black/90 border-y border-s3m-red/30"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/10 to-purple-600/10"></div>
           <div className="relative z-10 container mx-auto px-4">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-8">
               <div className="flex items-center">
                 <Bell className="w-6 h-6 text-s3m-red ml-3 animate-pulse" />
-                <h3 className="text-xl font-bold text-white">التحديثات المميزة</h3>
+                <h3 className="text-2xl font-bold text-white">🔥 أحدث الأخبار</h3>
                 <Globe className="w-5 h-5 text-s3m-red mr-3" />
               </div>
               <Button 
                 variant="outline"
                 onClick={() => navigate('/news')}
-                className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white rounded-xl"
+                className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white rounded-xl transition-all duration-300"
               >
                 زيارة صفحة الأخبار
                 <ArrowRight className="w-4 h-4 mr-2" />
               </Button>
             </div>
             
-            <div className="relative h-20 overflow-hidden rounded-lg bg-black/50 border border-s3m-red/30">
-              <div className="flex space-x-6 rtl:space-x-reverse animate-marquee">
-                {news.map((newsItem, index) => (
+            {/* News Cards Slider */}
+            <div className="relative overflow-hidden rounded-2xl">
+              <div className="flex space-x-6 rtl:space-x-reverse animate-scroll-right">
+                {news.concat(news).map((newsItem, index) => (
                   <motion.div
                     key={`${newsItem.id}-${index}`}
-                    className="flex-shrink-0 flex items-center space-x-4 rtl:space-x-reverse px-6"
-                    style={{ minWidth: '400px' }}
+                    className="flex-shrink-0 w-80"
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
                   >
-                    <Star className="w-5 h-5 text-yellow-400 flex-shrink-0" />
-                    <div className="text-white">
-                      <h4 className="font-bold text-lg">{newsItem.title}</h4>
-                      <p className="text-sm text-gray-300 truncate max-w-xs">{newsItem.description}</p>
-                    </div>
-                  </motion.div>
-                ))}
-                {/* Duplicate for seamless loop */}
-                {news.map((newsItem, index) => (
-                  <motion.div
-                    key={`${newsItem.id}-duplicate-${index}`}
-                    className="flex-shrink-0 flex items-center space-x-4 rtl:space-x-reverse px-6"
-                    style={{ minWidth: '400px' }}
-                  >
-                    <Star className="w-5 h-5 text-yellow-400 flex-shrink-0" />
-                    <div className="text-white">
-                      <h4 className="font-bold text-lg">{newsItem.title}</h4>
-                      <p className="text-sm text-gray-300 truncate max-w-xs">{newsItem.description}</p>
-                    </div>
+                    <NewsCard news={newsItem} />
                   </motion.div>
                 ))}
               </div>
@@ -465,7 +430,7 @@ const Home = () => {
         </motion.section>
       )}
 
-      {/* Admin-Selected Players Preview Section - "محاربونا" */}
+      {/* Admin-Selected Players Preview Section */}
       {adminSelectedPlayers.length > 0 && (
         <motion.section 
           initial={{ opacity: 0, y: 50 }}

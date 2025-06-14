@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import SmartGreeting from '../SmartGreeting';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const MobileNavigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -75,96 +76,190 @@ const MobileNavigation = () => {
     <>
       {/* Mobile menu button */}
       <div className="lg:hidden">
-        <Button
-          onClick={() => setIsOpen(!isOpen)}
-          variant="ghost"
-          size="sm"
-          className="text-gray-300 hover:text-white hover:bg-white/10 rounded-xl border border-white/20 hover:border-white/40 transition-all duration-300"
+        <motion.div
+          whileTap={{ scale: 0.95 }}
+          transition={{ duration: 0.1 }}
         >
-          {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </Button>
+          <Button
+            onClick={() => setIsOpen(!isOpen)}
+            variant="ghost"
+            size="sm"
+            className="relative text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-s3m-red/20 hover:to-purple-600/20 rounded-2xl border border-white/20 hover:border-s3m-red/60 transition-all duration-300 backdrop-blur-sm"
+          >
+            <motion.div
+              animate={{ rotate: isOpen ? 180 : 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </motion.div>
+          </Button>
+        </motion.div>
       </div>
 
-      {/* Mobile Navigation Menu */}
-      {isOpen && (
-        <div className="lg:hidden bg-black/98 border-t border-s3m-red/30 backdrop-blur-sm">
-          <div className="container mx-auto px-4 py-4 space-y-3">
-            {navLinks.map((link) => {
-              const Icon = link.icon;
-              return (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  onClick={closeMenu}
-                  className={`flex items-center space-x-2 rtl:space-x-reverse px-3 py-3 rounded-md text-base font-medium transition-colors ${
-                    isActivePath(link.path)
-                      ? 'text-s3m-red bg-s3m-red/10'
-                      : 'text-gray-300 hover:text-white hover:bg-gray-700'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span>{link.label}</span>
-                </Link>
-              );
-            })}
-            
-            <div className="border-t border-gray-700 pt-4 mt-4">
-              {user ? (
-                <div className="space-y-3">
-                  <div className="px-3">
-                    <SmartGreeting />
-                  </div>
-                  
-                  {isAdmin && (
-                    <Button
-                      onClick={handleAdminClick}
-                      variant="outline"
-                      className="w-full justify-start border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white"
-                    >
-                      <Shield className="w-4 h-4 ml-2" />
-                      لوحة الإدارة
-                    </Button>
-                  )}
-                  
-                  <Button
-                    onClick={handleProfileClick}
-                    variant="outline"
-                    className="w-full justify-start border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
-                  >
-                    <User className="w-4 h-4 ml-2" />
-                    الملف الشخصي
-                  </Button>
-                  
-                  <Button
-                    onClick={handleSignOut}
-                    variant="outline"
-                    className="w-full justify-start border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
-                  >
-                    <LogOut className="w-4 h-4 ml-2" />
-                    تسجيل الخروج
-                  </Button>
+      {/* Mobile Navigation Menu - Full Screen Overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="lg:hidden fixed inset-0 z-50 bg-gradient-to-br from-black via-gray-900 to-s3m-red/20 backdrop-blur-xl"
+          >
+            {/* Header with close button */}
+            <div className="flex justify-between items-center p-6 border-b border-s3m-red/30">
+              <div className="flex items-center space-x-3 rtl:space-x-reverse">
+                <div className="w-10 h-10 bg-gradient-to-br from-s3m-red via-red-500 to-red-700 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">S3M</span>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  <Button
-                    onClick={() => { navigate('/login'); closeMenu(); }}
-                    variant="outline"
-                    className="w-full justify-center border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
-                  >
-                    دخول
-                  </Button>
-                  <Button
-                    onClick={() => { navigate('/signup'); closeMenu(); }}
-                    className="w-full justify-center bg-s3m-red hover:bg-red-600 text-white"
-                  >
-                    إنشاء حساب
-                  </Button>
-                </div>
-              )}
+                <span className="text-white font-bold text-xl">القائمة</span>
+              </div>
+              <Button
+                onClick={closeMenu}
+                variant="ghost"
+                size="sm"
+                className="text-gray-300 hover:text-white hover:bg-s3m-red/20 rounded-xl"
+              >
+                <X className="w-6 h-6" />
+              </Button>
             </div>
-          </div>
-        </div>
-      )}
+
+            {/* Menu Content */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* User Greeting */}
+              {user && (
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="mb-6"
+                >
+                  <SmartGreeting />
+                </motion.div>
+              )}
+
+              {/* Navigation Links */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="space-y-3"
+              >
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                  <Crown className="w-5 h-5 text-s3m-red ml-2" />
+                  التنقل
+                </h3>
+                {navLinks.map((link, index) => {
+                  const Icon = link.icon;
+                  return (
+                    <motion.div
+                      key={link.path}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.3 + index * 0.1 }}
+                    >
+                      <Link
+                        to={link.path}
+                        onClick={closeMenu}
+                        className={`flex items-center space-x-3 rtl:space-x-reverse px-4 py-4 rounded-2xl text-base font-medium transition-all duration-300 group ${
+                          isActivePath(link.path)
+                            ? 'text-white bg-gradient-to-r from-s3m-red to-red-600 shadow-lg shadow-s3m-red/30'
+                            : 'text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-white/10 hover:to-s3m-red/20 border border-transparent hover:border-s3m-red/30'
+                        }`}
+                      >
+                        <Icon className={`w-6 h-6 transition-transform duration-300 ${isActivePath(link.path) ? 'scale-110' : 'group-hover:scale-110'}`} />
+                        <span className="flex-1">{link.label}</span>
+                        {isActivePath(link.path) && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="w-2 h-2 bg-white rounded-full"
+                          />
+                        )}
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+              
+              {/* User Actions */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.8 }}
+                className="border-t border-gray-700/50 pt-6"
+              >
+                {user ? (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                      <User className="w-5 h-5 text-s3m-red ml-2" />
+                      حسابي
+                    </h3>
+                    
+                    {isAdmin && (
+                      <Button
+                        onClick={handleAdminClick}
+                        variant="outline"
+                        className="w-full justify-start bg-gradient-to-r from-s3m-red/10 to-red-600/10 border-s3m-red/50 text-s3m-red hover:bg-gradient-to-r hover:from-s3m-red hover:to-red-600 hover:text-white rounded-xl py-3 transition-all duration-300"
+                      >
+                        <Shield className="w-5 h-5 ml-2" />
+                        لوحة الإدارة
+                      </Button>
+                    )}
+                    
+                    <Button
+                      onClick={handleProfileClick}
+                      variant="outline"
+                      className="w-full justify-start border-gray-600/50 text-gray-300 hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-600 hover:text-white rounded-xl py-3 transition-all duration-300"
+                    >
+                      <User className="w-5 h-5 ml-2" />
+                      الملف الشخصي
+                    </Button>
+                    
+                    <Button
+                      onClick={handleSignOut}
+                      variant="outline"
+                      className="w-full justify-start border-red-600/50 text-red-400 hover:bg-gradient-to-r hover:from-red-600 hover:to-red-700 hover:text-white rounded-xl py-3 transition-all duration-300"
+                    >
+                      <LogOut className="w-5 h-5 ml-2" />
+                      تسجيل الخروج
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-bold text-white mb-4">انضم إلينا</h3>
+                    <Button
+                      onClick={() => { navigate('/login'); closeMenu(); }}
+                      variant="outline"
+                      className="w-full justify-center border-gray-600/50 text-gray-300 hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-600 hover:text-white rounded-xl py-3 transition-all duration-300"
+                    >
+                      دخول
+                    </Button>
+                    <Button
+                      onClick={() => { navigate('/signup'); closeMenu(); }}
+                      className="w-full justify-center bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl py-3 shadow-lg shadow-s3m-red/30 transition-all duration-300"
+                    >
+                      إنشاء حساب
+                    </Button>
+                  </div>
+                )}
+              </motion.div>
+            </div>
+
+            {/* Footer */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1 }}
+              className="p-6 border-t border-s3m-red/30 text-center"
+            >
+              <p className="text-gray-400 text-sm">
+                © 2024 S3M E-Sports - جميع الحقوق محفوظة
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };
