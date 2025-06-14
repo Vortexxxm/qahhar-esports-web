@@ -68,7 +68,7 @@ const News = () => {
 
   return (
     <div className="min-h-screen py-6 px-4">
-      <div className="container mx-auto max-w-4xl">
+      <div className="container mx-auto max-w-7xl">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-s3m-red to-red-600 bg-clip-text text-transparent">
@@ -93,7 +93,7 @@ const News = () => {
             <div className="text-white text-xl">جاري التحميل...</div>
           </div>
         ) : news && news.length > 0 ? (
-          <div className="grid gap-6 md:gap-8">
+          <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
             {news.map((item) => (
               <NewsCard 
                 key={item.id} 
