@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Users, Trophy, Target, Star, Flame, Zap, GamepadIcon, Crown, Calendar, ArrowRight, Bell, Globe, Rocket } from 'lucide-react';
+import { Play, Users, Trophy, Target, Star, Flame, Zap, GamepadIcon, Crown, Calendar, ArrowRight, Bell, Globe, Rocket, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +12,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import WeeklyPlayerCard from '@/components/WeeklyPlayerCard';
 import MonthlyPlayerCard from '@/components/MonthlyPlayerCard';
 import NewsCard from '@/components/NewsCard';
-import MobileNotifications from '@/components/MobileNotifications';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -27,7 +26,7 @@ const Home = () => {
         .from('news')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(8);
+        .limit(3); // Only 3 cards as requested
       
       if (error) throw error;
       return data;
@@ -75,21 +74,37 @@ const Home = () => {
     }
   });
 
-  // Fetch homepage trailer video - simplified approach
+  // Fetch uploaded video from storage or URL
   const { data: trailerVideo } = useQuery({
     queryKey: ['homepage-trailer'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First check for uploaded video file
+      const { data: videoFile, error: videoError } = await supabase
+        .from('site_settings')
+        .select('*')
+        .eq('key', 'homepage_video_file')
+        .maybeSingle();
+      
+      if (videoFile && videoFile.value) {
+        // Get the public URL for the uploaded video
+        const { data: urlData } = supabase.storage
+          .from('admin-videos')
+          .getPublicUrl(videoFile.value);
+        return { type: 'file', url: urlData.publicUrl };
+      }
+
+      // Fallback to URL setting
+      const { data: urlSetting, error: urlError } = await supabase
         .from('site_settings')
         .select('*')
         .eq('key', 'homepage_trailer')
         .maybeSingle();
       
-      if (error) {
-        console.error('Error fetching trailer:', error);
-        return null;
+      if (urlSetting && urlSetting.value) {
+        return { type: 'url', url: urlSetting.value };
       }
-      return data;
+
+      return null;
     }
   });
 
@@ -114,7 +129,7 @@ const Home = () => {
     return leaderboardScores?.find(score => score.user_id === userId) || null;
   };
 
-  // Auto-scroll news ticker
+  // Auto-scroll news ticker - only for 3 news items moving right to left
   useEffect(() => {
     if (news.length > 1) {
       const interval = setInterval(() => {
@@ -146,20 +161,13 @@ const Home = () => {
     }
   };
 
-  const featuredNews = news.slice(0, 4);
-  const tickerNews = news.slice(0, 5);
-
   // Get trailer video URL safely
   const getTrailerVideoUrl = () => {
-    if (!trailerVideo || !trailerVideo.value) return null;
-    return trailerVideo.value;
+    return trailerVideo?.url || null;
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-s3m-red/20 overflow-hidden rtl" dir="rtl">
-      {/* Mobile Notifications */}
-      <MobileNotifications />
-
       {/* Hero Video Trailer Section */}
       <motion.section 
         className="relative h-screen flex items-center justify-center overflow-hidden"
@@ -317,80 +325,62 @@ const Home = () => {
         </div>
       </motion.section>
 
-      {/* Featured Updates Ticker Section */}
-      <motion.section 
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="relative py-6 bg-black/90 border-y border-s3m-red/30 overflow-hidden"
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/10 to-purple-600/10"></div>
-        <div className="relative z-10 container mx-auto px-4">
-          <div className="flex items-center mb-4">
-            <Bell className="w-6 h-6 text-s3m-red ml-3 animate-pulse" />
-            <h3 className="text-xl font-bold text-white">التحديثات المميزة</h3>
-            <Globe className="w-5 h-5 text-s3m-red mr-3" />
-          </div>
-          
-          {tickerNews.length > 0 && (
-            <div className="relative h-16 overflow-hidden rounded-lg bg-black/50 border border-s3m-red/30 mb-6">
-              <motion.div
-                key={currentNewsIndex}
-                initial={{ x: '100%' }}
-                animate={{ x: '-100%' }}
-                transition={{ duration: 20, ease: 'linear' }}
-                className="absolute inset-0 flex items-center px-6 text-white"
-              >
-                <Star className="w-5 h-5 text-yellow-400 ml-3 flex-shrink-0" />
-                <span className="text-lg font-medium whitespace-nowrap">
-                  {tickerNews[currentNewsIndex]?.title}
-                </span>
-              </motion.div>
-            </div>
-          )}
-          
-          <div className="text-center">
-            <Button 
-              variant="outline"
-              onClick={() => navigate('/news')}
-              className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white rounded-xl"
-            >
-              زيارة صفحة الأخبار
-              <ArrowRight className="w-4 h-4 mr-2" />
-            </Button>
-          </div>
-        </div>
-      </motion.section>
-
-      {/* Featured News Cards */}
-      {featuredNews.length > 0 && (
+      {/* Featured Updates Ticker Section - 3 cards moving right to left */}
+      {news.length > 0 && (
         <motion.section 
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="py-16 px-4"
+          transition={{ duration: 0.8 }}
+          className="relative py-6 bg-black/90 border-y border-s3m-red/30 overflow-hidden"
         >
-          <div className="container mx-auto max-w-7xl">
-            <motion.h2 
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.8 }}
-              className="text-3xl md:text-5xl font-bold text-center mb-12 bg-gradient-to-r from-s3m-red to-purple-500 bg-clip-text text-transparent"
-            >
-              🚨 التحديثات المميزة
-            </motion.h2>
+          <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/10 to-purple-600/10"></div>
+          <div className="relative z-10 container mx-auto px-4">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <Bell className="w-6 h-6 text-s3m-red ml-3 animate-pulse" />
+                <h3 className="text-xl font-bold text-white">التحديثات المميزة</h3>
+                <Globe className="w-5 h-5 text-s3m-red mr-3" />
+              </div>
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/news')}
+                className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white rounded-xl"
+              >
+                زيارة صفحة الأخبار
+                <ArrowRight className="w-4 h-4 mr-2" />
+              </Button>
+            </div>
             
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {featuredNews.map((newsItem, index) => (
-                <motion.div
-                  key={newsItem.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
-                >
-                  <NewsCard news={newsItem} />
-                </motion.div>
-              ))}
+            <div className="relative h-20 overflow-hidden rounded-lg bg-black/50 border border-s3m-red/30">
+              <div className="flex space-x-6 rtl:space-x-reverse animate-marquee">
+                {news.map((newsItem, index) => (
+                  <motion.div
+                    key={`${newsItem.id}-${index}`}
+                    className="flex-shrink-0 flex items-center space-x-4 rtl:space-x-reverse px-6"
+                    style={{ minWidth: '400px' }}
+                  >
+                    <Star className="w-5 h-5 text-yellow-400 flex-shrink-0" />
+                    <div className="text-white">
+                      <h4 className="font-bold text-lg">{newsItem.title}</h4>
+                      <p className="text-sm text-gray-300 truncate max-w-xs">{newsItem.description}</p>
+                    </div>
+                  </motion.div>
+                ))}
+                {/* Duplicate for seamless loop */}
+                {news.map((newsItem, index) => (
+                  <motion.div
+                    key={`${newsItem.id}-duplicate-${index}`}
+                    className="flex-shrink-0 flex items-center space-x-4 rtl:space-x-reverse px-6"
+                    style={{ minWidth: '400px' }}
+                  >
+                    <Star className="w-5 h-5 text-yellow-400 flex-shrink-0" />
+                    <div className="text-white">
+                      <h4 className="font-bold text-lg">{newsItem.title}</h4>
+                      <p className="text-sm text-gray-300 truncate max-w-xs">{newsItem.description}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </div>
         </motion.section>

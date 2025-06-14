@@ -6,49 +6,56 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
-  timestamp: Date;
-  read: boolean;
-}
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
 
 const MobileNotifications = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      title: 'مرحباً بك في S3M',
-      message: 'أهلاً وسهلاً بك في فريق S3M E-Sports!',
-      type: 'success',
-      timestamp: new Date(),
-      read: false
+
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      return data || [];
     },
-    {
-      id: '2',
-      title: 'بطولة جديدة',
-      message: 'تم إضافة بطولة جديدة - سجل الآن!',
-      type: 'info',
-      timestamp: new Date(Date.now() - 3600000),
-      read: false
-    }
-  ]);
+    enabled: !!user?.id,
+  });
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
+    supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('id', id)
+      .then(() => {
+        // Refresh notifications
+      });
   };
 
   const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
+    if (unreadIds.length > 0) {
+      supabase
+        .from('notifications')
+        .update({ read: true })
+        .in('id', unreadIds)
+        .then(() => {
+          // Refresh notifications
+        });
+    }
   };
 
   const getNotificationColor = (type: string) => {
@@ -60,33 +67,31 @@ const MobileNotifications = () => {
     }
   };
 
-  if (!isMobile) return null;
+  if (!isMobile || !user) return null;
 
   return (
     <>
-      {/* Notification Bell Icon */}
-      <div className="fixed top-4 left-4 z-50">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsOpen(!isOpen)}
-          className="relative bg-black/50 backdrop-blur-sm border border-s3m-red/30 hover:bg-s3m-red/20"
-        >
-          <Bell className="w-5 h-5 text-white" />
-          {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs bg-s3m-red"
-            >
-              {unreadCount}
-            </Badge>
-          )}
-        </Button>
-      </div>
+      {/* Notification Bell Icon - positioned next to profile */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setIsOpen(!isOpen)}
+        className="relative text-white hover:bg-gray-700"
+      >
+        <Bell className="w-5 h-5" />
+        {unreadCount > 0 && (
+          <Badge 
+            variant="destructive" 
+            className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-s3m-red"
+          >
+            {unreadCount}
+          </Badge>
+        )}
+      </Button>
 
       {/* Notifications Panel */}
       {isOpen && (
-        <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={() => setIsOpen(false)}>
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" onClick={() => setIsOpen(false)}>
           <Card className="fixed top-16 left-4 right-4 max-h-96 overflow-y-auto bg-black/90 border-s3m-red/30" onClick={e => e.stopPropagation()}>
             <div className="p-4 border-b border-s3m-red/30 flex items-center justify-between">
               <h3 className="text-white font-bold">الإشعارات</h3>
@@ -135,7 +140,7 @@ const MobileNotifications = () => {
                             {notification.message}
                           </p>
                           <span className="text-gray-500 text-xs">
-                            {notification.timestamp.toLocaleTimeString('ar-SA', {
+                            {new Date(notification.created_at).toLocaleTimeString('ar-SA', {
                               hour: '2-digit',
                               minute: '2-digit'
                             })}

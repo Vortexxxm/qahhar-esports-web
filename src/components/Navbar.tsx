@@ -107,10 +107,13 @@ const Navbar = () => {
             </div>
 
             {/* User Actions */}
-            <div className="hidden lg:flex items-center space-x-4 rtl:space-x-reverse">
+            <div className="flex items-center space-x-3 rtl:space-x-reverse">
               {user ? (
-                <div className="flex items-center space-x-3 rtl:space-x-reverse">
-                  <SmartGreeting />
+                <>
+                  <div className="hidden lg:block">
+                    <SmartGreeting />
+                  </div>
+                  
                   <NotificationsPopover />
                   
                   {isAdmin && (
@@ -118,7 +121,7 @@ const Navbar = () => {
                       onClick={handleAdminClick}
                       variant="outline"
                       size="sm"
-                      className="border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white"
+                      className="hidden lg:flex border-s3m-red text-s3m-red hover:bg-s3m-red hover:text-white"
                     >
                       <Shield className="w-4 h-4 ml-1" />
                       الإدارة
@@ -129,7 +132,7 @@ const Navbar = () => {
                     onClick={handleProfileClick}
                     variant="outline"
                     size="sm"
-                    className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+                    className="hidden lg:flex border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
                   >
                     <User className="w-4 h-4 ml-1" />
                     الملف الشخصي
@@ -139,14 +142,14 @@ const Navbar = () => {
                     onClick={handleSignOut}
                     variant="outline"
                     size="sm"
-                    className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
+                    className="hidden lg:flex border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
                   >
                     <LogOut className="w-4 h-4 ml-1" />
                     خروج
                   </Button>
-                </div>
+                </>
               ) : (
-                <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                <div className="hidden lg:flex items-center space-x-2 rtl:space-x-reverse">
                   <Button
                     onClick={() => navigate('/login')}
                     variant="outline"
@@ -164,18 +167,18 @@ const Navbar = () => {
                   </Button>
                 </div>
               )}
-            </div>
 
-            {/* Mobile menu button */}
-            <div className="lg:hidden">
-              <Button
-                onClick={() => setIsOpen(!isOpen)}
-                variant="ghost"
-                size="sm"
-                className="text-gray-300 hover:text-white hover:bg-gray-700"
-              >
-                {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </Button>
+              {/* Mobile menu button */}
+              <div className="lg:hidden">
+                <Button
+                  onClick={() => setIsOpen(!isOpen)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-300 hover:text-white hover:bg-gray-700"
+                >
+                  {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                </Button>
+              </div>
             </div>
           </div>
         </div>

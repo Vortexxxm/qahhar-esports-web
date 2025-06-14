@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect, useState } from "react";
@@ -8,13 +9,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import PlayerEditor from "@/components/PlayerEditor";
-import PlayerCard from "@/components/PlayerCard";
 import AdminStats from "@/components/admin/AdminStats";
 import UsersTable from "@/components/admin/UsersTable";
 import PointsManager from "@/components/admin/PointsManager";
 import TopPlayers from "@/components/admin/TopPlayers";
 import JoinRequests from "@/components/admin/JoinRequests";
 import TournamentRegistrations from "@/components/admin/TournamentRegistrations";
+import VideoManager from "@/components/admin/VideoManager";
 
 type UserWithProfile = {
   id: string;
@@ -176,6 +177,7 @@ const AdminPanel = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['special-players'] });
+      queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
       toast({
         title: "تم التحديث",
         description: "تم تحديد لاعب الأسبوع بنجاح",
@@ -197,6 +199,7 @@ const AdminPanel = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['special-players'] });
+      queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
       toast({
         title: "تم التحديث",
         description: "تم تحديد لاعب الشهر بنجاح",
@@ -232,35 +235,6 @@ const AdminPanel = () => {
     setMonthlyPlayerMutation.mutate(playerId);
   };
 
-  // Transform UserWithProfile to PlayerCardData
-  const transformToPlayerCardData = (user: UserWithProfile) => {
-    return {
-      id: user.id,
-      username: user.profiles?.username || '',
-      full_name: user.profiles?.full_name || '',
-      avatar_url: user.profiles?.avatar_url || '',
-      rank_title: user.profiles?.rank_title || 'Rookie',
-      total_likes: user.profiles?.total_likes || 0,
-      bio: user.profiles?.bio || '',
-      leaderboard_scores: user.leaderboard_scores ? {
-        points: user.leaderboard_scores.points || 0,
-        wins: user.leaderboard_scores.wins || 0,
-        kills: user.leaderboard_scores.kills || 0,
-        deaths: user.leaderboard_scores.deaths || 0,
-        visible_in_leaderboard: user.leaderboard_scores.visible_in_leaderboard || false
-      } : null
-    };
-  };
-
-  // Handle edit from PlayerCard
-  const handleEditFromPlayerCard = (playerCardData: any) => {
-    // Find the original user data
-    const originalUser = users?.find(u => u.id === playerCardData.id);
-    if (originalUser) {
-      setEditingPlayer(originalUser);
-    }
-  };
-
   if (loading || usersLoading) {
     return (
       <div className="min-h-screen py-12 flex items-center justify-center">
@@ -280,6 +254,8 @@ const AdminPanel = () => {
           <PlayerEditor 
             player={editingPlayer} 
             onClose={() => setEditingPlayer(null)}
+            onSetWeeklyPlayer={handleSetWeeklyPlayer}
+            onSetMonthlyPlayer={handleSetMonthlyPlayer}
           />
         </div>
       </div>
@@ -323,11 +299,8 @@ const AdminPanel = () => {
               <TabsTrigger value="points" className="data-[state=active]:bg-s3m-red text-xs md:text-sm px-3 py-2 whitespace-nowrap">
                 إدارة النقاط
               </TabsTrigger>
-              <TabsTrigger value="players" className="data-[state=active]:bg-s3m-red text-xs md:text-sm px-3 py-2 whitespace-nowrap">
-                إدارة اللاعبين
-              </TabsTrigger>
-              <TabsTrigger value="special" className="data-[state=active]:bg-s3m-red text-xs md:text-sm px-3 py-2 whitespace-nowrap">
-                اللاعبون المميزون
+              <TabsTrigger value="video" className="data-[state=active]:bg-s3m-red text-xs md:text-sm px-3 py-2 whitespace-nowrap">
+                الفيديو الدعائي
               </TabsTrigger>
             </TabsList>
           </div>
@@ -367,6 +340,8 @@ const AdminPanel = () => {
                     onEditPlayer={setEditingPlayer}
                     onToggleRole={handleToggleUserRole}
                     onToggleVisibility={handleToggleVisibility}
+                    onSetWeeklyPlayer={handleSetWeeklyPlayer}
+                    onSetMonthlyPlayer={handleSetMonthlyPlayer}
                   />
                 </div>
               </CardContent>
@@ -384,52 +359,8 @@ const AdminPanel = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="players">
-            <Card className="gaming-card">
-              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
-                <CardTitle className="text-s3m-red text-base md:text-xl">إدارة بطاقات اللاعبين</CardTitle>
-              </CardHeader>
-              <CardContent className="p-2 md:p-6">
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {users?.map((user) => (
-                    <PlayerCard
-                      key={user.id}
-                      player={transformToPlayerCardData(user)}
-                      cardStyle="classic"
-                      isAdmin={true}
-                      onEdit={handleEditFromPlayerCard}
-                      onToggleVisibility={handleToggleVisibility}
-                      onSetWeeklyPlayer={handleSetWeeklyPlayer}
-                      onSetMonthlyPlayer={handleSetMonthlyPlayer}
-                    />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="special">
-            <Card className="gaming-card">
-              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
-                <CardTitle className="text-s3m-red text-base md:text-xl">إدارة اللاعبين المميزين</CardTitle>
-              </CardHeader>
-              <CardContent className="p-2 md:p-6">
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {users?.map((user) => (
-                    <PlayerCard
-                      key={user.id}
-                      player={transformToPlayerCardData(user)}
-                      cardStyle="classic"
-                      isAdmin={true}
-                      onEdit={handleEditFromPlayerCard}
-                      onToggleVisibility={handleToggleVisibility}
-                      onSetWeeklyPlayer={handleSetWeeklyPlayer}
-                      onSetMonthlyPlayer={handleSetMonthlyPlayer}
-                    />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="video">
+            <VideoManager />
           </TabsContent>
         </Tabs>
       </div>
