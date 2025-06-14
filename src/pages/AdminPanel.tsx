@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect, useState } from "react";
@@ -16,6 +15,7 @@ import TopPlayers from "@/components/admin/TopPlayers";
 import JoinRequests from "@/components/admin/JoinRequests";
 import TournamentRegistrations from "@/components/admin/TournamentRegistrations";
 import VideoManager from "@/components/admin/VideoManager";
+import { Shield, Users, Trophy, Settings, FileText, Video, UserPlus, Calendar } from "lucide-react";
 
 type UserWithProfile = {
   id: string;
@@ -237,8 +237,11 @@ const AdminPanel = () => {
 
   if (loading || usersLoading) {
     return (
-      <div className="min-h-screen py-12 flex items-center justify-center">
-        <div className="text-white text-xl">جاري التحميل...</div>
+      <div className="min-h-screen py-12 flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-s3m-red/20">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-s3m-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="text-white text-lg">جاري التحميل...</div>
+        </div>
       </div>
     );
   }
@@ -249,7 +252,7 @@ const AdminPanel = () => {
 
   if (editingPlayer) {
     return (
-      <div className="min-h-screen py-6 px-4">
+      <div className="min-h-screen py-4 px-2 md:py-6 md:px-4 bg-gradient-to-br from-black via-gray-900 to-s3m-red/20">
         <div className="container mx-auto max-w-4xl">
           <PlayerEditor 
             player={editingPlayer} 
@@ -268,101 +271,160 @@ const AdminPanel = () => {
   const averagePoints = users?.length ? Math.round(users.reduce((sum, u) => sum + (u.leaderboard_scores?.points || 0), 0) / users.length) : 0;
 
   return (
-    <div className="min-h-screen py-4 px-3 md:py-6 md:px-4">
-      <div className="container mx-auto max-w-7xl">
-        <div className="mb-4 md:mb-6">
-          <h1 className="text-2xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-s3m-red to-red-600 bg-clip-text text-transparent">
-            لوحة الإدارة
-          </h1>
-          <p className="text-white/70 text-sm md:text-base">إدارة أعضاء الفريق والنقاط والإحصائيات</p>
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-s3m-red/20">
+      {/* Mobile-optimized header */}
+      <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-sm border-b border-s3m-red/20 p-3 md:p-4">
+        <div className="container mx-auto max-w-7xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Shield className="w-6 h-6 md:w-8 md:h-8 text-s3m-red" />
+              <div>
+                <h1 className="text-lg md:text-2xl font-bold bg-gradient-to-r from-s3m-red to-red-600 bg-clip-text text-transparent">
+                  لوحة الإدارة
+                </h1>
+                <p className="text-white/60 text-xs md:text-sm hidden md:block">
+                  إدارة النظام والمستخدمين
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-white/80 text-xs md:text-sm font-medium">
+                مرحباً {user?.email?.split('@')[0]}
+              </p>
+              <p className="text-s3m-red text-xs">المدير العام</p>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <AdminStats 
-          totalUsers={totalUsers}
-          activeUsers={activeUsers}
-          adminCount={adminCount}
-          averagePoints={averagePoints}
-        />
-
-        <Tabs defaultValue="requests" className="space-y-3 md:space-y-4">
-          <div className="overflow-x-auto">
-            <TabsList className="bg-black/20 border border-s3m-red/20 w-full min-w-max flex">
-              <TabsTrigger value="requests" className="data-[state=active]:bg-s3m-red text-xs md:text-sm px-3 py-2 whitespace-nowrap">
-                طلبات الانضمام
-              </TabsTrigger>
-              <TabsTrigger value="tournaments" className="data-[state=active]:bg-s3m-red text-xs md:text-sm px-3 py-2 whitespace-nowrap">
-                طلبات البطولات
-              </TabsTrigger>
-              <TabsTrigger value="users" className="data-[state=active]:bg-s3m-red text-xs md:text-sm px-3 py-2 whitespace-nowrap">
-                إدارة الأعضاء
-              </TabsTrigger>
-              <TabsTrigger value="points" className="data-[state=active]:bg-s3m-red text-xs md:text-sm px-3 py-2 whitespace-nowrap">
-                إدارة النقاط
-              </TabsTrigger>
-              <TabsTrigger value="video" className="data-[state=active]:bg-s3m-red text-xs md:text-sm px-3 py-2 whitespace-nowrap">
-                الفيديو الدعائي
-              </TabsTrigger>
-            </TabsList>
+      <div className="p-2 md:p-4">
+        <div className="container mx-auto max-w-7xl">
+          {/* Mobile-optimized stats */}
+          <div className="mb-4">
+            <AdminStats 
+              totalUsers={totalUsers}
+              activeUsers={activeUsers}
+              adminCount={adminCount}
+              averagePoints={averagePoints}
+            />
           </div>
 
-          <TabsContent value="requests">
-            <Card className="gaming-card">
-              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
-                <CardTitle className="text-s3m-red text-base md:text-xl">طلبات الانضمام</CardTitle>
-              </CardHeader>
-              <CardContent className="p-2 md:p-6">
-                <JoinRequests />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="tournaments">
-            <Card className="gaming-card">
-              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
-                <CardTitle className="text-s3m-red text-base md:text-xl">طلبات المشاركة في البطولات</CardTitle>
-              </CardHeader>
-              <CardContent className="p-2 md:p-6">
-                <TournamentRegistrations />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="users">
-            <Card className="gaming-card">
-              <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
-                <CardTitle className="text-s3m-red text-base md:text-xl">قائمة الأعضاء</CardTitle>
-              </CardHeader>
-              <CardContent className="p-2 md:p-6">
-                <div className="overflow-x-auto">
-                  <UsersTable 
-                    users={users || []}
-                    currentUserId={user?.id || ''}
-                    onEditPlayer={setEditingPlayer}
-                    onToggleRole={handleToggleUserRole}
-                    onToggleVisibility={handleToggleVisibility}
-                    onSetWeeklyPlayer={handleSetWeeklyPlayer}
-                    onSetMonthlyPlayer={handleSetMonthlyPlayer}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="points">
-            <div className="grid gap-4 lg:grid-cols-2">
-              <PointsManager 
-                users={users || []}
-                onAddPoints={handleAddPoints}
-                isLoading={updatePointsMutation.isPending}
-              />
-              <TopPlayers users={users || []} />
+          {/* Enhanced Mobile Tabs */}
+          <Tabs defaultValue="requests" className="space-y-3">
+            <div className="overflow-x-auto scrollbar-hide">
+              <TabsList className="bg-black/40 border border-s3m-red/30 backdrop-blur-sm w-full min-w-max flex p-1 rounded-lg">
+                <TabsTrigger 
+                  value="requests" 
+                  className="data-[state=active]:bg-s3m-red data-[state=active]:text-white text-white/70 text-xs md:text-sm px-2 md:px-4 py-2 whitespace-nowrap rounded-md transition-all duration-200 flex items-center gap-2"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span className="hidden sm:inline">طلبات الانضمام</span>
+                  <span className="sm:hidden">الطلبات</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="tournaments" 
+                  className="data-[state=active]:bg-s3m-red data-[state=active]:text-white text-white/70 text-xs md:text-sm px-2 md:px-4 py-2 whitespace-nowrap rounded-md transition-all duration-200 flex items-center gap-2"
+                >
+                  <Calendar className="w-4 h-4" />
+                  <span className="hidden sm:inline">البطولات</span>
+                  <span className="sm:hidden">البطولات</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="users" 
+                  className="data-[state=active]:bg-s3m-red data-[state=active]:text-white text-white/70 text-xs md:text-sm px-2 md:px-4 py-2 whitespace-nowrap rounded-md transition-all duration-200 flex items-center gap-2"
+                >
+                  <Users className="w-4 h-4" />
+                  <span className="hidden sm:inline">الأعضاء</span>
+                  <span className="sm:hidden">الأعضاء</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="points" 
+                  className="data-[state=active]:bg-s3m-red data-[state=active]:text-white text-white/70 text-xs md:text-sm px-2 md:px-4 py-2 whitespace-nowrap rounded-md transition-all duration-200 flex items-center gap-2"
+                >
+                  <Trophy className="w-4 h-4" />
+                  <span className="hidden sm:inline">النقاط</span>
+                  <span className="sm:hidden">النقاط</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="video" 
+                  className="data-[state=active]:bg-s3m-red data-[state=active]:text-white text-white/70 text-xs md:text-sm px-2 md:px-4 py-2 whitespace-nowrap rounded-md transition-all duration-200 flex items-center gap-2"
+                >
+                  <Video className="w-4 h-4" />
+                  <span className="hidden sm:inline">الفيديو</span>
+                  <span className="sm:hidden">الفيديو</span>
+                </TabsTrigger>
+              </TabsList>
             </div>
-          </TabsContent>
 
-          <TabsContent value="video">
-            <VideoManager />
-          </TabsContent>
-        </Tabs>
+            {/* Mobile-optimized tab content */}
+            <TabsContent value="requests">
+              <Card className="gaming-card border-s3m-red/30">
+                <CardHeader className="pb-2 p-3 md:p-4">
+                  <CardTitle className="text-s3m-red text-sm md:text-lg flex items-center gap-2">
+                    <UserPlus className="w-5 h-5" />
+                    طلبات الانضمام
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-2 md:p-4">
+                  <JoinRequests />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="tournaments">
+              <Card className="gaming-card border-s3m-red/30">
+                <CardHeader className="pb-2 p-3 md:p-4">
+                  <CardTitle className="text-s3m-red text-sm md:text-lg flex items-center gap-2">
+                    <Calendar className="w-5 h-5" />
+                    طلبات المشاركة في البطولات
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-2 md:p-4">
+                  <TournamentRegistrations />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="users">
+              <Card className="gaming-card border-s3m-red/30">
+                <CardHeader className="pb-2 p-3 md:p-4">
+                  <CardTitle className="text-s3m-red text-sm md:text-lg flex items-center gap-2">
+                    <Users className="w-5 h-5" />
+                    قائمة الأعضاء
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-1 md:p-4">
+                  <div className="overflow-x-auto">
+                    <UsersTable 
+                      users={users || []}
+                      currentUserId={user?.id || ''}
+                      onEditPlayer={setEditingPlayer}
+                      onToggleRole={handleToggleUserRole}
+                      onToggleVisibility={handleToggleVisibility}
+                      onSetWeeklyPlayer={handleSetWeeklyPlayer}
+                      onSetMonthlyPlayer={handleSetMonthlyPlayer}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="points">
+              <div className="grid gap-3 lg:grid-cols-2">
+                <PointsManager 
+                  users={users || []}
+                  onAddPoints={handleAddPoints}
+                  isLoading={updatePointsMutation.isPending}
+                />
+                <TopPlayers users={users || []} />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="video">
+              <VideoManager />
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </div>
   );

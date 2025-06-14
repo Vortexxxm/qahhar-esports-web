@@ -48,7 +48,7 @@
 
 @layer components {
   .gaming-card {
-    @apply bg-gradient-to-br from-gray-900/80 to-black/80 border border-white/10 backdrop-blur-sm hover:border-s3m-red/50 transition-all duration-300;
+    @apply bg-gradient-to-br from-gray-900/90 to-black/90 border border-white/10 backdrop-blur-sm hover:border-s3m-red/50 transition-all duration-300;
   }
   
   .gradient-text {
@@ -61,92 +61,36 @@
     direction: rtl;
   }
   
-  /* Enhanced mobile-first news animations */
-  @keyframes mobile-scroll-rtl {
+  /* Professional mobile-first news animations */
+  @keyframes professional-scroll-rtl {
     0% {
-      transform: translateX(100vw);
+      transform: translateX(100%);
     }
     100% {
       transform: translateX(-100%);
     }
   }
   
-  .animate-mobile-scroll-rtl {
-    animation: mobile-scroll-rtl 20s linear infinite;
+  .animate-professional-scroll {
+    animation: professional-scroll-rtl 60s linear infinite;
   }
   
-  /* Smooth mobile news carousel */
-  @keyframes mobile-news-flow {
+  /* Smooth professional news carousel */
+  @keyframes professional-news-flow {
     0% {
       transform: translateX(0);
     }
     100% {
-      transform: translateX(-50%);
+      transform: translateX(-25%);
     }
   }
   
-  .animate-mobile-news-flow {
-    animation: mobile-news-flow 25s linear infinite;
+  .animate-professional-news-flow {
+    animation: professional-news-flow 60s linear infinite;
   }
   
-  /* Pause animation on touch for mobile */
-  .animate-mobile-news-flow:active {
-    animation-play-state: paused;
-  }
-  
-  /* Enhanced news scroll animation */
-  @keyframes scroll-right {
-    0% {
-      transform: translateX(100%);
-    }
-    100% {
-      transform: translateX(-100%);
-    }
-  }
-  
-  .animate-scroll-right {
-    animation: scroll-right 40s linear infinite;
-  }
-  
-  /* Pause animation on hover for better UX */
-  .animate-scroll-right:hover {
-    animation-play-state: paused;
-  }
-  
-  /* Responsive scroll speed for mobile */
-  @media (max-width: 768px) {
-    .animate-scroll-right {
-      animation: scroll-right 20s linear infinite;
-    }
-    
-    .animate-mobile-scroll-rtl {
-      animation: mobile-scroll-rtl 15s linear infinite;
-    }
-  }
-  
-  /* Enhanced marquee animation for news ticker */
-  @keyframes marquee {
-    0% {
-      transform: translateX(100%);
-    }
-    100% {
-      transform: translateX(-100%);
-    }
-  }
-  
-  .animate-marquee {
-    animation: marquee 25s linear infinite;
-  }
-  
-  /* Mobile marquee speed adjustment */
-  @media (max-width: 768px) {
-    .animate-marquee {
-      animation: marquee 18s linear infinite;
-    }
-  }
-  
-  /* Smooth continuous news scroll */
-  @keyframes continuous-scroll {
+  /* Enhanced professional scrolling */
+  @keyframes enhanced-professional-scroll {
     0% {
       transform: translateX(100vw);
     }
@@ -155,18 +99,68 @@
     }
   }
   
-  .animate-continuous-scroll {
-    animation: continuous-scroll 40s linear infinite;
+  .animate-enhanced-professional-scroll {
+    animation: enhanced-professional-scroll 70s linear infinite;
   }
   
-  /* Enhanced mobile continuous scroll */
+  /* Mobile-optimized professional animations */
   @media (max-width: 768px) {
-    .animate-continuous-scroll {
-      animation: continuous-scroll 25s linear infinite;
+    .animate-professional-scroll {
+      animation: professional-scroll-rtl 50s linear infinite;
+    }
+    
+    .animate-professional-news-flow {
+      animation: professional-news-flow 50s linear infinite;
+    }
+    
+    .animate-enhanced-professional-scroll {
+      animation: enhanced-professional-scroll 55s linear infinite;
     }
   }
   
-  /* Text clamp utilities for mobile news cards */
+  /* Ultra-smooth professional marquee */
+  @keyframes ultra-smooth-marquee {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+  
+  .animate-ultra-smooth-marquee {
+    animation: ultra-smooth-marquee 80s linear infinite;
+  }
+  
+  /* Mobile ultra-smooth marquee */
+  @media (max-width: 768px) {
+    .animate-ultra-smooth-marquee {
+      animation: ultra-smooth-marquee 60s linear infinite;
+    }
+  }
+  
+  /* Professional continuous scroll */
+  @keyframes professional-continuous-scroll {
+    0% {
+      transform: translateX(100vw);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+  
+  .animate-professional-continuous-scroll {
+    animation: professional-continuous-scroll 90s linear infinite;
+  }
+  
+  /* Enhanced mobile professional scroll */
+  @media (max-width: 768px) {
+    .animate-professional-continuous-scroll {
+      animation: professional-continuous-scroll 65s linear infinite;
+    }
+  }
+  
+  /* Text clamp utilities for professional news cards */
   .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -179,6 +173,16 @@
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+  
+  /* Enhanced scrollbar hiding */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -209,92 +213,143 @@
   animation: fade-in-up 0.6s ease-out;
 }
 
-/* Glowing effect for special elements */
-.glow-effect {
-  box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+/* Professional glowing effect */
+.professional-glow-effect {
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.4);
 }
 
-/* Smooth transitions */
+/* Ultra-smooth transitions */
 * {
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
-/* Enhanced news card animations */
-@keyframes news-glow {
+/* Enhanced professional news card animations */
+@keyframes professional-news-glow {
   0%, 100% {
-    box-shadow: 0 0 5px rgba(239, 68, 68, 0.3);
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
   }
   50% {
-    box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+    box-shadow: 0 0 25px rgba(239, 68, 68, 0.6);
   }
 }
 
-.news-card-featured {
-  animation: news-glow 3s ease-in-out infinite;
+.professional-news-card-featured {
+  animation: professional-news-glow 4s ease-in-out infinite;
 }
 
 /* Enhanced mobile improvements */
 @media (max-width: 768px) {
   .gaming-card {
-    @apply shadow-lg;
+    @apply shadow-lg border-opacity-60;
   }
   
-  .news-section-mobile {
-    @apply px-2;
+  .professional-news-section-mobile {
+    @apply px-1;
   }
   
   /* Enhanced mobile news cards */
-  .mobile-news-card {
+  .professional-mobile-news-card {
     @apply transform-gpu will-change-transform;
   }
   
-  /* Mobile-optimized news display */
-  .mobile-news-container {
-    @apply relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-900/90 to-black/90 border border-s3m-red/30;
+  /* Mobile-optimized professional news display */
+  .professional-mobile-news-container {
+    @apply relative overflow-hidden rounded-lg bg-gradient-to-br from-gray-900/95 to-black/95 border border-s3m-red/25;
   }
   
-  /* Mobile news animation optimization */
-  .mobile-news-scroll {
+  /* Professional mobile news animation optimization */
+  .professional-mobile-news-scroll {
     will-change: transform;
     backface-visibility: hidden;
     perspective: 1000px;
   }
 }
 
-/* Performance optimizations */
+/* Professional performance optimizations */
 .will-change-transform {
   will-change: transform;
 }
 
-/* Smooth hardware acceleration */
+/* Professional hardware acceleration */
 .transform-gpu {
   transform: translateZ(0);
 }
 
-/* Enhanced gradient backgrounds */
-.bg-enhanced-gradient {
+/* Enhanced professional gradient backgrounds */
+.bg-professional-enhanced-gradient {
   background: linear-gradient(135deg, 
-    rgba(239, 68, 68, 0.1) 0%, 
-    rgba(147, 51, 234, 0.05) 25%, 
-    rgba(0, 0, 0, 0.8) 50%, 
-    rgba(239, 68, 68, 0.05) 75%, 
-    rgba(0, 0, 0, 0.9) 100%);
+    rgba(239, 68, 68, 0.08) 0%, 
+    rgba(147, 51, 234, 0.04) 25%, 
+    rgba(0, 0, 0, 0.85) 50%, 
+    rgba(239, 68, 68, 0.04) 75%, 
+    rgba(0, 0, 0, 0.92) 100%);
 }
 
-/* Touch-friendly mobile interactions */
+/* Touch-friendly professional mobile interactions */
 @media (max-width: 768px) {
   .touch-friendly {
     min-height: 44px;
     min-width: 44px;
   }
   
-  /* Improved mobile tap targets */
+  /* Improved professional mobile tap targets */
   button, .clickable {
     @apply touch-friendly;
   }
   
-  /* Mobile news card enhancements */
-  .mobile-news-card {
-    @apply min-h-[200px] max-w-[320px];
+  /* Professional mobile news card enhancements */
+  .professional-mobile-news-card {
+    @apply min-h-[180px] max-w-[280px];
+  }
+  
+  /* Professional mobile admin panel optimizations */
+  .admin-mobile-card {
+    @apply rounded-lg shadow-md border-opacity-50;
+  }
+  
+  .admin-mobile-tab {
+    @apply text-xs px-2 py-1.5 rounded-md;
+  }
+  
+  .admin-mobile-header {
+    @apply sticky top-0 z-50 bg-black/90 backdrop-blur-md border-b border-s3m-red/30;
+  }
+}
+
+/* Professional admin panel enhancements */
+.admin-professional-card {
+  @apply bg-gradient-to-br from-gray-900/95 to-black/95 border border-s3m-red/30 backdrop-blur-sm;
+}
+
+.admin-professional-header {
+  @apply bg-black/85 backdrop-blur-md border-b border-s3m-red/25;
+}
+
+.admin-professional-tab {
+  @apply bg-black/30 border border-s3m-red/25 backdrop-blur-sm;
+}
+
+/* Professional loading animations */
+@keyframes professional-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-professional-spin {
+  animation: professional-spin 1s linear infinite;
+}
+
+/* Professional mobile responsiveness */
+@media (max-width: 640px) {
+  .professional-mobile-text {
+    @apply text-xs;
+  }
+  
+  .professional-mobile-padding {
+    @apply p-2;
+  }
+  
+  .professional-mobile-margin {
+    @apply m-1;
   }
 }
