@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/theme-provider";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import Index from "@/pages/Index";
 import Home from "@/pages/Home";
 import About from "@/pages/About";
@@ -37,30 +38,33 @@ function App() {
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              <div className="min-h-screen bg-background text-foreground">
+              <div className="min-h-screen bg-background text-foreground flex flex-col">
                 <Navbar />
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/home" element={<Home />} />
-                  <Route path="/index" element={<Navigate to="/" replace />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/team" element={<Team />} />
-                  <Route path="/news" element={<News />} />
-                  <Route path="/tournaments" element={<Tournaments />} />
-                  <Route path="/tournaments/:id" element={<TournamentDetails />} />
-                  <Route path="/leaderboard" element={<Leaderboard />} />
-                  <Route path="/join-us" element={<JoinUs />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/signup" element={<Signup />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/admin" element={<AdminPanel />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="/reset-password-page" element={<ResetPasswordPage />} />
-                  <Route path="/terms" element={<Terms />} />
-                  <Route path="/privacy" element={<Privacy />} />
-                  <Route path="/404" element={<NotFound />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
+                <main className="flex-1">
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/home" element={<Home />} />
+                    <Route path="/index" element={<Navigate to="/" replace />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/team" element={<Team />} />
+                    <Route path="/news" element={<News />} />
+                    <Route path="/tournaments" element={<Tournaments />} />
+                    <Route path="/tournaments/:id" element={<TournamentDetails />} />
+                    <Route path="/leaderboard" element={<Leaderboard />} />
+                    <Route path="/join-us" element={<JoinUs />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<Signup />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/admin" element={<AdminPanel />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/reset-password-page" element={<ResetPasswordPage />} />
+                    <Route path="/terms" element={<Terms />} />
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/404" element={<NotFound />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </main>
+                <Footer />
               </div>
             </BrowserRouter>
           </TooltipProvider>
