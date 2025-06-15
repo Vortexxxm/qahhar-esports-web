@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { Trophy, Users, Target, Gamepad2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -277,7 +276,20 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* News Section - Moved before Features Section */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          {newsLoading ? (
+            <div className="animate-pulse">
+              <div className="bg-gray-800 rounded-lg p-6 h-64 max-w-4xl mx-auto"></div>
+            </div>
+          ) : (
+            <MobileNewsSection news={newsData || []} />
+          )}
+        </div>
+      </section>
+
+      {/* Features Section - Now after News */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <motion.h2
@@ -319,19 +331,6 @@ const Home = () => {
               </motion.div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* News Section */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          {newsLoading ? (
-            <div className="animate-pulse">
-              <div className="bg-gray-800 rounded-lg p-6 h-64 max-w-4xl mx-auto"></div>
-            </div>
-          ) : (
-            <MobileNewsSection news={newsData || []} />
-          )}
         </div>
       </section>
     </div>
