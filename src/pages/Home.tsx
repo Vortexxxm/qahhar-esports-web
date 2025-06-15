@@ -42,8 +42,9 @@ const Home = () => {
       console.log('Special players fetched:', data);
       return data;
     },
-    staleTime: 30000, // Cache for 30 seconds
-    refetchOnWindowFocus: false
+    staleTime: 5000, // Cache for 5 seconds
+    refetchOnWindowFocus: true,
+    refetchInterval: 10000 // Refetch every 10 seconds
   });
 
   // Get all leaderboard scores
@@ -62,60 +63,9 @@ const Home = () => {
       console.log('Leaderboard scores fetched:', data);
       return data;
     },
-    staleTime: 30000,
-    refetchOnWindowFocus: false
-  });
-
-  const { data: leaderboardData, isLoading: leaderboardLoading } = useQuery({
-    queryKey: ['leaderboard-preview'],
-    queryFn: async () => {
-      console.log('Fetching leaderboard preview...');
-      const { data, error } = await supabase
-        .from('profiles')
-        .select(`
-          id,
-          username,
-          full_name,
-          avatar_url,
-          game_id
-        `)
-        .limit(10); // Get more profiles to ensure we have enough
-
-      if (error) {
-        console.error('Error fetching profiles:', error);
-        throw error;
-      }
-
-      // Get leaderboard data separately
-      const { data: leaderboardScores, error: scoresError } = await supabase
-        .from('leaderboard_scores')
-        .select('user_id, points, wins, kills, deaths, visible_in_leaderboard')
-        .eq('visible_in_leaderboard', true)
-        .order('points', { ascending: false })
-        .limit(10);
-
-      if (scoresError) {
-        console.error('Error fetching leaderboard scores:', scoresError);
-        throw scoresError;
-      }
-
-      // Combine the data
-      const combinedData = data?.map(profile => {
-        const score = leaderboardScores?.find(score => score.user_id === profile.id);
-        return {
-          ...profile,
-          points: score?.points || 0,
-          wins: score?.wins || 0,
-          kills: score?.kills || 0,
-          deaths: score?.deaths || 0
-        };
-      }).filter(profile => profile.points > 0).slice(0, 3) || [];
-
-      console.log('Leaderboard preview data:', combinedData);
-      return combinedData;
-    },
-    staleTime: 30000,
-    refetchOnWindowFocus: false
+    staleTime: 5000,
+    refetchOnWindowFocus: true,
+    refetchInterval: 10000
   });
 
   const { data: newsData, isLoading: newsLoading } = useQuery({
@@ -135,8 +85,9 @@ const Home = () => {
       console.log('News fetched:', data);
       return data || [];
     },
-    staleTime: 30000,
-    refetchOnWindowFocus: false
+    staleTime: 5000,
+    refetchOnWindowFocus: true,
+    refetchInterval: 15000
   });
 
   // Transform player data with leaderboard scores
@@ -267,7 +218,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Featured Players Section - Show even while loading */}
+      {/* Featured Players Section - Monthly player on the right, Weekly on the left */}
       <section className="py-16 bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm">
         <div className="container mx-auto px-4">
           <motion.h2
@@ -290,25 +241,29 @@ const Home = () => {
             </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-              {weeklyPlayer && (
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <WeeklyPlayerCard player={weeklyPlayer} />
-                </motion.div>
-              )}
-              
+              {/* Monthly Player on the Right (appears first on desktop) */}
               {monthlyPlayer && (
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: 0.4 }}
+                  transition={{ delay: 0.2 }}
+                  className="md:order-2"
                 >
                   <MonthlyPlayerCard player={monthlyPlayer} />
+                </motion.div>
+              )}
+              
+              {/* Weekly Player on the Left (appears second on desktop) */}
+              {weeklyPlayer && (
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.4 }}
+                  className="md:order-1"
+                >
+                  <WeeklyPlayerCard player={weeklyPlayer} />
                 </motion.div>
               )}
               
@@ -364,68 +319,6 @@ const Home = () => {
               </motion.div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Top Players Preview */}
-      <section className="py-16 bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4">
-          <motion.div
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              أفضل اللاعبين
-            </h2>
-            <p className="text-white/70 mb-8">تعرف على المتصدرين في مجتمعنا</p>
-            <Link to="/leaderboard">
-              <Button className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-red-700">
-                عرض جميع المتصدرين
-              </Button>
-            </Link>
-          </motion.div>
-          
-          {leaderboardLoading ? (
-            <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="bg-gray-800 rounded-lg p-6 h-32"></div>
-                </div>
-              ))}
-            </div>
-          ) : leaderboardData && leaderboardData.length > 0 ? (
-            <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {leaderboardData.slice(0, 3).map((player, index) => (
-                <motion.div
-                  key={player.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Card className="gaming-card text-center hover:scale-105 transition-all duration-300">
-                    <CardContent className="p-6">
-                      <div className="text-4xl font-bold text-s3m-red mb-2">
-                        #{index + 1}
-                      </div>
-                      <h3 className="text-lg font-bold text-white mb-1">
-                        {player.username || 'مجهول'}
-                      </h3>
-                      <p className="text-yellow-400 font-bold text-xl">
-                        {Number(player.points || 0).toLocaleString()} نقطة
-                      </p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center text-white/60">
-              لا توجد بيانات متصدرين حالياً
-            </div>
-          )}
         </div>
       </section>
 
