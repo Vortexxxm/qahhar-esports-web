@@ -13,9 +13,11 @@ import SmartGreeting from "@/components/SmartGreeting";
 import HomepageVideo from "@/components/HomepageVideo";
 
 const Home = () => {
-  const { data: specialPlayers } = useQuery({
+  // Fetch all data independently to avoid dependency issues
+  const { data: specialPlayers, isLoading: specialPlayersLoading } = useQuery({
     queryKey: ['special-players'],
     queryFn: async () => {
+      console.log('Fetching special players...');
       const { data, error } = await supabase
         .from('special_players')
         .select(`
@@ -33,32 +35,41 @@ const Home = () => {
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  // Get leaderboard scores for special players
-  const { data: specialPlayersScores } = useQuery({
-    queryKey: ['special-players-scores'],
-    queryFn: async () => {
-      if (!specialPlayers?.length) return [];
-      
-      const userIds = specialPlayers.map(p => p.user_id);
-      const { data, error } = await supabase
-        .from('leaderboard_scores')
-        .select('*')
-        .in('user_id', userIds);
-
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching special players:', error);
+        throw error;
+      }
+      console.log('Special players fetched:', data);
       return data;
     },
-    enabled: !!specialPlayers?.length
+    staleTime: 30000, // Cache for 30 seconds
+    refetchOnWindowFocus: false
   });
 
-  const { data: leaderboardData } = useQuery({
+  // Get all leaderboard scores
+  const { data: allLeaderboardScores, isLoading: scoresLoading } = useQuery({
+    queryKey: ['all-leaderboard-scores'],
+    queryFn: async () => {
+      console.log('Fetching all leaderboard scores...');
+      const { data, error } = await supabase
+        .from('leaderboard_scores')
+        .select('*');
+
+      if (error) {
+        console.error('Error fetching leaderboard scores:', error);
+        throw error;
+      }
+      console.log('Leaderboard scores fetched:', data);
+      return data;
+    },
+    staleTime: 30000,
+    refetchOnWindowFocus: false
+  });
+
+  const { data: leaderboardData, isLoading: leaderboardLoading } = useQuery({
     queryKey: ['leaderboard-preview'],
     queryFn: async () => {
+      console.log('Fetching leaderboard preview...');
       const { data, error } = await supabase
         .from('profiles')
         .select(`
@@ -68,9 +79,12 @@ const Home = () => {
           avatar_url,
           game_id
         `)
-        .limit(3);
+        .limit(10); // Get more profiles to ensure we have enough
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profiles:', error);
+        throw error;
+      }
 
       // Get leaderboard data separately
       const { data: leaderboardScores, error: scoresError } = await supabase
@@ -78,9 +92,12 @@ const Home = () => {
         .select('user_id, points, wins, kills, deaths, visible_in_leaderboard')
         .eq('visible_in_leaderboard', true)
         .order('points', { ascending: false })
-        .limit(3);
+        .limit(10);
 
-      if (scoresError) throw scoresError;
+      if (scoresError) {
+        console.error('Error fetching leaderboard scores:', scoresError);
+        throw scoresError;
+      }
 
       // Combine the data
       const combinedData = data?.map(profile => {
@@ -92,31 +109,41 @@ const Home = () => {
           kills: score?.kills || 0,
           deaths: score?.deaths || 0
         };
-      }).filter(profile => profile.points > 0) || [];
+      }).filter(profile => profile.points > 0).slice(0, 3) || [];
 
+      console.log('Leaderboard preview data:', combinedData);
       return combinedData;
-    }
+    },
+    staleTime: 30000,
+    refetchOnWindowFocus: false
   });
 
-  const { data: newsData } = useQuery({
+  const { data: newsData, isLoading: newsLoading } = useQuery({
     queryKey: ['homepage-news'],
     queryFn: async () => {
+      console.log('Fetching news...');
       const { data, error } = await supabase
         .from('news')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(3);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching news:', error);
+        throw error;
+      }
+      console.log('News fetched:', data);
       return data || [];
-    }
+    },
+    staleTime: 30000,
+    refetchOnWindowFocus: false
   });
 
   // Transform player data with leaderboard scores
   const transformPlayerData = (player: any) => {
-    if (!player || !player.profiles) return null;
+    if (!player || !player.profiles || !allLeaderboardScores) return null;
     
-    const leaderboardScore = specialPlayersScores?.find(score => score.user_id === player.user_id);
+    const leaderboardScore = allLeaderboardScores.find(score => score.user_id === player.user_id);
     
     return {
       id: player.user_id,
@@ -141,6 +168,9 @@ const Home = () => {
 
   const weeklyPlayer = weeklyPlayerRaw ? transformPlayerData(weeklyPlayerRaw) : null;
   const monthlyPlayer = monthlyPlayerRaw ? transformPlayerData(monthlyPlayerRaw) : null;
+
+  console.log('Weekly player:', weeklyPlayer);
+  console.log('Monthly player:', monthlyPlayer);
 
   const features = [
     {
@@ -168,6 +198,9 @@ const Home = () => {
       link: "/join-us"
     }
   ];
+
+  // Show loading state while data is being fetched
+  const isDataLoading = specialPlayersLoading || scoresLoading || newsLoading;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-s3m-red/20">
@@ -223,7 +256,7 @@ const Home = () => {
             </motion.div>
           </motion.div>
 
-          {/* Homepage Video */}
+          {/* Homepage Video - Always show */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -234,19 +267,28 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Featured Players Section */}
-      {(weeklyPlayer || monthlyPlayer) && (
-        <section className="py-16 bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm">
-          <div className="container mx-auto px-4">
-            <motion.h2
-              className="text-3xl md:text-4xl font-bold text-center mb-12 text-white"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              اللاعبون المميزون
-            </motion.h2>
-            
+      {/* Featured Players Section - Show even while loading */}
+      <section className="py-16 bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm">
+        <div className="container mx-auto px-4">
+          <motion.h2
+            className="text-3xl md:text-4xl font-bold text-center mb-12 text-white"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            اللاعبون المميزون
+          </motion.h2>
+          
+          {isDataLoading ? (
+            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              <div className="animate-pulse">
+                <div className="bg-gray-800 rounded-lg p-6 h-64"></div>
+              </div>
+              <div className="animate-pulse">
+                <div className="bg-gray-800 rounded-lg p-6 h-64"></div>
+              </div>
+            </div>
+          ) : (
             <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               {weeklyPlayer && (
                 <motion.div
@@ -269,10 +311,16 @@ const Home = () => {
                   <MonthlyPlayerCard player={monthlyPlayer} />
                 </motion.div>
               )}
+              
+              {!weeklyPlayer && !monthlyPlayer && !isDataLoading && (
+                <div className="col-span-2 text-center text-white/60">
+                  لا توجد لاعبين مميزين حالياً
+                </div>
+              )}
             </div>
-          </div>
-        </section>
-      )}
+          )}
+        </div>
+      </section>
 
       {/* Features Section */}
       <section className="py-20">
@@ -296,32 +344,7 @@ const Home = () => {
           </motion.p>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                icon: Trophy,
-                title: "البطولات",
-                description: "شارك في البطولات واربح جوائز قيمة",
-                link: "/tournaments"
-              },
-              {
-                icon: Users,
-                title: "الفريق",
-                description: "تعرف على أعضاء الفريق المحترفين",
-                link: "/team"
-              },
-              {
-                icon: Target,
-                title: "المتصدرين",
-                description: "اطلع على ترتيب أفضل اللاعبين",
-                link: "/leaderboard"
-              },
-              {
-                icon: Gamepad2,
-                title: "انضم إلينا",
-                description: "كن جزءاً من عائلة S3M",
-                link: "/join-us"
-              }
-            ].map((feature, index) => (
+            {features.map((feature, index) => (
               <motion.div
                 key={feature.title}
                 initial={{ opacity: 0, y: 20 }}
@@ -345,26 +368,34 @@ const Home = () => {
       </section>
 
       {/* Top Players Preview */}
-      {leaderboardData && leaderboardData.length > 0 && (
-        <section className="py-16 bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm">
-          <div className="container mx-auto px-4">
-            <motion.div
-              className="text-center mb-12"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                أفضل اللاعبين
-              </h2>
-              <p className="text-white/70 mb-8">تعرف على المتصدرين في مجتمعنا</p>
-              <Link to="/leaderboard">
-                <Button className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-red-700">
-                  عرض جميع المتصدرين
-                </Button>
-              </Link>
-            </motion.div>
-            
+      <section className="py-16 bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm">
+        <div className="container mx-auto px-4">
+          <motion.div
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              أفضل اللاعبين
+            </h2>
+            <p className="text-white/70 mb-8">تعرف على المتصدرين في مجتمعنا</p>
+            <Link to="/leaderboard">
+              <Button className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-red-700">
+                عرض جميع المتصدرين
+              </Button>
+            </Link>
+          </motion.div>
+          
+          {leaderboardLoading ? (
+            <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-gray-800 rounded-lg p-6 h-32"></div>
+                </div>
+              ))}
+            </div>
+          ) : leaderboardData && leaderboardData.length > 0 ? (
             <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
               {leaderboardData.slice(0, 3).map((player, index) => (
                 <motion.div
@@ -390,14 +421,24 @@ const Home = () => {
                 </motion.div>
               ))}
             </div>
-          </div>
-        </section>
-      )}
+          ) : (
+            <div className="text-center text-white/60">
+              لا توجد بيانات متصدرين حالياً
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* News Section */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <MobileNewsSection news={newsData || []} />
+          {newsLoading ? (
+            <div className="animate-pulse">
+              <div className="bg-gray-800 rounded-lg p-6 h-64 max-w-4xl mx-auto"></div>
+            </div>
+          ) : (
+            <MobileNewsSection news={newsData || []} />
+          )}
         </div>
       </section>
     </div>
