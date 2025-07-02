@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,7 +22,7 @@ interface BlogPost {
   profiles?: {
     username: string;
     full_name: string | null;
-  };
+  } | null;
 }
 
 const GirlsBlog = () => {
@@ -37,7 +36,7 @@ const GirlsBlog = () => {
         .from('girls_blog')
         .select(`
           *,
-          profiles:user_id (
+          profiles!girls_blog_user_id_fkey (
             username,
             full_name
           )
@@ -45,7 +44,10 @@ const GirlsBlog = () => {
         .eq('is_published', true)
         .order('published_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching blog posts:', error);
+        throw error;
+      }
       return data as BlogPost[];
     },
   });

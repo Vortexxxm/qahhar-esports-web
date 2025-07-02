@@ -1,11 +1,10 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Users, MapPin, Edit, Plus } from "lucide-react";
+import { Calendar, Clock, Users, MapPin, Edit, Plus, Trophy } from "lucide-react";
 import { format, isFuture, isPast, isToday } from "date-fns";
 import { ar } from "date-fns/locale";
 
@@ -42,7 +41,7 @@ const GirlsTrainingSchedule = () => {
       case 'training':
         return <Users className="h-4 w-4" />;
       case 'war':
-        return <Badge className="h-4 w-4" />;
+        return <Trophy className="h-4 w-4" />;
       case 'meeting':
         return <Calendar className="h-4 w-4" />;
       case 'tournament':

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,7 +22,7 @@ interface Suggestion {
   profiles?: {
     username: string;
     full_name: string | null;
-  };
+  } | null;
 }
 
 const GirlsSuggestions = () => {
@@ -36,7 +35,7 @@ const GirlsSuggestions = () => {
         .from('girls_suggestions')
         .select(`
           *,
-          profiles:user_id (
+          profiles!girls_suggestions_user_id_fkey (
             username,
             full_name
           )
@@ -44,7 +43,10 @@ const GirlsSuggestions = () => {
         .order('votes', { ascending: false })
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching suggestions:', error);
+        throw error;
+      }
       return data as Suggestion[];
     },
   });

@@ -45,7 +45,7 @@ const GirlsJoinForm = () => {
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from('girls_join_requests').insert([data]);
+      const { error } = await supabase.from('girls_join_requests').insert(data);
       
       if (error) throw error;
 

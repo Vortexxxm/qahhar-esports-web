@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,7 +23,7 @@ interface GalleryImage {
   profiles?: {
     username: string;
     full_name: string | null;
-  };
+  } | null;
 }
 
 const GirlsGallery = () => {
@@ -39,7 +38,7 @@ const GirlsGallery = () => {
         .from('girls_gallery')
         .select(`
           *,
-          profiles:uploaded_by (
+          profiles!girls_gallery_uploaded_by_fkey (
             username,
             full_name
           )
@@ -47,7 +46,10 @@ const GirlsGallery = () => {
         .order('is_featured', { ascending: false })
         .order('uploaded_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching gallery images:', error);
+        throw error;
+      }
       return data as GalleryImage[];
     },
   });

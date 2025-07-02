@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,7 +25,7 @@ interface Highlight {
   profiles?: {
     username: string;
     full_name: string | null;
-  };
+  } | null;
 }
 
 const GirlsHighlights = () => {
@@ -40,7 +39,7 @@ const GirlsHighlights = () => {
         .from('girls_highlights')
         .select(`
           *,
-          profiles:user_id (
+          profiles!girls_highlights_user_id_fkey (
             username,
             full_name
           )
@@ -50,7 +49,10 @@ const GirlsHighlights = () => {
         .order('is_featured', { ascending: false })
         .order('submitted_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching highlights:', error);
+        throw error;
+      }
       return data as Highlight[];
     },
   });

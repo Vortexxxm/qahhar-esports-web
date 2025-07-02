@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,7 +22,7 @@ interface GirlsAward {
   profiles?: {
     username: string;
     full_name: string | null;
-  };
+  } | null;
 }
 
 const GirlsAwards = () => {
@@ -36,14 +35,17 @@ const GirlsAwards = () => {
         .from('girls_awards')
         .select(`
           *,
-          profiles:user_id (
+          profiles!girls_awards_user_id_fkey (
             username,
             full_name
           )
         `)
         .order('award_date', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching awards:', error);
+        throw error;
+      }
       return data as GirlsAward[];
     },
   });

@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,7 +22,7 @@ interface WeeklyRating {
     username: string;
     full_name: string | null;
     avatar_url: string | null;
-  };
+  } | null;
 }
 
 const GirlsWeeklyRankings = () => {
@@ -37,7 +36,7 @@ const GirlsWeeklyRankings = () => {
         .from('girls_weekly_ratings')
         .select(`
           *,
-          profiles:user_id (
+          profiles!girls_weekly_ratings_user_id_fkey (
             username,
             full_name,
             avatar_url
@@ -46,7 +45,10 @@ const GirlsWeeklyRankings = () => {
         .eq('week_start', currentWeekStart)
         .order('total_score', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching weekly ratings:', error);
+        throw error;
+      }
       return data as WeeklyRating[];
     },
   });
