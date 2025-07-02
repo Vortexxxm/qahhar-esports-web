@@ -41,7 +41,7 @@ const News = () => {
       return data as NewsItem[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime)
   });
 
   // Memoize filtered news to prevent unnecessary re-renders
