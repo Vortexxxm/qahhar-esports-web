@@ -18,11 +18,6 @@ interface WeeklyRating {
   total_score: number | null;
   notes: string | null;
   created_at: string;
-  profiles?: {
-    username: string;
-    full_name: string | null;
-    avatar_url: string | null;
-  } | null;
 }
 
 const GirlsWeeklyRankings = () => {
@@ -34,14 +29,7 @@ const GirlsWeeklyRankings = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('girls_weekly_ratings')
-        .select(`
-          *,
-          profiles!girls_weekly_ratings_user_id_fkey (
-            username,
-            full_name,
-            avatar_url
-          )
-        `)
+        .select('*')
         .eq('week_start', currentWeekStart)
         .order('total_score', { ascending: false });
 
@@ -125,7 +113,7 @@ const GirlsWeeklyRankings = () => {
                     <div className="flex justify-between items-start mb-4">
                       <div>
                         <h3 className="text-xl font-bold text-white">
-                          {rating.profiles?.full_name || rating.profiles?.username || 'مجهول'}
+                          لاعبة #{index + 1}
                         </h3>
                         <p className="text-white/60">المركز #{index + 1}</p>
                       </div>

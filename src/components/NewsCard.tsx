@@ -6,6 +6,7 @@ import { Edit, Calendar, PlayCircle, Eye, EyeOff, Expand } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { useState, memo } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface NewsItem {
   id: string;
@@ -28,6 +29,10 @@ interface NewsCardProps {
 const NewsCard = memo(({ news, onEdit, onImageClick }: NewsCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const { userRole } = useAuth();
+
+  // Check if user can edit - admin or journalist
+  const canEdit = userRole === 'admin' || userRole === 'journalist';
 
   const handleImageClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -87,7 +92,7 @@ const NewsCard = memo(({ news, onEdit, onImageClick }: NewsCardProps) => {
             </div>
           ) : null}
           
-          {onEdit && (
+          {canEdit && onEdit && (
             <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <Button
                 size="sm"
@@ -106,7 +111,7 @@ const NewsCard = memo(({ news, onEdit, onImageClick }: NewsCardProps) => {
           <CardTitle className="text-lg text-white line-clamp-2 flex-1 leading-tight">
             {news.title}
           </CardTitle>
-          {onEdit && !news.image_url && !news.video_url && (
+          {canEdit && onEdit && !news.image_url && !news.video_url && (
             <Button
               size="sm"
               onClick={() => onEdit(news)}

@@ -1,353 +1,320 @@
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { UserPlus, Heart, Crown, Star } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
+import { UserPlus, Send } from "lucide-react";
 
-const formSchema = z.object({
-  full_name: z.string().min(2, "الاسم يجب أن يكون على الأقل حرفين"),
-  age: z.number().min(13, "العمر يجب أن يكون 13 سنة على الأقل").max(30, "العمر يجب أن يكون أقل من 30 سنة"),
-  game_id: z.string().min(1, "معرف اللعبة مطلوب"),
-  phone_number: z.string().min(10, "رقم الهاتف يجب أن يكون على الأقل 10 أرقام"),
-  email: z.string().email("البريد الإلكتروني غير صحيح"),
-  experience_level: z.enum(["beginner", "intermediate", "advanced", "professional"]),
-  play_hours_daily: z.string().min(1, "ساعات اللعب مطلوبة"),
-  previous_teams: z.string().optional(),
-  why_join: z.string().min(20, "يجب أن يكون السبب 20 حرف على الأقل"),
-  commitment_level: z.enum(["casual", "semi_serious", "serious", "professional"]),
-  can_attend_training: z.boolean(),
-  preferred_role: z.string().optional(),
-});
-
-type FormData = z.infer<typeof formSchema>;
+interface FormData {
+  full_name: string;
+  email: string;
+  phone_number: string;
+  age: number;
+  game_id: string;
+  experience_level: string;
+  preferred_role: string;
+  play_hours_daily: string;
+  commitment_level: string;
+  can_attend_training: boolean;
+  previous_teams: string;
+  why_join: string;
+  notes: string;
+}
 
 const GirlsJoinForm = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      can_attend_training: true,
+  const [formData, setFormData] = useState<FormData>({
+    full_name: '',
+    email: '',
+    phone_number: '',
+    age: 0,
+    game_id: '',
+    experience_level: '',
+    preferred_role: '',
+    play_hours_daily: '',
+    commitment_level: '',
+    can_attend_training: true,
+    previous_teams: '',
+    why_join: '',
+    notes: ''
+  });
+
+  const submitMutation = useMutation({
+    mutationFn: async (data: FormData) => {
+      const { error } = await supabase
+        .from('girls_join_requests')
+        .insert(data);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({
+        title: "تم إرسال الطلب بنجاح",
+        description: "سيتم مراجعة طلبك والرد عليك في أقرب وقت ممكن",
+      });
+      setFormData({
+        full_name: '',
+        email: '',
+        phone_number: '',
+        age: 0,
+        game_id: '',
+        experience_level: '',
+        preferred_role: '',
+        play_hours_daily: '',
+        commitment_level: '',
+        can_attend_training: true,
+        previous_teams: '',
+        why_join: '',
+        notes: ''
+      });
+      queryClient.invalidateQueries({ queryKey: ['join-requests'] });
+    },
+    onError: (error) => {
+      console.error('Error submitting join request:', error);
+      toast({
+        title: "خطأ في إرسال الطلب",
+        description: "حدث خطأ أثناء إرسال طلبك، يرجى المحاولة مرة أخرى",
+        variant: "destructive",
+      });
     },
   });
 
-  const onSubmit = async (data: FormData) => {
-    setIsSubmitting(true);
-    try {
-      const { error } = await supabase.from('girls_join_requests').insert(data);
-      
-      if (error) throw error;
-
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate required fields
+    if (!formData.full_name || !formData.email || !formData.phone_number || 
+        !formData.age || !formData.game_id || !formData.why_join) {
       toast({
-        title: "تم إرسال الطلب بنجاح! 🎉",
-        description: "سيتم مراجعة طلبك والتواصل معك قريباً",
-      });
-
-      form.reset();
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      toast({
-        title: "حدث خطأ",
-        description: "لم يتم إرسال الطلب، يرجى المحاولة مرة أخرى",
+        title: "يرجى ملء جميع الحقول المطلوبة",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
+      return;
     }
+
+    submitMutation.mutate(formData);
+  };
+
+  const handleInputChange = (field: keyof FormData, value: string | number | boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-white flex items-center justify-center gap-2 mb-4">
-          <Crown className="h-8 w-8 text-pink-400" />
-          انضمي لفريق S3M Girls
+    <div className="space-y-6">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-white flex items-center justify-center gap-2 mb-4">
+          <UserPlus className="h-6 w-6 text-pink-400" />
+          انضمي إلى فريق البنات
         </h2>
-        <p className="text-white/80 text-lg max-w-2xl mx-auto">
-          هل تحلمين بأن تكوني جزءاً من أقوى فريق نسائي في عالم الألعاب الإلكترونية؟ 
-          املأي النموذج أدناه وابدأي رحلتك معنا! 💫
+        <p className="text-white/70">
+          املئي النموذج أدناه للتقديم للانضمام إلى فريق البنات في S3M E-Sports
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3 mb-8">
-        <Card className="gaming-card bg-gradient-to-br from-pink-500/20 to-purple-500/20 border-pink-400/30 text-center">
-          <CardContent className="p-6">
-            <Crown className="h-12 w-12 text-pink-400 mx-auto mb-3" />
-            <h3 className="font-bold text-white mb-2">قيادة مميزة</h3>
-            <p className="text-white/70 text-sm">بقيادة شهد والفريق المحترف</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="gaming-card bg-gradient-to-br from-purple-500/20 to-blue-500/20 border-purple-400/30 text-center">
-          <CardContent className="p-6">
-            <Star className="h-12 w-12 text-purple-400 mx-auto mb-3" />
-            <h3 className="font-bold text-white mb-2">بيئة احترافية</h3>
-            <p className="text-white/70 text-sm">تدريب منتظم وتطوير مستمر</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="gaming-card bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-400/30 text-center">
-          <CardContent className="p-6">
-            <Heart className="h-12 w-12 text-blue-400 mx-auto mb-3" />
-            <h3 className="font-bold text-white mb-2">مجتمع متميز</h3>
-            <p className="text-white/70 text-sm">صداقات حقيقية وذكريات جميلة</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="gaming-card">
+      <Card className="gaming-card max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle className="text-white text-xl flex items-center gap-2">
-            <UserPlus className="h-6 w-6 text-pink-400" />
-            نموذج الانضمام
-          </CardTitle>
+          <CardTitle className="text-white text-center">نموذج طلب الانضمام</CardTitle>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid gap-6 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="full_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white">الاسم الكامل *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="أدخلي اسمك الكامل" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="age"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white">العمر *</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="العمر"
-                          {...field}
-                          onChange={e => field.onChange(parseInt(e.target.value))}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="game_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white">معرف اللعبة *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="معرف اللعبة (Player ID)" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="phone_number"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white">رقم الهاتف *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="05xxxxxxxx" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white">البريد الإلكتروني *</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="example@email.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="experience_level"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white">مستوى الخبرة *</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="اختاري مستوى خبرتك" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="beginner">مبتدئة</SelectItem>
-                          <SelectItem value="intermediate">متوسطة</SelectItem>
-                          <SelectItem value="advanced">متقدمة</SelectItem>
-                          <SelectItem value="professional">محترفة</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="play_hours_daily"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white">ساعات اللعب يومياً *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="مثال: 2-4 ساعات" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="commitment_level"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-white">مستوى الالتزام *</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="اختاري مستوى التزامك" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="casual">عادي</SelectItem>
-                          <SelectItem value="semi_serious">شبه جدي</SelectItem>
-                          <SelectItem value="serious">جدي</SelectItem>
-                          <SelectItem value="professional">احترافي</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Personal Information */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="full_name" className="text-white">الاسم الكامل *</Label>
+                <Input
+                  id="full_name"
+                  value={formData.full_name}
+                  onChange={(e) => handleInputChange('full_name', e.target.value)}
+                  className="bg-black/30 border-white/20 text-white"
+                  placeholder="أدخلي اسمك الكامل"
+                  required
                 />
               </div>
+              <div>
+                <Label htmlFor="email" className="text-white">البريد الإلكتروني *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  className="bg-black/30 border-white/20 text-white"
+                  placeholder="example@email.com"
+                  required
+                />
+              </div>
+            </div>
 
-              <FormField
-                control={form.control}
-                name="previous_teams"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">الفرق السابقة (اختياري)</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="اذكري الفرق التي لعبت معها سابقاً (إن وجد)"
-                        className="resize-none"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="phone_number" className="text-white">رقم الهاتف *</Label>
+                <Input
+                  id="phone_number"
+                  value={formData.phone_number}
+                  onChange={(e) => handleInputChange('phone_number', e.target.value)}
+                  className="bg-black/30 border-white/20 text-white"
+                  placeholder="05xxxxxxxx"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="age" className="text-white">العمر *</Label>
+                <Input
+                  id="age"
+                  type="number"
+                  min="16"
+                  max="35"
+                  value={formData.age || ''}
+                  onChange={(e) => handleInputChange('age', parseInt(e.target.value) || 0)}
+                  className="bg-black/30 border-white/20 text-white"
+                  placeholder="18"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Gaming Information */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="game_id" className="text-white">معرف اللعبة *</Label>
+                <Input
+                  id="game_id"
+                  value={formData.game_id}
+                  onChange={(e) => handleInputChange('game_id', e.target.value)}
+                  className="bg-black/30 border-white/20 text-white"
+                  placeholder="اسم المستخدم في اللعبة"
+                  required
+                />
+              </div>
+              <div>
+                <Label className="text-white">مستوى الخبرة</Label>
+                <Select onValueChange={(value) => handleInputChange('experience_level', value)}>
+                  <SelectTrigger className="bg-black/30 border-white/20 text-white">
+                    <SelectValue placeholder="اختاري مستوى خبرتك" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="beginner">مبتدئة</SelectItem>
+                    <SelectItem value="intermediate">متوسطة</SelectItem>
+                    <SelectItem value="advanced">متقدمة</SelectItem>
+                    <SelectItem value="professional">محترفة</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-white">الدور المفضل</Label>
+                <Input
+                  value={formData.preferred_role}
+                  onChange={(e) => handleInputChange('preferred_role', e.target.value)}
+                  className="bg-black/30 border-white/20 text-white"
+                  placeholder="مثل: Duelist, Controller, ..."
+                />
+              </div>
+              <div>
+                <Label className="text-white">ساعات اللعب اليومية</Label>
+                <Select onValueChange={(value) => handleInputChange('play_hours_daily', value)}>
+                  <SelectTrigger className="bg-black/30 border-white/20 text-white">
+                    <SelectValue placeholder="كم ساعة تلعبين يومياً؟" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1-2">1-2 ساعة</SelectItem>
+                    <SelectItem value="3-4">3-4 ساعات</SelectItem>
+                    <SelectItem value="5-6">5-6 ساعات</SelectItem>
+                    <SelectItem value="7+">أكثر من 7 ساعات</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-white">مستوى الالتزام</Label>
+              <Select onValueChange={(value) => handleInputChange('commitment_level', value)}>
+                <SelectTrigger className="bg-black/30 border-white/20 text-white">
+                  <SelectValue placeholder="ما مدى التزامك؟" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="casual">عادي</SelectItem>
+                  <SelectItem value="semi_serious">جدي نوعاً ما</SelectItem>
+                  <SelectItem value="serious">جدي</SelectItem>
+                  <SelectItem value="professional">محترف</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="can_attend_training"
+                checked={formData.can_attend_training}
+                onCheckedChange={(checked) => handleInputChange('can_attend_training', !!checked)}
               />
+              <Label htmlFor="can_attend_training" className="text-white">
+                أستطيع حضور التدريبات المنتظمة
+              </Label>
+            </div>
 
-              <FormField
-                control={form.control}
-                name="preferred_role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">الدور المفضل (اختياري)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="مثال: Support, Assault, Sniper" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            <div>
+              <Label htmlFor="previous_teams" className="text-white">الفرق السابقة (اختياري)</Label>
+              <Textarea
+                id="previous_teams"
+                value={formData.previous_teams}
+                onChange={(e) => handleInputChange('previous_teams', e.target.value)}
+                className="bg-black/30 border-white/20 text-white"
+                placeholder="اذكري أي فرق سابقة لعبت معها..."
+                rows={3}
               />
+            </div>
 
-              <FormField
-                control={form.control}
-                name="why_join"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">لماذا تريدين الانضمام لفريق S3M Girls؟ *</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="أخبرينا عن دوافعك وأهدافك في الانضمام للفريق..."
-                        className="resize-none min-h-[100px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            <div>
+              <Label htmlFor="why_join" className="text-white">لماذا تريدين الانضمام؟ *</Label>
+              <Textarea
+                id="why_join"
+                value={formData.why_join}
+                onChange={(e) => handleInputChange('why_join', e.target.value)}
+                className="bg-black/30 border-white/20 text-white"
+                placeholder="أخبرينا عن دوافعك للانضمام إلى الفريق..."
+                rows={4}
+                required
               />
+            </div>
 
-              <FormField
-                control={form.control}
-                name="can_attend_training"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-white/20 p-4">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="text-white">
-                        أستطيع حضور التدريبات المنتظمة
-                      </FormLabel>
-                      <p className="text-sm text-white/60">
-                        التدريبات مهمة لتطوير مستوى الفريق والتناغم بين الأعضاء
-                      </p>
-                    </div>
-                  </FormItem>
-                )}
+            <div>
+              <Label htmlFor="notes" className="text-white">ملاحظات إضافية</Label>
+              <Textarea
+                id="notes"
+                value={formData.notes}
+                onChange={(e) => handleInputChange('notes', e.target.value)}
+                className="bg-black/30 border-white/20 text-white"
+                placeholder="أي معلومات أخرى تودين إضافتها..."
+                rows={3}
               />
+            </div>
 
-              <Button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-3 text-lg"
-              >
-                {isSubmitting ? "جاري الإرسال..." : "إرسال طلب الانضمام 💖"}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-
-      <Card className="gaming-card bg-gradient-to-r from-pink-500/10 to-purple-500/10 border-pink-400/30">
-        <CardContent className="p-6 text-center">
-          <h3 className="text-xl font-bold text-white mb-3">ملاحظة مهمة</h3>
-          <p className="text-white/80 leading-relaxed">
-            سيتم مراجعة جميع الطلبات بعناية من قبل قائدة الفريق شهد والإدارة. 
-            إذا تم قبول طلبك، سيتم التواصل معك خلال 3-5 أيام عمل. 
-            نتطلع لاستقبالك في عائلة S3M Girls! 👑✨
-          </p>
+            <Button
+              type="submit"
+              disabled={submitMutation.isPending}
+              className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+            >
+              {submitMutation.isPending ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+              ) : (
+                <Send className="h-4 w-4 mr-2" />
+              )}
+              {submitMutation.isPending ? 'جاري الإرسال...' : 'إرسال الطلب'}
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>

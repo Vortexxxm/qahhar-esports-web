@@ -19,10 +19,6 @@ interface BlogPost {
   is_published: boolean | null;
   published_at: string | null;
   created_at: string;
-  profiles?: {
-    username: string;
-    full_name: string | null;
-  } | null;
 }
 
 const GirlsBlog = () => {
@@ -34,13 +30,7 @@ const GirlsBlog = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('girls_blog')
-        .select(`
-          *,
-          profiles!girls_blog_user_id_fkey (
-            username,
-            full_name
-          )
-        `)
+        .select('*')
         .eq('is_published', true)
         .order('published_at', { ascending: false });
 
@@ -124,7 +114,7 @@ const GirlsBlog = () => {
                       <div className="flex items-center gap-4 text-sm text-white/60">
                         <span className="flex items-center gap-1">
                           <User className="h-3 w-3" />
-                          {post.profiles?.full_name || post.profiles?.username}
+                          كاتب مجهول
                         </span>
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />

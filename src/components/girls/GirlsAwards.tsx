@@ -19,10 +19,6 @@ interface GirlsAward {
   is_monetary: boolean | null;
   image_url: string | null;
   created_at: string;
-  profiles?: {
-    username: string;
-    full_name: string | null;
-  } | null;
 }
 
 const GirlsAwards = () => {
@@ -33,13 +29,7 @@ const GirlsAwards = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('girls_awards')
-        .select(`
-          *,
-          profiles!girls_awards_user_id_fkey (
-            username,
-            full_name
-          )
-        `)
+        .select('*')
         .order('award_date', { ascending: false });
 
       if (error) {
@@ -135,15 +125,6 @@ const GirlsAwards = () => {
                     />
                   </div>
                 )}
-                
-                <div className="text-center">
-                  <h3 className="font-bold text-white text-lg mb-1">
-                    {award.profiles?.full_name || award.profiles?.username || 'فائزة مجهولة'}
-                  </h3>
-                  <Badge className="bg-white/10 text-white/80 border-white/20">
-                    {award.award_type}
-                  </Badge>
-                </div>
                 
                 {award.description && (
                   <p className="text-white/80 text-sm text-center leading-relaxed">
