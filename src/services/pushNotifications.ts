@@ -39,18 +39,21 @@ export class PushNotificationService {
       const registration = await navigator.serviceWorker.register('/sw.js');
       await navigator.serviceWorker.ready;
 
+      // Use a valid VAPID public key or generate one
+      const vapidPublicKey = 'BEl62iUYgUivyIkv69yViA3O6tJHm5MQJ4x9HmQSL5p0QiG8JJ3_9BCZS-OM_w7-GHrg-Y3n9IwzD7bECo5lnxc';
+      
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array('BGn8W8C8kIJV7fPKCk2u32V7DWrO5nWPJtN3tSp7zJjS6X6J4gTFJ6HqogtfRsv0r9nqPG5hR3oDKpILLPk5vc8'),
+        applicationServerKey: this.urlBase64ToUint8Array(vapidPublicKey),
       });
 
-      // حفظ الاشتراك في قاعدة البيانات
+      // Save subscription to database - the table exists now
       const { error } = await supabase
         .from('push_subscriptions')
         .upsert({
           user_id: userId,
           subscription: JSON.stringify(subscription),
-          created_at: new Date().toISOString()
+          updated_at: new Date().toISOString()
         });
 
       if (error) {
