@@ -15,7 +15,8 @@ import TopPlayers from "@/components/admin/TopPlayers";
 import JoinRequests from "@/components/admin/JoinRequests";
 import TournamentRegistrations from "@/components/admin/TournamentRegistrations";
 import VideoManager from "@/components/admin/VideoManager";
-import { Shield, Users, Trophy, Settings, FileText, Video, UserPlus, Calendar, Menu, X } from "lucide-react";
+import AILeaderboardManager from "@/components/admin/AILeaderboardManager";
+import { Shield, Users, Trophy, Settings, FileText, Video, UserPlus, Calendar, Menu, X, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type UserWithProfile = {
@@ -47,28 +48,24 @@ const AdminPanel = () => {
   const { data: users, isLoading: usersLoading } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
-      // First get all profiles
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('*');
 
       if (profilesError) throw profilesError;
 
-      // Get user roles for each profile
       const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
         .select('*');
 
       if (rolesError) throw rolesError;
 
-      // Get leaderboard scores for each profile
       const { data: scoresData, error: scoresError } = await supabase
         .from('leaderboard_scores')
         .select('*');
 
       if (scoresError) throw scoresError;
 
-      // Combine the data
       const combinedData: UserWithProfile[] = profilesData.map(profile => ({
         id: profile.id,
         profiles: profile,
@@ -93,7 +90,6 @@ const AdminPanel = () => {
 
       if (error) throw error;
 
-      // Update rankings
       await supabase.rpc('update_leaderboard_rankings');
     },
     onSuccess: () => {
@@ -150,7 +146,6 @@ const AdminPanel = () => {
 
       if (error) throw error;
 
-      // Update rankings if making visible
       if (visibility) {
         await supabase.rpc('update_leaderboard_rankings');
       }
@@ -275,7 +270,6 @@ const AdminPanel = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-s3m-red/20">
-      {/* Enhanced Mobile-optimized header */}
       <div className="sticky top-0 z-50 bg-black/90 backdrop-blur-md border-b border-s3m-red/30 shadow-lg">
         <div className="container mx-auto max-w-7xl p-3 md:p-4">
           <div className="flex items-center justify-between">
@@ -293,7 +287,6 @@ const AdminPanel = () => {
               </div>
             </div>
             
-            {/* Mobile Menu Button */}
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
                 <p className="text-white/90 text-sm md:text-base font-medium">
@@ -313,7 +306,6 @@ const AdminPanel = () => {
             </div>
           </div>
           
-          {/* Mobile User Info */}
           {isMobileMenuOpen && (
             <div className="md:hidden mt-4 p-3 bg-black/40 rounded-lg border border-s3m-red/20">
               <p className="text-white text-sm font-medium">
@@ -327,7 +319,6 @@ const AdminPanel = () => {
 
       <div className="p-3 md:p-6 space-y-6">
         <div className="container mx-auto max-w-7xl">
-          {/* Enhanced Mobile stats */}
           <div className="mb-6">
             <AdminStats 
               totalUsers={totalUsers}
@@ -337,7 +328,6 @@ const AdminPanel = () => {
             />
           </div>
 
-          {/* Enhanced Mobile-First Tabs */}
           <Tabs defaultValue="requests" className="space-y-4">
             <div className="overflow-x-auto scrollbar-hide pb-2">
               <TabsList className="bg-gradient-to-r from-black/60 to-gray-900/60 border border-s3m-red/40 backdrop-blur-md w-full min-w-max flex p-1.5 rounded-xl shadow-lg">
@@ -374,6 +364,14 @@ const AdminPanel = () => {
                   <span className="sm:hidden">النقاط</span>
                 </TabsTrigger>
                 <TabsTrigger 
+                  value="ai-leaderboard" 
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-s3m-red data-[state=active]:to-red-600 data-[state=active]:text-white text-white/80 text-xs md:text-sm px-3 md:px-5 py-2.5 whitespace-nowrap rounded-lg transition-all duration-300 flex items-center gap-2 font-medium"
+                >
+                  <Zap className="w-4 h-4" />
+                  <span className="hidden sm:inline">الذكاء الاصطناعي</span>
+                  <span className="sm:hidden">الذكاء</span>
+                </TabsTrigger>
+                <TabsTrigger 
                   value="video" 
                   className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-s3m-red data-[state=active]:to-red-600 data-[state=active]:text-white text-white/80 text-xs md:text-sm px-3 md:px-5 py-2.5 whitespace-nowrap rounded-lg transition-all duration-300 flex items-center gap-2 font-medium"
                 >
@@ -384,7 +382,6 @@ const AdminPanel = () => {
               </TabsList>
             </div>
 
-            {/* Enhanced Mobile-optimized tab content */}
             <TabsContent value="requests" className="mt-6">
               <Card className="bg-gradient-to-br from-gray-900/95 to-black/95 border border-s3m-red/40 backdrop-blur-sm shadow-xl">
                 <CardHeader className="pb-3 p-4 md:p-6 border-b border-s3m-red/20">
@@ -477,6 +474,10 @@ const AdminPanel = () => {
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
+
+            <TabsContent value="ai-leaderboard" className="mt-6">
+              <AILeaderboardManager />
             </TabsContent>
 
             <TabsContent value="video" className="mt-6">

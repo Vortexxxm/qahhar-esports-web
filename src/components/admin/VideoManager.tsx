@@ -5,12 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 const VideoManager = () => {
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [videoUrl, setVideoUrl] = useState('');
   const [isAddingUrl, setIsAddingUrl] = useState(false);
   const { toast } = useToast();
@@ -67,7 +69,7 @@ const VideoManager = () => {
       const fileExt = file.name.split('.').pop();
       const fileName = `trailer-${Date.now()}.${fileExt}`;
       
-      // Upload to storage
+      // رفع الملف مع مراقبة التقدم
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('admin-videos')
         .upload(fileName, file, {
@@ -86,7 +88,6 @@ const VideoManager = () => {
         })
         .eq('key', 'homepage_trailer');
 
-      // Check if record exists first
       const { data: existingRecord } = await supabase
         .from('site_settings')
         .select('*')
@@ -94,7 +95,6 @@ const VideoManager = () => {
         .maybeSingle();
 
       if (existingRecord) {
-        // Update existing record
         const { error: updateError } = await supabase
           .from('site_settings')
           .update({ 
@@ -105,7 +105,6 @@ const VideoManager = () => {
 
         if (updateError) throw updateError;
       } else {
-        // Insert new record
         const { error: insertError } = await supabase
           .from('site_settings')
           .insert({
@@ -123,6 +122,7 @@ const VideoManager = () => {
       queryClient.invalidateQueries({ queryKey: ['homepage-video-file'] });
       queryClient.invalidateQueries({ queryKey: ['homepage-video-url'] });
       queryClient.invalidateQueries({ queryKey: ['homepage-trailer'] });
+      setUploadProgress(0);
       toast({
         title: "تم الرفع بنجاح",
         description: "تم رفع الفيديو الدعائي بنجاح",
@@ -130,6 +130,7 @@ const VideoManager = () => {
     },
     onError: (error: any) => {
       console.error('Video upload error:', error);
+      setUploadProgress(0);
       toast({
         title: "خطأ في الرفع",
         description: error.message || "حدث خطأ أثناء رفع الفيديو",
@@ -143,7 +144,6 @@ const VideoManager = () => {
       try {
         console.log('Starting saveVideoUrlMutation with URL:', url);
         
-        // First, let's try to use upsert instead of manual check and update
         const { data: upsertData, error: upsertError } = await supabase
           .from('site_settings')
           .upsert({
@@ -163,7 +163,6 @@ const VideoManager = () => {
 
         console.log('Upsert successful:', upsertData);
 
-        // Clear any existing file setting
         await supabase
           .from('site_settings')
           .upsert({
@@ -207,14 +206,12 @@ const VideoManager = () => {
   const deleteVideoMutation = useMutation({
     mutationFn: async () => {
       if (currentVideoFile?.value) {
-        // Delete from storage
         const { error: deleteError } = await supabase.storage
           .from('admin-videos')
           .remove([currentVideoFile.value]);
 
         if (deleteError) throw deleteError;
 
-        // Remove from settings
         await supabase
           .from('site_settings')
           .update({ 
@@ -225,7 +222,6 @@ const VideoManager = () => {
       }
 
       if (currentVideoUrl?.value) {
-        // Remove URL from settings
         await supabase
           .from('site_settings')
           .update({ 
@@ -258,8 +254,8 @@ const VideoManager = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Check file size (900MB limit)
-    const maxSize = 900 * 1024 * 1024; // 900MB in bytes
+    // تحقق من حجم الملف (900MB حد أقصى)
+    const maxSize = 900 * 1024 * 1024;
     if (file.size > maxSize) {
       toast({
         title: "ملف كبير جداً",
@@ -269,7 +265,6 @@ const VideoManager = () => {
       return;
     }
 
-    // Check file type
     if (!file.type.startsWith('video/')) {
       toast({
         title: "نوع ملف غير صحيح",
@@ -280,11 +275,28 @@ const VideoManager = () => {
     }
 
     setUploading(true);
+    setUploadProgress(0);
+
+    // محاكاة شريط التقدم
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 95) {
+          clearInterval(progressInterval);
+          return prev;
+        }
+        return prev + Math.random() * 10;
+      });
+    }, 500);
+
     try {
       await uploadVideoMutation.mutateAsync(file);
+      setUploadProgress(100);
+      setTimeout(() => {
+        setUploadProgress(0);
+      }, 1000);
     } finally {
       setUploading(false);
-      // Reset the input
+      clearInterval(progressInterval);
       event.target.value = '';
     }
   };
@@ -301,7 +313,6 @@ const VideoManager = () => {
       return;
     }
 
-    // Basic URL validation
     try {
       new URL(videoUrl);
     } catch {
@@ -313,7 +324,6 @@ const VideoManager = () => {
       return;
     }
 
-    // Additional validation for supported platforms
     const isYoutube = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be');
     const isInstagram = videoUrl.includes('instagram.com');
     
@@ -449,6 +459,16 @@ const VideoManager = () => {
                 </TabsList>
                 
                 <TabsContent value="upload" className="space-y-4">
+                  {uploading && (
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm text-white">
+                        <span>جاري الرفع...</span>
+                        <span>{Math.round(uploadProgress)}%</span>
+                      </div>
+                      <Progress value={uploadProgress} className="w-full" />
+                    </div>
+                  )}
+                  
                   <label>
                     <Button
                       disabled={uploading}
@@ -457,7 +477,7 @@ const VideoManager = () => {
                     >
                       <span>
                         <Upload className="w-4 h-4 ml-2" />
-                        {uploading ? 'جاري الرفع...' : 'رفع فيديو دعائي'}
+                        {uploading ? `جاري الرفع... ${Math.round(uploadProgress)}%` : 'رفع فيديو دعائي'}
                       </span>
                     </Button>
                     <input
