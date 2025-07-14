@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ImageIcon, Upload, Star, Calendar, Edit } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import ImageModal from "@/components/ImageModal";
 
 interface GalleryImage {
   id: string;
@@ -24,10 +26,12 @@ interface GalleryImage {
 const GirlsGallery = () => {
   const { userRole } = useAuth();
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const { data: images, isLoading } = useQuery({
+  const { data: images, isLoading, error } = useQuery({
     queryKey: ['girls-gallery'],
     queryFn: async () => {
+      console.log('Fetching girls gallery images...');
       const { data, error } = await supabase
         .from('girls_gallery')
         .select('*')
@@ -37,6 +41,8 @@ const GirlsGallery = () => {
         console.error('Error fetching gallery images:', error);
         throw error;
       }
+      
+      console.log('Fetched images:', data?.length);
       return data as GalleryImage[];
     },
   });
@@ -58,10 +64,23 @@ const GirlsGallery = () => {
     activeCategory === 'all' || image.category === activeCategory
   ) || [];
 
+  const handleImageClick = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-red-400 mb-4">خطأ في تحميل الصور</div>
+        <p className="text-white/60">يرجى المحاولة مرة أخرى</p>
       </div>
     );
   }
@@ -99,12 +118,18 @@ const GirlsGallery = () => {
           {filteredImages.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredImages.map((image) => (
-                <Card key={image.id} className="gaming-card hover:scale-105 transition-all duration-300 overflow-hidden">
-                  <div className="relative">
+                <Card key={image.id} className="gaming-card hover:scale-105 transition-all duration-300 overflow-hidden cursor-pointer">
+                  <div className="relative" onClick={() => handleImageClick(image.image_url)}>
                     <img
                       src={image.image_url}
                       alt={image.title}
-                      className="w-full h-48 object-cover"
+                      className="w-full h-48 object-cover hover:opacity-90 transition-opacity"
+                      loading="lazy"
+                      onError={(e) => {
+                        console.error('Image failed to load:', image.image_url);
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                      onLoad={() => console.log('Image loaded successfully:', image.image_url)}
                     />
                     {image.is_featured && (
                       <Badge className="absolute top-2 right-2 bg-yellow-500/80 text-black">
@@ -118,7 +143,12 @@ const GirlsGallery = () => {
                     <CardTitle className="text-white text-lg">{image.title}</CardTitle>
                     <div className="flex items-center gap-2 text-sm text-white/60">
                       <Calendar className="h-3 w-3" />
-                      <span>{format(new Date(image.uploaded_at || new Date()), 'PP', { locale: ar })}</span>
+                      <span>
+                        {image.uploaded_at 
+                          ? format(new Date(image.uploaded_at), 'PP', { locale: ar })
+                          : 'تاريخ غير محدد'
+                        }
+                      </span>
                     </div>
                   </CardHeader>
                   
@@ -139,6 +169,11 @@ const GirlsGallery = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      <ImageModal 
+        imageUrl={selectedImage} 
+        onClose={() => setSelectedImage(null)} 
+      />
     </div>
   );
 };

@@ -1,23 +1,47 @@
+
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import AILeaderboardManager from "@/components/admin/AILeaderboardManager";
 import PushNotificationSender from "@/components/admin/PushNotificationSender";
 
 const AdminPanel = () => {
-  const { user } = useAuth();
+  const { user, userRole, loading: authLoading } = useAuth();
   const { toast } = useToast();
-  const [role, setRole] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [roleLoading, setRoleLoading] = useState(true);
+  const [hasAccess, setHasAccess] = useState(false);
 
   useEffect(() => {
-    const getRole = async () => {
-      setLoading(true);
-      if (user) {
+    const checkAdminAccess = async () => {
+      if (!user || authLoading) {
+        setRoleLoading(true);
+        return;
+      }
+
+      console.log('Checking admin access for user:', user.id);
+      console.log('Current user role:', userRole);
+
+      // Check if userRole is already available from context
+      if (userRole) {
+        const isAdmin = userRole === 'admin';
+        setHasAccess(isAdmin);
+        setRoleLoading(false);
+        
+        if (!isAdmin) {
+          toast({
+            title: "غير مصرح",
+            description: "ليس لديك صلاحية للوصول لهذه الصفحة",
+            variant: "destructive",
+          });
+        }
+        return;
+      }
+
+      // Fallback: Check role directly from database
+      try {
         const { data, error } = await supabase
           .from('user_roles')
           .select('role')
@@ -27,33 +51,53 @@ const AdminPanel = () => {
         if (error) {
           console.error("Error fetching user role:", error);
           toast({
-            title: "Error",
-            description: "Failed to fetch user role.",
+            title: "خطأ",
+            description: "فشل في التحقق من الصلاحيات",
             variant: "destructive",
           });
+          setHasAccess(false);
         } else {
-          setRole(data?.role || null);
+          const isAdmin = data?.role === 'admin';
+          setHasAccess(isAdmin);
+          
+          if (!isAdmin) {
+            toast({
+              title: "غير مصرح",
+              description: "ليس لديك صلاحية للوصول لهذه الصفحة",
+              variant: "destructive",
+            });
+          }
         }
+      } catch (error) {
+        console.error("Error checking admin access:", error);
+        setHasAccess(false);
+      } finally {
+        setRoleLoading(false);
       }
-      setLoading(false);
     };
 
-    getRole();
-  }, [user, toast]);
+    checkAdminAccess();
+  }, [user, userRole, authLoading, toast]);
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (loading) {
+  // Show loading while checking authentication
+  if (authLoading || roleLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white">جاري التحميل...</div>
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-s3m-red mx-auto mb-4"></div>
+          <div className="text-white text-lg">جاري التحميل...</div>
+        </div>
       </div>
     );
   }
 
-  if (role !== 'admin') {
+  // Redirect to login if not authenticated
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Redirect to home if not admin
+  if (!hasAccess) {
     return <Navigate to="/" replace />;
   }
 
@@ -82,11 +126,30 @@ const AdminPanel = () => {
           </TabsList>
 
           <TabsContent value="stats" className="space-y-6">
-            <div>إحصائيات الموقع</div>
+            <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
+              <h3 className="text-xl font-semibold text-white mb-4">إحصائيات الموقع</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-gray-900/50 p-4 rounded-lg">
+                  <h4 className="text-white font-medium">المستخدمين النشطين</h4>
+                  <p className="text-2xl font-bold text-s3m-red mt-2">0</p>
+                </div>
+                <div className="bg-gray-900/50 p-4 rounded-lg">
+                  <h4 className="text-white font-medium">البطولات النشطة</h4>
+                  <p className="text-2xl font-bold text-s3m-red mt-2">0</p>
+                </div>
+                <div className="bg-gray-900/50 p-4 rounded-lg">
+                  <h4 className="text-white font-medium">الأخبار المنشورة</h4>
+                  <p className="text-2xl font-bold text-s3m-red mt-2">0</p>
+                </div>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="users" className="space-y-6">
-            <div>إدارة المستخدمين</div>
+            <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
+              <h3 className="text-xl font-semibold text-white mb-4">إدارة المستخدمين</h3>
+              <p className="text-gray-400">سيتم إضافة إدارة المستخدمين قريباً</p>
+            </div>
           </TabsContent>
 
           <TabsContent value="leaderboard" className="space-y-6">
