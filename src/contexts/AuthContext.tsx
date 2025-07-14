@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Session, User } from '@supabase/supabase-js';
@@ -125,7 +126,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ last_active: new Date().toISOString() })
+        .update({ updated_at: new Date().toISOString() })
         .eq('id', userId);
 
       if (error) {

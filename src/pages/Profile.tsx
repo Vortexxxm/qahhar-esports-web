@@ -1,3 +1,4 @@
+
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import UserProfile from "@/components/UserProfile";
@@ -29,7 +30,7 @@ const Profile = () => {
         <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-8 border border-gray-700">
           <h1 className="text-3xl font-bold text-white mb-8 text-center">الملف الشخصي</h1>
           
-          <UserProfile />
+          <UserProfile userId={user.id} />
         </div>
       </div>
     </div>

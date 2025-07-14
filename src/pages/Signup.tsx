@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,10 +7,12 @@ import { Separator } from "@/components/ui/separator";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Signup = () => {
   const { signUp, user, loading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -61,24 +62,32 @@ const Signup = () => {
     e.preventDefault();
     
     if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "خطأ",
+        description: "كلمات المرور غير متطابقة",
+        variant: "destructive",
+      });
       return;
     }
 
     setIsSubmitting(true);
 
-    const userData = {
-      username: formData.username,
-      full_name: formData.fullName,
-      game_id: formData.gameId,
-    };
-
-    const { error } = await signUp(formData.email, formData.password, userData);
-    
-    if (!error) {
+    try {
+      await signUp(formData.email, formData.password);
+      toast({
+        title: "تم إنشاء الحساب بنجاح",
+        description: "مرحباً بك في S3M E-Sports",
+      });
       navigate('/login');
+    } catch (error: any) {
+      toast({
+        title: "خطأ في إنشاء الحساب",
+        description: error.message || "حدث خطأ غير متوقع",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   };
 
   if (loading) {
