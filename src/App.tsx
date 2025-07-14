@@ -28,7 +28,14 @@ import Privacy from "@/pages/Privacy";
 import NotFound from "@/pages/NotFound";
 import PushNotificationPrompt from "@/components/PushNotificationPrompt";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function App() {
   return (
@@ -43,7 +50,7 @@ function App() {
                 <Navbar />
                 <main className="flex-1">
                   <Routes>
-                    <Route path="/" element={<Home />} />
+                    <Route path="/" element={<Index />} />
                     <Route path="/home" element={<Home />} />
                     <Route path="/index" element={<Navigate to="/" replace />} />
                     <Route path="/about" element={<About />} />

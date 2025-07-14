@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,13 +7,6 @@ import { Button } from "@/components/ui/button";
 import { CalendarDays, Timer, Users, Flag, LayoutDashboard } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel"
 import HomepageVideo from "@/components/HomepageVideo";
 
 const Home = () => {
@@ -118,7 +112,7 @@ const Home = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {upcomingTournaments.map((tournament) => (
                 <div key={tournament.id} className="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
-                  <h3 className="text-xl font-bold text-white mb-2">{tournament.name}</h3>
+                  <h3 className="text-xl font-bold text-white mb-2">{tournament.title}</h3>
                   <p className="text-gray-400 mb-4">{tournament.description}</p>
                   <div className="flex items-center text-gray-500 mb-2">
                     <Timer className="h-4 w-4 mr-2" />
@@ -182,7 +176,7 @@ const Home = () => {
               {latestNews.map((newsItem) => (
                 <div key={newsItem.id} className="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
                   <h3 className="text-xl font-bold text-white mb-2">{newsItem.title}</h3>
-                  <p className="text-gray-400 mb-4">{newsItem.content.substring(0, 100)}...</p>
+                  <p className="text-gray-400 mb-4">{newsItem.content?.substring(0, 100)}...</p>
                   <Button className="w-full bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-s3m-red">
                     اقرأ المزيد
                   </Button>
