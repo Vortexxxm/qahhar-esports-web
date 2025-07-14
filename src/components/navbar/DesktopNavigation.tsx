@@ -18,7 +18,6 @@ const DesktopNavigation = () => {
     { path: '/leaderboard', label: 'المتصدرون' },
     { path: '/tournaments', label: 'البطولات' },
     { path: '/team', label: 'الفريق' },
-    { path: '/girls', label: 'فرع البنات', special: true },
     { path: '/news', label: 'الأخبار' },
     { path: '/join-us', label: 'انضم إلينا' },
   ];
@@ -35,12 +34,8 @@ const DesktopNavigation = () => {
             to={item.path}
             className={`relative px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
               isActivePath(item.path)
-                ? item.special
-                  ? 'text-white bg-gradient-to-r from-pink-500 to-purple-600 shadow-lg shadow-pink-500/30'
-                  : 'text-white bg-gradient-to-r from-s3m-red to-red-600 shadow-lg shadow-s3m-red/30'
-                : item.special
-                  ? 'text-pink-300 hover:text-white hover:bg-gradient-to-r hover:from-pink-500/20 hover:to-purple-600/20 border border-transparent hover:border-pink-400/30'
-                  : 'text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-white/10 hover:to-s3m-red/20 border border-transparent hover:border-s3m-red/30'
+                ? 'text-white bg-gradient-to-r from-s3m-red to-red-600 shadow-lg shadow-s3m-red/30'
+                : 'text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-white/10 hover:to-s3m-red/20 border border-transparent hover:border-s3m-red/30'
             }`}
           >
             {item.label}

@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,7 +17,6 @@ import Tournaments from "@/pages/Tournaments";
 import TournamentDetails from "@/pages/TournamentDetails";
 import Leaderboard from "@/pages/Leaderboard";
 import JoinUs from "@/pages/JoinUs";
-import GirlsSection from "@/pages/GirlsSection";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
 import Profile from "@/pages/Profile";
@@ -53,7 +53,6 @@ function App() {
                     <Route path="/tournaments/:id" element={<TournamentDetails />} />
                     <Route path="/leaderboard" element={<Leaderboard />} />
                     <Route path="/join-us" element={<JoinUs />} />
-                    <Route path="/girls" element={<GirlsSection />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
                     <Route path="/profile" element={<Profile />} />
