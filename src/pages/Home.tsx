@@ -341,7 +341,8 @@ const Home = () => {
                         alt={entry.profiles?.username}
                         className="w-8 h-8 rounded-full mr-2"
                         onError={(e) => {
-                          e.target.src = '/placeholder.svg';
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.svg';
                         }}
                       />
                       <h3 className="text-xl font-bold text-white">{entry.profiles?.username}</h3>

@@ -73,7 +73,14 @@ const Signup = () => {
     setIsSubmitting(true);
 
     try {
-      await signUp(formData.email, formData.password);
+      // Pass additional user metadata
+      const userMetadata = {
+        username: formData.username,
+        full_name: formData.fullName,
+        game_id: formData.gameId,
+      };
+
+      await signUp(formData.email, formData.password, userMetadata);
       toast({
         title: "تم إنشاء الحساب بنجاح",
         description: "مرحباً بك في S3M E-Sports",
