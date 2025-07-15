@@ -111,7 +111,7 @@ const AdminPanel = () => {
         throw error;
       }
     },
-    enabled: hasAccess && !authLoading,
+    enabled: hasAccess === true && !authLoading,
     retry: 2,
     retryDelay: 1000,
   });
