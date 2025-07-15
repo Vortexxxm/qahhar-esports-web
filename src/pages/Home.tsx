@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Timer, Users, Flag, LayoutDashboard, Star, Crown, Calendar } from "lucide-react";
+import { Calendar, Star, Crown, Eye, ArrowRight, Sparkles, Trophy, GamepadIcon } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import HomepageVideo from "@/components/HomepageVideo";
@@ -14,37 +14,9 @@ import { motion } from "framer-motion";
 
 const Home = () => {
   const { user, userRole } = useAuth();
-  const [upcomingTournaments, setUpcomingTournaments] = useState([]);
   const [latestNews, setLatestNews] = useState([]);
 
   console.log("Home component rendered, user:", user?.id, "role:", userRole);
-
-  const { data: leaderboardData, isLoading: leaderboardLoading, error: leaderboardError } = useQuery({
-    queryKey: ['leaderboard'],
-    queryFn: async () => {
-      console.log("Fetching leaderboard data...");
-      const { data, error } = await supabase
-        .from('leaderboard_scores')
-        .select(`
-          points,
-          profiles!inner (
-            username,
-            avatar_url
-          )
-        `)
-        .eq('visible_in_leaderboard', true)
-        .order('points', { ascending: false })
-        .limit(5);
-
-      if (error) {
-        console.error("Error fetching leaderboard data:", error);
-        throw error;
-      }
-
-      console.log("Leaderboard data fetched:", data);
-      return data;
-    },
-  });
 
   // Fetch special players
   const { data: specialPlayers, isLoading: specialPlayersLoading } = useQuery({
@@ -103,27 +75,6 @@ const Home = () => {
   };
 
   useEffect(() => {
-    const fetchUpcomingTournaments = async () => {
-      console.log("Fetching upcoming tournaments...");
-      try {
-        const { data, error } = await supabase
-          .from('tournaments')
-          .select('*')
-          .gte('start_date', new Date().toISOString())
-          .order('start_date', { ascending: true })
-          .limit(3);
-
-        if (error) {
-          console.error("Error fetching upcoming tournaments:", error);
-        } else {
-          console.log("Tournaments fetched:", data);
-          setUpcomingTournaments(data || []);
-        }
-      } catch (error) {
-        console.error("Error in fetchUpcomingTournaments:", error);
-      }
-    };
-
     const fetchLatestNews = async () => {
       console.log("Fetching latest news...");
       try {
@@ -131,7 +82,7 @@ const Home = () => {
           .from('news')
           .select('*')
           .order('created_at', { ascending: false })
-          .limit(3);
+          .limit(6);
 
         if (error) {
           console.error("Error fetching latest news:", error);
@@ -144,16 +95,41 @@ const Home = () => {
       }
     };
 
-    fetchUpcomingTournaments();
     fetchLatestNews();
   }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 opacity-50">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-s3m-red via-transparent to-transparent"></div>
-        <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-red-600 via-transparent to-transparent"></div>
+      {/* Animated Background Effects */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-s3m-red via-transparent to-transparent animate-pulse"></div>
+        <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-red-600 via-transparent to-transparent animate-pulse"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full opacity-20 animate-float"></div>
+      </div>
+
+      {/* Floating Particles */}
+      <div className="absolute inset-0 overflow-hidden">
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-2 h-2 bg-s3m-red rounded-full opacity-30"
+            initial={{ 
+              x: Math.random() * window.innerWidth, 
+              y: Math.random() * window.innerHeight 
+            }}
+            animate={{ 
+              y: [0, -100, 0],
+              x: [0, Math.random() * 50 - 25, 0],
+              scale: [1, 1.5, 1],
+              opacity: [0.3, 0.8, 0.3]
+            }}
+            transition={{ 
+              duration: 3 + Math.random() * 2,
+              repeat: Infinity,
+              delay: Math.random() * 2
+            }}
+          />
+        ))}
       </div>
 
       {/* Hero Section */}
@@ -166,27 +142,56 @@ const Home = () => {
             transition={{ duration: 0.8 }}
             className="text-center mb-12"
           >
-            <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-4">
-              مرحباً بك في عالم S3M E-Sports
-            </h1>
-            <p className="text-lg text-gray-300 mb-8">
-              مجتمع الألعاب الأول في الشرق الأوسط. انضم إلينا اليوم وكن جزءًا من الإثارة!
-            </p>
-            <div className="flex justify-center space-x-4 space-x-reverse">
-              <Button className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-s3m-red">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 1, delay: 0.2 }}
+              className="relative inline-block"
+            >
+              <h1 className="text-6xl md:text-8xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-s3m-red via-red-500 to-orange-500 mb-4 relative">
+                S3M E-SPORTS
+                <motion.div
+                  className="absolute -top-4 -right-4"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                >
+                  <Sparkles className="w-8 h-8 text-yellow-400" />
+                </motion.div>
+              </h1>
+            </motion.div>
+            
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.8 }}
+              className="text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed"
+            >
+              مجتمع الألعاب الأول في الشرق الأوسط • انضم إلى النخبة واكتشف عالم الإثارة والمنافسة
+            </motion.p>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8, duration: 0.6 }}
+              className="flex justify-center space-x-6 space-x-reverse mb-8"
+            >
+              <Button className="bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-s3m-red px-8 py-4 text-lg font-bold transform hover:scale-105 transition-all duration-300 shadow-2xl">
+                <GamepadIcon className="ml-2 h-6 w-6" />
+                ابدأ مغامرتك
+              </Button>
+              <Button variant="outline" className="border-2 border-gray-400 text-white hover:bg-white hover:text-black px-8 py-4 text-lg font-bold transform hover:scale-105 transition-all duration-300 backdrop-blur-sm">
+                <Trophy className="ml-2 h-6 w-6" />
                 استكشف البطولات
               </Button>
-              <Button variant="outline" className="border-gray-500 text-white hover:bg-gray-800">
-                انضم إلى فريقنا
-              </Button>
-            </div>
+            </motion.div>
           </motion.div>
           
           {/* Promotional Video Section */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="mb-20"
           >
             <HomepageVideo />
           </motion.div>
@@ -196,15 +201,28 @@ const Home = () => {
             <motion.section 
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="mb-16"
+              transition={{ duration: 0.6, delay: 0.6 }}
+              className="mb-20"
             >
-              <div className="text-center mb-8">
-                <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-yellow-400 to-purple-500 bg-clip-text text-transparent flex items-center justify-center gap-3">
-                  <Star className="w-8 h-8 text-yellow-400" />
-                  اللاعبون المميزون
-                  <Star className="w-8 h-8 text-yellow-400" />
-                </h2>
+              <div className="text-center mb-12">
+                <motion.h2 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8, duration: 0.6 }}
+                  className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-purple-500 bg-clip-text text-transparent flex items-center justify-center gap-4 mb-4"
+                >
+                  <Star className="w-10 h-10 text-yellow-400 animate-pulse" />
+                  نجوم الفريق
+                  <Star className="w-10 h-10 text-yellow-400 animate-pulse" />
+                </motion.h2>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1, duration: 0.6 }}
+                  className="text-xl text-gray-400 max-w-2xl mx-auto"
+                >
+                  أبطالنا المميزون الذين يقودون الفريق نحو النصر
+                </motion.p>
               </div>
               
               <div className="grid gap-8 md:grid-cols-2 max-w-6xl mx-auto">
@@ -212,26 +230,33 @@ const Home = () => {
                   <motion.div
                     initial={{ opacity: 0, x: -50 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.8, delay: 0.6 }}
+                    transition={{ duration: 0.8, delay: 0.8 }}
+                    className="relative"
                   >
-                    <div className="text-center mb-4">
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <Crown className="w-6 h-6 text-yellow-400" />
-                        <h3 className="text-xl font-bold text-yellow-400">لاعب الشهر</h3>
+                    <div className="absolute -top-6 -left-6 w-full h-full bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl opacity-20 blur-xl"></div>
+                    <div className="text-center mb-6 relative z-10">
+                      <div className="flex items-center justify-center gap-3 mb-3">
+                        <Crown className="w-8 h-8 text-yellow-400 animate-bounce" />
+                        <h3 className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+                          لاعب الشهر
+                        </h3>
+                        <Crown className="w-8 h-8 text-yellow-400 animate-bounce" />
                       </div>
                     </div>
-                    <MonthlyPlayerCard 
-                      player={{
-                        id: monthlyPlayer.profiles.id,
-                        username: monthlyPlayer.profiles.username,
-                        full_name: monthlyPlayer.profiles.full_name,
-                        avatar_url: monthlyPlayer.profiles.avatar_url,
-                        rank_title: monthlyPlayer.profiles.rank_title,
-                        total_likes: monthlyPlayer.profiles.total_likes,
-                        bio: monthlyPlayer.profiles.bio,
-                        leaderboard_scores: getPlayerLeaderboardData(monthlyPlayer.user_id)
-                      }}
-                    />
+                    <div className="relative z-10">
+                      <MonthlyPlayerCard 
+                        player={{
+                          id: monthlyPlayer.profiles.id,
+                          username: monthlyPlayer.profiles.username,
+                          full_name: monthlyPlayer.profiles.full_name,
+                          avatar_url: monthlyPlayer.profiles.avatar_url,
+                          rank_title: monthlyPlayer.profiles.rank_title,
+                          total_likes: monthlyPlayer.profiles.total_likes,
+                          bio: monthlyPlayer.profiles.bio,
+                          leaderboard_scores: getPlayerLeaderboardData(monthlyPlayer.user_id)
+                        }}
+                      />
+                    </div>
                   </motion.div>
                 )}
                 
@@ -239,153 +264,154 @@ const Home = () => {
                   <motion.div
                     initial={{ opacity: 0, x: 50 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.8, delay: 0.8 }}
+                    transition={{ duration: 0.8, delay: 1 }}
+                    className="relative"
                   >
-                    <div className="text-center mb-4">
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <Calendar className="w-6 h-6 text-purple-400" />
-                        <h3 className="text-xl font-bold text-purple-400">لاعب الأسبوع</h3>
+                    <div className="absolute -top-6 -right-6 w-full h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl opacity-20 blur-xl"></div>
+                    <div className="text-center mb-6 relative z-10">
+                      <div className="flex items-center justify-center gap-3 mb-3">
+                        <Calendar className="w-8 h-8 text-purple-400 animate-pulse" />
+                        <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+                          لاعب الأسبوع
+                        </h3>
+                        <Calendar className="w-8 h-8 text-purple-400 animate-pulse" />
                       </div>
                     </div>
-                    <WeeklyPlayerCard 
-                      player={{
-                        id: weeklyPlayer.profiles.id,
-                        username: weeklyPlayer.profiles.username,
-                        full_name: weeklyPlayer.profiles.full_name,
-                        avatar_url: weeklyPlayer.profiles.avatar_url,
-                        rank_title: weeklyPlayer.profiles.rank_title,
-                        total_likes: weeklyPlayer.profiles.total_likes,
-                        bio: weeklyPlayer.profiles.bio,
-                        leaderboard_scores: getPlayerLeaderboardData(weeklyPlayer.user_id)
-                      }}
-                    />
+                    <div className="relative z-10">
+                      <WeeklyPlayerCard 
+                        player={{
+                          id: weeklyPlayer.profiles.id,
+                          username: weeklyPlayer.profiles.username,
+                          full_name: weeklyPlayer.profiles.full_name,
+                          avatar_url: weeklyPlayer.profiles.avatar_url,
+                          rank_title: weeklyPlayer.profiles.rank_title,
+                          total_likes: weeklyPlayer.profiles.total_likes,
+                          bio: weeklyPlayer.profiles.bio,
+                          leaderboard_scores: getPlayerLeaderboardData(weeklyPlayer.user_id)
+                        }}
+                      />
+                    </div>
                   </motion.div>
                 )}
               </div>
             </motion.section>
           )}
 
-          {/* Upcoming Tournaments Section */}
-          <motion.section 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="mb-12"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-3xl font-semibold text-white flex items-center gap-2">
-                <CalendarDays className="h-6 w-6 text-s3m-red" />
-                البطولات القادمة
-              </h2>
-              <Button variant="link" className="text-s3m-red">
-                عرض الكل
-              </Button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {upcomingTournaments.map((tournament) => (
-                <motion.div 
-                  key={tournament.id} 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5 }}
-                  className="bg-gray-800/50 p-6 rounded-xl border border-gray-700 hover:border-s3m-red/50 transition-all duration-300"
-                >
-                  <h3 className="text-xl font-bold text-white mb-2">{tournament.title}</h3>
-                  <p className="text-gray-400 mb-4">{tournament.description}</p>
-                  <div className="flex items-center text-gray-500 mb-2">
-                    <Timer className="h-4 w-4 mr-2" />
-                    {formatDistanceToNow(new Date(tournament.start_date), { addSuffix: true, locale: ar })}
-                  </div>
-                  <Button className="w-full bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-s3m-red">
-                    التفاصيل
-                  </Button>
-                </motion.div>
-              ))}
-            </div>
-          </motion.section>
-
-          {/* Leaderboard Section */}
-          <motion.section 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
-            className="mb-12"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-3xl font-semibold text-white flex items-center gap-2">
-                <LayoutDashboard className="h-6 w-6 text-s3m-red" />
-                المتصدرين
-              </h2>
-              <Button variant="link" className="text-s3m-red">
-                عرض الكل
-              </Button>
-            </div>
-            {leaderboardLoading ? (
-              <div className="text-center">جاري التحميل...</div>
-            ) : leaderboardError ? (
-              <div className="text-center text-red-500">حدث خطأ أثناء تحميل المتصدرين.</div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {leaderboardData?.map((entry: any, index: number) => (
-                  <motion.div 
-                    key={index} 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className="bg-gray-800/50 p-6 rounded-xl border border-gray-700"
-                  >
-                    <div className="flex items-center mb-2">
-                      <span className="text-xl font-bold text-s3m-red mr-2">#{index + 1}</span>
-                      <img
-                        src={entry.profiles?.avatar_url || '/placeholder.svg'}
-                        alt={entry.profiles?.username}
-                        className="w-8 h-8 rounded-full mr-2"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/placeholder.svg';
-                        }}
-                      />
-                      <h3 className="text-xl font-bold text-white">{entry.profiles?.username}</h3>
-                    </div>
-                    <p className="text-gray-400">النقاط: {entry.points?.toLocaleString() || 0}</p>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </motion.section>
-
-          {/* Latest News Section */}
+          {/* Enhanced News Section */}
           <motion.section
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.0 }}
+            transition={{ duration: 0.6, delay: 1.2 }}
+            className="mb-16"
           >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-3xl font-semibold text-white flex items-center gap-2">
-                <Flag className="h-6 w-6 text-s3m-red" />
-                آخر الأخبار
-              </h2>
-              <Button variant="link" className="text-s3m-red">
-                عرض الكل
-              </Button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {latestNews.map((newsItem, index) => (
-                <motion.div 
-                  key={newsItem.id} 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: index * 0.2 }}
-                  className="bg-gray-800/50 p-6 rounded-xl border border-gray-700 hover:border-s3m-red/50 transition-all duration-300"
+            <div className="text-center mb-16">
+              <motion.h2 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1.4, duration: 0.8 }}
+                className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-s3m-red via-red-500 to-orange-500 bg-clip-text text-transparent mb-6 relative"
+              >
+                آخر الأخبار والتحديثات
+                <motion.div
+                  className="absolute -top-2 left-1/2 transform -translate-x-1/2"
+                  animate={{ y: [-5, 5, -5] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  <h3 className="text-xl font-bold text-white mb-2">{newsItem.title}</h3>
-                  <p className="text-gray-400 mb-4">{newsItem.content?.substring(0, 100) || newsItem.description?.substring(0, 100)}...</p>
-                  <Button className="w-full bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-s3m-red">
-                    اقرأ المزيد
-                  </Button>
+                  <Sparkles className="w-6 h-6 text-yellow-400" />
                 </motion.div>
-              ))}
+              </motion.h2>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.6, duration: 0.6 }}
+                className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed"
+              >
+                ابقَ على اطلاع دائم بآخر أخبار الفريق والبطولات والإنجازات المميزة
+              </motion.p>
             </div>
+
+            {latestNews.length > 0 ? (
+              <div className="grid gap-8 lg:grid-cols-2 xl:grid-cols-3">
+                {latestNews.map((newsItem, index) => (
+                  <motion.div 
+                    key={newsItem.id} 
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 1.8 + index * 0.1 }}
+                    whileHover={{ scale: 1.05, y: -10 }}
+                    className="group relative bg-gradient-to-br from-gray-900/80 via-gray-800/80 to-gray-900/80 backdrop-blur-lg rounded-2xl overflow-hidden border border-gray-700/50 hover:border-s3m-red/50 transition-all duration-500 shadow-2xl"
+                  >
+                    {/* Glow Effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-s3m-red/0 via-s3m-red/20 to-s3m-red/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    
+                    {/* News Image */}
+                    {newsItem.image_url && (
+                      <div className="relative h-56 overflow-hidden">
+                        <img 
+                          src={newsItem.image_url} 
+                          alt={newsItem.title}
+                          className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                        <div className="absolute top-4 right-4">
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                            className="w-8 h-8 bg-s3m-red rounded-full flex items-center justify-center"
+                          >
+                            <Sparkles className="w-4 h-4 text-white" />
+                          </motion.div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="p-6 relative z-10">
+                      <div className="flex items-center gap-2 text-xs text-gray-400 mb-3">
+                        <Calendar className="w-4 h-4" />
+                        <span>{formatDistanceToNow(new Date(newsItem.created_at), { addSuffix: true, locale: ar })}</span>
+                      </div>
+                      
+                      <h3 className="text-xl font-bold text-white mb-3 line-clamp-2 group-hover:text-s3m-red transition-colors duration-300">
+                        {newsItem.title}
+                      </h3>
+                      
+                      <p className="text-gray-300 text-sm leading-relaxed line-clamp-3 mb-4">
+                        {newsItem.description}
+                      </p>
+                      
+                      <motion.div
+                        whileHover={{ x: 5 }}
+                        className="flex items-center text-s3m-red font-semibold text-sm cursor-pointer group-hover:text-white transition-colors duration-300"
+                      >
+                        <Eye className="w-4 h-4 ml-2" />
+                        اقرأ المزيد
+                        <ArrowRight className="w-4 h-4 mr-2 transform group-hover:translate-x-2 transition-transform duration-300" />
+                      </motion.div>
+                    </div>
+                    
+                    {/* Hover Border Glow */}
+                    <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-s3m-red/30 transition-all duration-500"></div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 2, duration: 0.6 }}
+                className="text-center py-20"
+              >
+                <div className="relative inline-block">
+                  <div className="w-24 h-24 bg-gradient-to-r from-s3m-red to-red-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+                    <Sparkles className="w-12 h-12 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-4">قريباً...</h3>
+                  <p className="text-gray-400 max-w-md mx-auto">
+                    ترقبوا أحدث الأخبار والتحديثات المثيرة من فريق S3M
+                  </p>
+                </div>
+              </motion.div>
+            )}
           </motion.section>
         </div>
       </div>
