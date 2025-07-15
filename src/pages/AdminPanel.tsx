@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,115 +24,102 @@ type UserWithProfile = {
 const AdminPanel = () => {
   const { user, userRole, loading: authLoading } = useAuth();
   const { toast } = useToast();
-  const [roleLoading, setRoleLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
   const queryClient = useQueryClient();
 
+  console.log("AdminPanel rendered, user:", user?.id, "role:", userRole, "authLoading:", authLoading);
+
   useEffect(() => {
-    const checkAdminAccess = async () => {
+    const checkAdminAccess = () => {
       if (!user || authLoading) {
-        setRoleLoading(true);
+        console.log("User not loaded or still loading auth");
         return;
       }
 
       console.log('Checking admin access for user:', user.id);
       console.log('Current user role:', userRole);
 
-      // Check if userRole is already available from context
-      if (userRole) {
-        const isAdmin = userRole === 'admin';
-        setHasAccess(isAdmin);
-        setRoleLoading(false);
-        
-        if (!isAdmin) {
-          toast({
-            title: "غير مصرح",
-            description: "ليس لديك صلاحية للوصول لهذه الصفحة",
-            variant: "destructive",
-          });
-        }
-        return;
-      }
-
-      // Fallback: Check role directly from database
-      try {
-        const { data, error } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .single();
-
-        if (error) {
-          console.error("Error fetching user role:", error);
-          toast({
-            title: "خطأ",
-            description: "فشل في التحقق من الصلاحيات",
-            variant: "destructive",
-          });
-          setHasAccess(false);
-        } else {
-          const isAdmin = data?.role === 'admin';
-          setHasAccess(isAdmin);
-          
-          if (!isAdmin) {
-            toast({
-              title: "غير مصرح",
-              description: "ليس لديك صلاحية للوصول لهذه الصفحة",
-              variant: "destructive",
-            });
-          }
-        }
-      } catch (error) {
-        console.error("Error checking admin access:", error);
-        setHasAccess(false);
-      } finally {
-        setRoleLoading(false);
+      const isAdmin = userRole === 'admin';
+      setHasAccess(isAdmin);
+      
+      if (!isAdmin) {
+        console.log("User is not admin, access denied");
+        toast({
+          title: "غير مصرح",
+          description: "ليس لديك صلاحية للوصول لهذه الصفحة",
+          variant: "destructive",
+        });
+      } else {
+        console.log("Admin access granted");
       }
     };
 
     checkAdminAccess();
   }, [user, userRole, authLoading, toast]);
 
-  const { data: users, isLoading: usersLoading } = useQuery({
+  const { data: users, isLoading: usersLoading, error: usersError } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select(`
-          id,
-          username,
-          full_name,
-          avatar_url,
-          game_id,
-          phone_number
-        `);
+      console.log("Fetching admin users data...");
+      
+      try {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select(`
+            id,
+            username,
+            full_name,
+            avatar_url,
+            game_id,
+            phone_number
+          `);
 
-      if (profilesError) throw profilesError;
+        if (profilesError) {
+          console.error("Error fetching profiles:", profilesError);
+          throw profilesError;
+        }
 
-      const { data: roles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
+        const { data: roles, error: rolesError } = await supabase
+          .from('user_roles')
+          .select('user_id, role');
 
-      if (rolesError) throw rolesError;
+        if (rolesError) {
+          console.error("Error fetching roles:", rolesError);
+          throw rolesError;
+        }
 
-      const { data: scores, error: scoresError } = await supabase
-        .from('leaderboard_scores')
-        .select('*');
+        const { data: scores, error: scoresError } = await supabase
+          .from('leaderboard_scores')
+          .select('*');
 
-      if (scoresError) throw scoresError;
+        if (scoresError) {
+          console.error("Error fetching scores:", scoresError);
+          throw scoresError;
+        }
 
-      return profiles?.map(profile => ({
-        id: profile.id,
-        profiles: profile,
-        user_roles: roles?.filter(r => r.user_id === profile.id).map(r => ({ role: r.role })) || [],
-        leaderboard_scores: scores?.find(s => s.user_id === profile.id) || null
-      })) as UserWithProfile[];
+        const combinedData = profiles?.map(profile => ({
+          id: profile.id,
+          profiles: profile,
+          user_roles: roles?.filter(r => r.user_id === profile.id).map(r => ({ role: r.role })) || [],
+          leaderboard_scores: scores?.find(s => s.user_id === profile.id) || null
+        })) as UserWithProfile[];
+
+        console.log("Admin users data fetched successfully:", combinedData?.length);
+        return combinedData;
+      } catch (error) {
+        console.error("Error in admin users query:", error);
+        throw error;
+      }
     },
-    enabled: hasAccess && !authLoading && !roleLoading,
+    enabled: hasAccess && !authLoading,
+    retry: 2,
+    retryDelay: 1000,
   });
 
   const updatePointsMutation = useMutation({
     mutationFn: async ({ userId, points }: { userId: string; points: number }) => {
+      console.log("Updating points for user:", userId, "points:", points);
+      
       const { error } = await supabase
         .from('leaderboard_scores')
         .upsert({
@@ -141,10 +129,14 @@ const AdminPanel = () => {
           last_updated: new Date().toISOString()
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating points:", error);
+        throw error;
+      }
 
       // تحديث الترتيب
       await supabase.rpc('update_leaderboard_rankings');
+      console.log("Points updated successfully");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
@@ -155,6 +147,7 @@ const AdminPanel = () => {
       });
     },
     onError: (error: any) => {
+      console.error("Error in updatePointsMutation:", error);
       toast({
         title: "خطأ",
         description: error.message || "حدث خطأ أثناء تحديث النقاط",
@@ -165,13 +158,20 @@ const AdminPanel = () => {
 
   const toggleRoleMutation = useMutation({
     mutationFn: async ({ userId, currentRole }: { userId: string; currentRole: string }) => {
+      console.log("Toggling role for user:", userId, "from:", currentRole);
+      
       const newRole = currentRole === 'admin' ? 'user' : 'admin';
       const { error } = await supabase
         .from('user_roles')
         .update({ role: newRole })
         .eq('user_id', userId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating role:", error);
+        throw error;
+      }
+      
+      console.log("Role updated successfully to:", newRole);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
@@ -181,6 +181,7 @@ const AdminPanel = () => {
       });
     },
     onError: (error: any) => {
+      console.error("Error in toggleRoleMutation:", error);
       toast({
         title: "خطأ",
         description: error.message || "حدث خطأ أثناء تحديث الدور",
@@ -191,12 +192,19 @@ const AdminPanel = () => {
 
   const toggleVisibilityMutation = useMutation({
     mutationFn: async ({ userId, currentVisibility }: { userId: string; currentVisibility: boolean }) => {
+      console.log("Toggling visibility for user:", userId, "from:", currentVisibility);
+      
       const { error } = await supabase
         .from('leaderboard_scores')
         .update({ visible_in_leaderboard: !currentVisibility })
         .eq('user_id', userId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating visibility:", error);
+        throw error;
+      }
+      
+      console.log("Visibility updated successfully");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
@@ -206,6 +214,7 @@ const AdminPanel = () => {
       });
     },
     onError: (error: any) => {
+      console.error("Error in toggleVisibilityMutation:", error);
       toast({
         title: "خطأ",
         description: error.message || "حدث خطأ أثناء تحديث الرؤية",
@@ -215,7 +224,7 @@ const AdminPanel = () => {
   });
 
   // Show loading while checking authentication
-  if (authLoading || roleLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center">
         <div className="text-center">
@@ -228,13 +237,17 @@ const AdminPanel = () => {
 
   // Redirect to login if not authenticated
   if (!user) {
+    console.log("User not authenticated, redirecting to login");
     return <Navigate to="/login" replace />;
   }
 
   // Redirect to home if not admin
   if (!hasAccess) {
+    console.log("User not admin, redirecting to home");
     return <Navigate to="/" replace />;
   }
+
+  console.log("Rendering admin panel for user:", user.id);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
@@ -293,6 +306,11 @@ const AdminPanel = () => {
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-s3m-red mx-auto"></div>
                   <p className="text-white mt-4">جاري التحميل...</p>
+                </div>
+              ) : usersError ? (
+                <div className="text-center py-8">
+                  <p className="text-red-500">حدث خطأ أثناء تحميل البيانات</p>
+                  <p className="text-gray-400 text-sm mt-2">{usersError.message}</p>
                 </div>
               ) : users ? (
                 <UsersTable

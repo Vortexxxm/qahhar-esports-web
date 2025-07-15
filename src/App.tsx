@@ -33,6 +33,8 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
       refetchOnWindowFocus: false,
+      retry: 1,
+      retryDelay: 1000,
     },
   },
 });
@@ -50,9 +52,9 @@ function App() {
                 <Navbar />
                 <main className="flex-1">
                   <Routes>
-                    <Route path="/" element={<Index />} />
+                    <Route path="/" element={<Home />} />
                     <Route path="/home" element={<Home />} />
-                    <Route path="/index" element={<Navigate to="/" replace />} />
+                    <Route path="/index" element={<Index />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/team" element={<Team />} />
                     <Route path="/news" element={<News />} />
