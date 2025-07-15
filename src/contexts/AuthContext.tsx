@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -24,6 +24,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { toast } = useToast();
 
   console.log("AuthProvider rendered, user:", user?.id, "role:", userRole, "loading:", loading);
+
+  const fetchUserRole = useCallback(async (userId: string) => {
+    try {
+      console.log("Fetching user role for:", userId);
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .maybeSingle(); // Use maybeSingle instead of single
+
+      if (error) {
+        console.error("Error fetching user role:", error);
+        setUserRole('user');
+      } else {
+        console.log("User role fetched:", data?.role);
+        setUserRole(data?.role || 'user');
+      }
+    } catch (error) {
+      console.error("Error in fetchUserRole:", error);
+      setUserRole('user');
+    }
+  }, []);
+
+  const updateUserActivity = useCallback(async (userId: string) => {
+    try {
+      console.log("Updating user activity for:", userId);
+      const { error } = await supabase.rpc('update_user_activity', {
+        user_uuid: userId
+      });
+
+      if (error) {
+        console.error("Error updating user activity:", error);
+      }
+    } catch (error) {
+      console.error("Error in updateUserActivity:", error);
+    }
+  }, []);
 
   useEffect(() => {
     const getSession = async () => {
@@ -65,44 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return () => subscription.unsubscribe();
-  }, []);
-
-  const fetchUserRole = async (userId: string) => {
-    try {
-      console.log("Fetching user role for:", userId);
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .single();
-
-      if (error) {
-        console.error("Error fetching user role:", error);
-        setUserRole('user'); // Default role
-      } else {
-        console.log("User role fetched:", data?.role);
-        setUserRole(data?.role || 'user');
-      }
-    } catch (error) {
-      console.error("Error in fetchUserRole:", error);
-      setUserRole('user');
-    }
-  };
-
-  const updateUserActivity = async (userId: string) => {
-    try {
-      console.log("Updating user activity for:", userId);
-      const { error } = await supabase.rpc('update_user_activity', {
-        user_uuid: userId
-      });
-
-      if (error) {
-        console.error("Error updating user activity:", error);
-      }
-    } catch (error) {
-      console.error("Error in updateUserActivity:", error);
-    }
-  };
+  }, [fetchUserRole, updateUserActivity]);
 
   const signUp = async (email: string, password: string, userData: any) => {
     try {
@@ -193,14 +193,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     userRole,
     loading,
     signUp,
     signIn,
     signOut,
-  };
+  }), [user, userRole, loading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

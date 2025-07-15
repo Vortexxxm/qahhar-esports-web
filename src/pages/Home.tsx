@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import React, { memo, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,9 +12,8 @@ import WeeklyPlayerCard from '@/components/WeeklyPlayerCard';
 import MonthlyPlayerCard from '@/components/MonthlyPlayerCard';
 import { motion } from "framer-motion";
 
-const Home = () => {
+const Home = memo(() => {
   const { user, userRole } = useAuth();
-  const [latestNews, setLatestNews] = useState([]);
 
   console.log("Home component rendered, user:", user?.id, "role:", userRole);
 
@@ -66,37 +65,42 @@ const Home = () => {
     }
   });
 
-  const weeklyPlayer = specialPlayers?.find(p => p.type === 'weekly');
-  const monthlyPlayer = specialPlayers?.find(p => p.type === 'monthly');
+  // Fetch latest news using useQuery for better performance
+  const { data: latestNews = [] } = useQuery({
+    queryKey: ['latest-news'],
+    queryFn: async () => {
+      console.log("Fetching latest news...");
+      const { data, error } = await supabase
+        .from('news')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      if (error) {
+        console.error("Error fetching latest news:", error);
+        throw error;
+      }
+
+      console.log("News fetched:", data);
+      return data || [];
+    }
+  });
+
+  // Memoize calculations for better performance
+  const weeklyPlayer = useMemo(() => 
+    specialPlayers?.find(p => p.type === 'weekly'), 
+    [specialPlayers]
+  );
+  
+  const monthlyPlayer = useMemo(() => 
+    specialPlayers?.find(p => p.type === 'monthly'), 
+    [specialPlayers]
+  );
 
   // Get leaderboard data for special players
-  const getPlayerLeaderboardData = (userId: string) => {
+  const getPlayerLeaderboardData = useMemo(() => (userId: string) => {
     return leaderboardScores?.find(score => score.user_id === userId) || null;
-  };
-
-  useEffect(() => {
-    const fetchLatestNews = async () => {
-      console.log("Fetching latest news...");
-      try {
-        const { data, error } = await supabase
-          .from('news')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(3); // عرض آخر 3 أخبار فقط
-
-        if (error) {
-          console.error("Error fetching latest news:", error);
-        } else {
-          console.log("News fetched:", data);
-          setLatestNews(data || []);
-        }
-      } catch (error) {
-        console.error("Error in fetchLatestNews:", error);
-      }
-    };
-
-    fetchLatestNews();
-  }, []);
+  }, [leaderboardScores]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden">
@@ -421,6 +425,6 @@ const Home = () => {
       </div>
     </div>
   );
-};
+});
 
 export default Home;
