@@ -24,7 +24,7 @@ type UserWithProfile = {
 const AdminPanel = () => {
   const { user, userRole, loading: authLoading } = useAuth();
   const { toast } = useToast();
-  const [hasAccess, setHasAccess] = useState(false);
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null); // null means we're still checking
   const queryClient = useQueryClient();
 
   console.log("AdminPanel rendered, user:", user?.id, "role:", userRole, "authLoading:", authLoading);
@@ -241,8 +241,20 @@ const AdminPanel = () => {
     return <Navigate to="/login" replace />;
   }
 
+  // Show loading while checking admin access
+  if (hasAccess === null) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-s3m-red mx-auto mb-4"></div>
+          <div className="text-white text-lg">جاري التحقق من الصلاحيات...</div>
+        </div>
+      </div>
+    );
+  }
+
   // Redirect to home if not admin
-  if (!hasAccess) {
+  if (hasAccess === false) {
     console.log("User not admin, redirecting to home");
     return <Navigate to="/" replace />;
   }
