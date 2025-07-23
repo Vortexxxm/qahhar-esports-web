@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -62,6 +61,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  const checkFirstTimeUser = useCallback(async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('is_first_visit, username')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error checking first time user:", error);
+        return;
+      }
+
+      // إذا كان المستخدم جديد أو لم يكمل ملفه الشخصي
+      if (data?.is_first_visit || !data?.username?.trim()) {
+        console.log("First time user or incomplete profile, redirecting to edit profile");
+        navigate('/edit-profile');
+      }
+    } catch (error) {
+      console.error("Error in checkFirstTimeUser:", error);
+    }
+  }, [navigate]);
+
   useEffect(() => {
     const getSession = async () => {
       try {
@@ -75,6 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(session.user);
           await fetchUserRole(session.user.id);
           await updateUserActivity(session.user.id);
+          await checkFirstTimeUser(session.user.id);
         } else {
           console.log("No session found");
         }
@@ -94,6 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session.user);
         await fetchUserRole(session.user.id);
         await updateUserActivity(session.user.id);
+        await checkFirstTimeUser(session.user.id);
       } else {
         setUser(null);
         setUserRole(null);
@@ -102,7 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return () => subscription.unsubscribe();
-  }, [fetchUserRole, updateUserActivity]);
+  }, [fetchUserRole, updateUserActivity, checkFirstTimeUser]);
 
   const signUp = async (email: string, password: string, userData: any) => {
     try {

@@ -20,6 +20,7 @@ import JoinUs from "@/pages/JoinUs";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
 import Profile from "@/pages/Profile";
+import EditProfile from "@/pages/EditProfile";
 import AdminPanel from "@/pages/AdminPanel";
 import ResetPassword from "@/pages/ResetPassword";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
@@ -65,6 +66,7 @@ function App() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
                     <Route path="/profile" element={<Profile />} />
+                    <Route path="/edit-profile" element={<EditProfile />} />
                     <Route path="/admin" element={<AdminPanel />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/reset-password-page" element={<ResetPasswordPage />} />
