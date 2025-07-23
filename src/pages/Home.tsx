@@ -40,33 +40,41 @@ const Home = memo(() => {
 
       if (error) {
         console.error("Error fetching special players:", error);
-        throw error;
+        return [];
       }
 
-      console.log("Special players fetched:", data);
-      return data;
-    }
+      console.log("Special players fetched:", data?.length);
+      return data || [];
+    },
+    retry: 2,
+    retryDelay: 1000,
+    staleTime: 5 * 60 * 1000 // 5 minutes
   });
 
   // Fetch leaderboard scores for special players
-  const { data: leaderboardScores } = useQuery({
+  const { data: leaderboardScores, isLoading: scoresLoading } = useQuery({
     queryKey: ['leaderboard-scores'],
     queryFn: async () => {
+      console.log("Fetching leaderboard scores...");
       const { data, error } = await supabase
         .from('leaderboard_scores')
         .select('*');
 
       if (error) {
         console.error("Error fetching leaderboard scores:", error);
-        throw error;
+        return [];
       }
 
-      return data;
-    }
+      console.log("Leaderboard scores fetched:", data?.length);
+      return data || [];
+    },
+    retry: 2,
+    retryDelay: 1000,
+    staleTime: 5 * 60 * 1000 // 5 minutes
   });
 
   // Fetch latest news using useQuery for better performance
-  const { data: latestNews = [] } = useQuery({
+  const { data: latestNews = [], isLoading: newsLoading, error: newsError } = useQuery({
     queryKey: ['latest-news'],
     queryFn: async () => {
       console.log("Fetching latest news...");
@@ -78,12 +86,15 @@ const Home = memo(() => {
 
       if (error) {
         console.error("Error fetching latest news:", error);
-        throw error;
+        return [];
       }
 
-      console.log("News fetched:", data);
+      console.log("News fetched:", data?.length);
       return data || [];
-    }
+    },
+    retry: 2,
+    retryDelay: 1000,
+    staleTime: 5 * 60 * 1000 // 5 minutes
   });
 
   // Memoize calculations for better performance
@@ -101,6 +112,18 @@ const Home = memo(() => {
   const getPlayerLeaderboardData = useMemo(() => (userId: string) => {
     return leaderboardScores?.find(score => score.user_id === userId) || null;
   }, [leaderboardScores]);
+
+  // Show loading state
+  if (specialPlayersLoading || scoresLoading || newsLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-s3m-red mx-auto mb-4"></div>
+          <div className="text-white text-lg">جاري تحميل المحتوى...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden">

@@ -74,9 +74,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      // إذا كان المستخدم جديد أو لم يكمل ملفه الشخصي
-      if (data?.is_first_visit || !data?.username?.trim()) {
-        console.log("First time user or incomplete profile, redirecting to edit profile");
+      // Only redirect if this is truly a first visit and we're not already on edit profile
+      if (data?.is_first_visit && window.location.pathname !== '/edit-profile') {
+        console.log("First time user detected, redirecting to edit profile");
         navigate('/edit-profile');
       }
     } catch (error) {
@@ -100,9 +100,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           await checkFirstTimeUser(session.user.id);
         } else {
           console.log("No session found");
+          setUser(null);
+          setUserRole(null);
         }
       } catch (error) {
         console.error("Error in getSession:", error);
+        setUser(null);
+        setUserRole(null);
       } finally {
         setLoading(false);
       }
@@ -117,7 +121,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session.user);
         await fetchUserRole(session.user.id);
         await updateUserActivity(session.user.id);
-        await checkFirstTimeUser(session.user.id);
+        // Only redirect to edit profile on SIGNED_IN event, not on initial load
+        if (event === 'SIGNED_IN') {
+          await checkFirstTimeUser(session.user.id);
+        }
       } else {
         setUser(null);
         setUserRole(null);
