@@ -1,6 +1,4 @@
-
 import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
 
 const DesktopNavigation = () => {
   const location = useLocation();
@@ -14,8 +12,7 @@ const DesktopNavigation = () => {
 
   const navItems = [
     { path: '/', label: 'الرئيسية' },
-    { path: '/about', label: 'من نحن' },
-    { path: '/leaderboard', label: 'المتصدرون' },
+    { path: '/leaderboard', label: 'المتصدرين' },
     { path: '/tournaments', label: 'البطولات' },
     { path: '/team', label: 'الفريق' },
     { path: '/news', label: 'الأخبار' },
@@ -25,11 +22,7 @@ const DesktopNavigation = () => {
   return (
     <div className="hidden lg:flex items-center space-x-8 rtl:space-x-reverse">
       {navItems.map((item) => (
-        <motion.div
-          key={item.path}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
+        <div key={item.path}>
           <Link
             to={item.path}
             className={`relative px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
@@ -40,16 +33,10 @@ const DesktopNavigation = () => {
           >
             {item.label}
             {isActivePath(item.path) && (
-              <motion.div
-                layoutId="activeIndicator"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-white rounded-full"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              />
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white rounded-full" />
             )}
           </Link>
-        </motion.div>
+        </div>
       ))}
     </div>
   );

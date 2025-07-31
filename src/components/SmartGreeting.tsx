@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,7 +5,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Moon, Star, Trophy, Crown, Zap, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface UserActivity {
   last_login: string;
@@ -37,21 +35,18 @@ const SmartGreeting = () => {
 
     const fetchUserStatus = async () => {
       try {
-        // جلب بيانات النشاط
         const { data: activity } = await supabase
           .from('user_activity')
           .select('*')
           .eq('user_id', user.id)
           .single();
 
-        // جلب بيانات البروفايل
         const { data: profile } = await supabase
           .from('profiles')
           .select('is_first_visit, rank_title, activity_score, total_likes')
           .eq('id', user.id)
           .single();
 
-        // تحديث نشاط المستخدم
         await supabase.rpc('update_user_activity', { user_uuid: user.id });
 
         const greeting = generateGreeting(activity, profile);
@@ -71,7 +66,6 @@ const SmartGreeting = () => {
     const daysSinceLastLogin = lastLogin ? 
       Math.floor((now.getTime() - lastLogin.getTime()) / (1000 * 60 * 60 * 24)) : 0;
 
-    // الزيارة الأولى
     if (profile?.is_first_visit) {
       return {
         message: "مرحباً بك في موقعنا! إليك نظرة سريعة لمساعدتك على الاستفادة القصوى من الموقع.",
@@ -82,7 +76,6 @@ const SmartGreeting = () => {
       };
     }
 
-    // عودة بعد غياب طويل
     if (daysSinceLastLogin >= 5) {
       return {
         message: "اشتقنا لأسلوبك يا بطل، ماذا لديك من جديد؟",
@@ -93,7 +86,6 @@ const SmartGreeting = () => {
       };
     }
 
-    // دخول متأخر بالليل
     if (currentHour >= 23 || currentHour <= 5) {
       return {
         message: "مساء الخير، هل أنت مستعد لإكمال أسطورتك الليلة؟ 🌙",
@@ -103,7 +95,6 @@ const SmartGreeting = () => {
       };
     }
 
-    // رتبة مميزة
     if (profile?.rank_title === 'Heroic') {
       return {
         message: "أهلاً بالبطل! إنجازاتك تتحدث عن نفسها",
@@ -114,7 +105,6 @@ const SmartGreeting = () => {
       };
     }
 
-    // نشاط مرتفع
     if ((profile?.activity_score || 0) > 100) {
       return {
         message: "أداؤك رائع هذا الأسبوع! استمر في التقدم",
@@ -125,7 +115,6 @@ const SmartGreeting = () => {
       };
     }
 
-    // رسالة افتراضية حسب الوقت
     const timeGreeting = currentHour < 12 ? "صباح الخير" : 
                         currentHour < 18 ? "مرحباً" : "مساء الخير";
     
@@ -144,49 +133,38 @@ const SmartGreeting = () => {
   if (!greetingData || !user || !isVisible) return null;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, y: -20, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -20, scale: 0.95 }}
-        transition={{ duration: 0.3 }}
-      >
-        <Card className={`mb-6 border-none ${greetingData.bgGradient} backdrop-blur-sm relative overflow-hidden shadow-lg`}>
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
-          <CardContent className="p-4 relative">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3 rtl:space-x-reverse flex-1">
-                <motion.div 
-                  className="p-3 rounded-full bg-black/20"
-                  whileHover={{ scale: 1.1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {greetingData.icon}
-                </motion.div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-base font-semibold ${greetingData.textColor} mb-1 leading-tight`}>
-                    {greetingData.message}
-                  </p>
-                  {greetingData.badge && (
-                    <Badge className="bg-gradient-to-r from-s3m-red to-red-600 text-white text-xs">
-                      {greetingData.badge}
-                    </Badge>
-                  )}
-                </div>
+    <div>
+      <Card className={`mb-6 border-none ${greetingData.bgGradient} backdrop-blur-sm relative overflow-hidden shadow-lg`}>
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
+        <CardContent className="p-4 relative">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3 rtl:space-x-reverse flex-1">
+              <div className="p-3 rounded-full bg-black/20">
+                {greetingData.icon}
               </div>
-              <Button
-                onClick={handleDismiss}
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-white/20 rounded-full transition-all duration-200 flex-shrink-0"
-              >
-                <X className="w-4 h-4" />
-              </Button>
+              <div className="flex-1 min-w-0">
+                <p className={`text-base font-semibold ${greetingData.textColor} mb-1 leading-tight`}>
+                  {greetingData.message}
+                </p>
+                {greetingData.badge && (
+                  <Badge className="bg-gradient-to-r from-s3m-red to-red-600 text-white text-xs">
+                    {greetingData.badge}
+                  </Badge>
+                )}
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-    </AnimatePresence>
+            <Button
+              onClick={handleDismiss}
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-white/20 rounded-full transition-all duration-200 flex-shrink-0"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

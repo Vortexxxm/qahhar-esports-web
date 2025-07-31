@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { LogIn, User, LogOut, Settings, Crown, Bell } from 'lucide-react';
 import {
@@ -17,7 +16,6 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import NotificationsPopover from '@/components/NotificationsPopover';
-import { motion } from 'framer-motion';
 
 const UserActions = () => {
   const { user, userRole } = useAuth();
@@ -39,12 +37,7 @@ const UserActions = () => {
 
   if (!user) {
     return (
-      <motion.div 
-        className="flex items-center space-x-3 rtl:space-x-reverse"
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.3 }}
-      >
+      <div className="flex items-center space-x-3 rtl:space-x-reverse">
         <Button 
           onClick={() => navigate('/login')}
           variant="ghost"
@@ -53,17 +46,12 @@ const UserActions = () => {
           <LogIn className="w-4 h-4 ml-2" />
           دخول
         </Button>
-      </motion.div>
+      </div>
     );
   }
 
   return (
-    <motion.div 
-      className="flex items-center space-x-4 rtl:space-x-reverse"
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.3 }}
-    >
+    <div className="flex items-center space-x-4 rtl:space-x-reverse">
       {/* Notifications */}
       <NotificationsPopover />
 
@@ -129,7 +117,7 @@ const UserActions = () => {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-    </motion.div>
+    </div>
   );
 };
 

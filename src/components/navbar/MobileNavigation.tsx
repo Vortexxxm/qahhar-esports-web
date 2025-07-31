@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X, User, LogOut, Shield, Trophy, Users, Newspaper, Info, Home, Crown } from 'lucide-react';
@@ -7,7 +6,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import SmartGreeting from '../SmartGreeting';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
 
 const MobileNavigation = () => {
@@ -21,39 +19,24 @@ const MobileNavigation = () => {
     queryKey: ['user-role', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
-      
       const { data, error } = await supabase
-        .rpc('get_user_role', { user_uuid: user.id });
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .maybeSingle();
       
       if (error) {
         console.error('Error fetching user role:', error);
         return null;
       }
       
-      return data;
+      return data?.role || 'user';
     },
     enabled: !!user?.id,
   });
 
-  const isAdmin = userRole === 'admin';
-
   const handleSignOut = async () => {
     await signOut();
-    navigate('/');
-    setIsOpen(false);
-  };
-
-  const handleProfileClick = () => {
-    navigate('/profile');
-    setIsOpen(false);
-  };
-
-  const handleAdminClick = () => {
-    navigate('/admin');
-    setIsOpen(false);
-  };
-
-  const closeMenu = () => {
     setIsOpen(false);
   };
 
@@ -64,188 +47,138 @@ const MobileNavigation = () => {
     return location.pathname === path;
   };
 
-  const navLinks = [
-    { path: '/', label: 'الرئيسية', icon: Home },
-    { path: '/about', label: 'من نحن', icon: Info },
-    { path: '/leaderboard', label: 'المتصدرون', icon: Trophy },
-    { path: '/tournaments', label: 'البطولات', icon: Crown },
-    { path: '/team', label: 'الفريق', icon: Users },
-    { path: '/news', label: 'الأخبار', icon: Newspaper },
-    { path: '/join-us', label: 'انضم إلينا', icon: Users },
+  const navItems = [
+    { path: '/', label: 'الرئيسية', icon: <Home className="h-5 w-5" /> },
+    { path: '/leaderboard', label: 'المتصدرين', icon: <Trophy className="h-5 w-5" /> },
+    { path: '/tournaments', label: 'البطولات', icon: <Crown className="h-5 w-5" /> },
+    { path: '/team', label: 'الفريق', icon: <Users className="h-5 w-5" /> },
+    { path: '/news', label: 'الأخبار', icon: <Newspaper className="h-5 w-5" /> },
+    { path: '/about', label: 'من نحن', icon: <Info className="h-5 w-5" /> },
+  ];
+
+  const userActions = [
+    { path: '/profile', label: 'الملف الشخصي', icon: <User className="h-5 w-5" /> },
+    ...(userRole === 'admin' ? [{ path: '/admin', label: 'لوحة الإدارة', icon: <Shield className="h-5 w-5" /> }] : []),
   ];
 
   return (
-    <>
-      {/* Mobile menu button */}
-      <div className="lg:hidden">
-        <Drawer direction="right" open={isOpen} onOpenChange={setIsOpen}>
-          <DrawerTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="relative text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-s3m-red/20 hover:to-purple-600/20 rounded-2xl border border-white/20 hover:border-s3m-red/60 transition-all duration-300 backdrop-blur-sm"
-            >
-              <motion.div
-                animate={{ rotate: isOpen ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </motion.div>
-            </Button>
-          </DrawerTrigger>
-          
-          <DrawerContent className="h-full max-w-sm bg-gradient-to-br from-black via-gray-900 to-s3m-red/20 border-l-2 border-s3m-red/50 backdrop-blur-xl">
-            {/* Header */}
-            <div className="flex justify-between items-center p-6 border-b border-s3m-red/30">
-              <div className="flex items-center space-x-3 rtl:space-x-reverse">
-                <div className="w-10 h-10 bg-gradient-to-br from-s3m-red via-red-500 to-red-700 rounded-xl flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-lg">S3M</span>
-                </div>
-                <span className="text-white font-bold text-xl">القائمة</span>
+    <div className="lg:hidden">
+      <Drawer open={isOpen} onOpenChange={setIsOpen}>
+        <DrawerTrigger asChild>
+          <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+            <Menu className="h-6 w-6" />
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent className="bg-gradient-to-b from-gray-900 to-black border-gray-800 text-white">
+          <div className="px-4 py-6 max-h-[80vh] overflow-y-auto">
+            {/* User Section */}
+            {user && (
+              <div className="mb-6 pb-6 border-b border-gray-700">
+                <SmartGreeting />
               </div>
-              <Button
-                onClick={closeMenu}
-                variant="ghost"
-                size="sm"
-                className="text-gray-300 hover:text-white hover:bg-s3m-red/20 rounded-xl"
-              >
-                <X className="w-6 h-6" />
-              </Button>
-            </div>
+            )}
 
-            {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto">
-              <div className="p-6 space-y-6">
-                {/* User Greeting */}
-                {user && (
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="mb-6"
+            {/* Navigation Links */}
+            <div className="space-y-4 mb-6">
+              {navItems.map((item) => (
+                <div key={item.path}>
+                  <Link
+                    to={item.path}
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center space-x-3 rtl:space-x-reverse p-3 rounded-lg transition-all duration-200 ${
+                      isActivePath(item.path)
+                        ? 'bg-gradient-to-r from-s3m-red to-red-600 text-white shadow-lg'
+                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                    }`}
                   >
-                    <SmartGreeting />
-                  </motion.div>
-                )}
-
-                {/* Navigation Links */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="space-y-3"
-                >
-                  <h3 className="text-lg font-bold text-white mb-4 flex items-center">
-                    <Crown className="w-5 h-5 text-s3m-red ml-2" />
-                    التنقل
-                  </h3>
-                  {navLinks.map((link, index) => {
-                    const Icon = link.icon;
-                    return (
-                      <motion.div
-                        key={link.path}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.3 + index * 0.1 }}
-                      >
-                        <Link
-                          to={link.path}
-                          onClick={closeMenu}
-                          className={`flex items-center space-x-3 rtl:space-x-reverse px-4 py-4 rounded-2xl text-base font-medium transition-all duration-300 group ${
-                            isActivePath(link.path)
-                              ? 'text-white bg-gradient-to-r from-s3m-red to-red-600 shadow-lg shadow-s3m-red/30'
-                              : 'text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-white/10 hover:to-s3m-red/20 border border-transparent hover:border-s3m-red/30'
-                          }`}
-                        >
-                          <Icon className={`w-6 h-6 transition-transform duration-300 ${isActivePath(link.path) ? 'scale-110' : 'group-hover:scale-110'}`} />
-                          <span className="flex-1">{link.label}</span>
-                          {isActivePath(link.path) && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="w-2 h-2 bg-white rounded-full"
-                            />
-                          )}
-                        </Link>
-                      </motion.div>
-                    );
-                  })}
-                </motion.div>
-                
-                {/* User Actions */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.8 }}
-                  className="border-t border-gray-700/50 pt-6"
-                >
-                  {user ? (
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-bold text-white mb-4 flex items-center">
-                        <User className="w-5 h-5 text-s3m-red ml-2" />
-                        حسابي
-                      </h3>
-                      
-                      {isAdmin && (
-                        <Button
-                          onClick={handleAdminClick}
-                          variant="outline"
-                          className="w-full justify-start bg-gradient-to-r from-s3m-red/10 to-red-600/10 border-s3m-red/50 text-s3m-red hover:bg-gradient-to-r hover:from-s3m-red hover:to-red-600 hover:text-white rounded-xl py-3 transition-all duration-300"
-                        >
-                          <Shield className="w-5 h-5 ml-2" />
-                          لوحة الإدارة
-                        </Button>
-                      )}
-                      
-                      <Button
-                        onClick={handleProfileClick}
-                        variant="outline"
-                        className="w-full justify-start border-gray-600/50 text-gray-300 hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-600 hover:text-white rounded-xl py-3 transition-all duration-300"
-                      >
-                        <User className="w-5 h-5 ml-2" />
-                        الملف الشخصي
-                      </Button>
-                      
-                      <Button
-                        onClick={handleSignOut}
-                        variant="outline"
-                        className="w-full justify-start border-red-600/50 text-red-400 hover:bg-gradient-to-r hover:from-red-600 hover:to-red-700 hover:text-white rounded-xl py-3 transition-all duration-300"
-                      >
-                        <LogOut className="w-5 h-5 ml-2" />
-                        تسجيل الخروج
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-bold text-white mb-4">انضم إلينا</h3>
-                      <Button
-                        onClick={() => { navigate('/login'); closeMenu(); }}
-                        variant="outline"
-                        className="w-full justify-center border-gray-600/50 text-gray-300 hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-600 hover:text-white rounded-xl py-3 transition-all duration-300"
-                      >
-                        دخول
-                      </Button>
-                    </div>
-                  )}
-                </motion.div>
-              </div>
+                    {item.icon}
+                    <span className="font-medium">{item.label}</span>
+                  </Link>
+                </div>
+              ))}
             </div>
 
-            {/* Footer */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1 }}
-              className="p-6 border-t border-s3m-red/30 text-center bg-gradient-to-r from-black/80 to-gray-900/80"
-            >
-              <p className="text-gray-400 text-sm">
-                © 2024 S3M E-Sports - جميع الحقوق محفوظة
-              </p>
-            </motion.div>
-          </DrawerContent>
-        </Drawer>
-      </div>
-    </>
+            {/* User Actions */}
+            {user && (
+              <div className="space-y-4 mb-6 pb-6 border-b border-gray-700">
+                {userActions.map((action) => (
+                  <div key={action.path}>
+                    <Link
+                      to={action.path}
+                      onClick={() => setIsOpen(false)}
+                      className={`flex items-center space-x-3 rtl:space-x-reverse p-3 rounded-lg transition-all duration-200 ${
+                        location.pathname === action.path
+                          ? 'bg-gradient-to-r from-s3m-red to-red-600 text-white shadow-lg'
+                          : 'text-gray-300 hover:text-white hover:bg-white/10'
+                      }`}
+                    >
+                      {action.icon}
+                      <span className="font-medium">{action.label}</span>
+                      {action.path === '/admin' && (
+                        <div className="mr-auto">
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        </div>
+                      )}
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Auth Actions */}
+            <div className="space-y-3">
+              {user ? (
+                <Button
+                  onClick={handleSignOut}
+                  variant="outline"
+                  className="w-full justify-start space-x-3 rtl:space-x-reverse border-red-500/50 text-red-400 hover:bg-red-500/20 hover:text-red-300"
+                >
+                  <LogOut className="h-5 w-5" />
+                  <span>تسجيل الخروج</span>
+                </Button>
+              ) : (
+                <div className="space-y-2">
+                  <Button
+                    onClick={() => {
+                      navigate('/login');
+                      setIsOpen(false);
+                    }}
+                    className="w-full bg-gradient-to-r from-s3m-red to-red-600 hover:from-red-600 hover:to-s3m-red"
+                  >
+                    تسجيل الدخول
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      navigate('/signup');
+                      setIsOpen(false);
+                    }}
+                    variant="outline"
+                    className="w-full border-gray-600 text-gray-300 hover:bg-white/10"
+                  >
+                    إنشاء حساب جديد
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Join Us Button for Non-authenticated Users */}
+            {!user && (
+              <div className="mt-4 pt-4 border-t border-gray-700">
+                <Button
+                  onClick={() => {
+                    navigate('/join-us');
+                    setIsOpen(false);
+                  }}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                >
+                  انضم إلى الفريق
+                </Button>
+              </div>
+            )}
+          </div>
+        </DrawerContent>
+      </Drawer>
+    </div>
   );
 };
 

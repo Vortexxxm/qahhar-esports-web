@@ -6,7 +6,6 @@ import { Trophy, Target, Gamepad2, Zap, Crown, Medal, Award, Star, Calendar } fr
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
-import { motion } from "framer-motion";
 import WeeklyPlayerCard from '@/components/WeeklyPlayerCard';
 import MonthlyPlayerCard from '@/components/MonthlyPlayerCard';
 
@@ -298,12 +297,7 @@ const Leaderboard = () => {
 
         {/* Special Players Section */}
         {(weeklyPlayer || monthlyPlayer) && (
-          <motion.section 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="mb-16"
-          >
+          <section className="mb-16">
             <Card className="gaming-card mb-8">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-yellow-400 to-purple-500 bg-clip-text text-transparent flex items-center justify-center gap-3">
@@ -315,11 +309,7 @@ const Leaderboard = () => {
               <CardContent>
                 <div className="grid gap-8 md:grid-cols-2 max-w-6xl mx-auto">
                   {monthlyPlayer && monthlyPlayer.profiles && (
-                    <motion.div
-                      initial={{ opacity: 0, x: -50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.8, delay: 0.4 }}
-                    >
+                    <div>
                       <div className="text-center mb-4">
                         <div className="flex items-center justify-center gap-2 mb-2">
                           <Crown className="w-6 h-6 text-yellow-400" />
@@ -338,15 +328,11 @@ const Leaderboard = () => {
                           leaderboard_scores: getPlayerLeaderboardData(monthlyPlayer.user_id)
                         }}
                       />
-                    </motion.div>
+                    </div>
                   )}
                   
                   {weeklyPlayer && weeklyPlayer.profiles && (
-                    <motion.div
-                      initial={{ opacity: 0, x: 50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.8, delay: 0.6 }}
-                    >
+                    <div>
                       <div className="text-center mb-4">
                         <div className="flex items-center justify-center gap-2 mb-2">
                           <Calendar className="w-6 h-6 text-purple-400" />
@@ -365,12 +351,12 @@ const Leaderboard = () => {
                           leaderboard_scores: getPlayerLeaderboardData(weeklyPlayer.user_id)
                         }}
                       />
-                    </motion.div>
+                    </div>
                   )}
                 </div>
               </CardContent>
             </Card>
-          </motion.section>
+          </section>
         )}
 
         <div className="max-w-6xl mx-auto">
