@@ -32,10 +32,13 @@ import PushNotificationPrompt from "@/components/PushNotificationPrompt";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 15 * 60 * 1000, // 15 minutes
+      gcTime: 30 * 60 * 1000, // 30 minutes
       refetchOnWindowFocus: false,
-      retry: 1,
-      retryDelay: 1000,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      retry: 0, // Disable retries for faster failures
+      retryDelay: 0,
     },
   },
 });

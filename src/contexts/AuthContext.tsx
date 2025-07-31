@@ -26,18 +26,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUserRole = useCallback(async (userId: string) => {
     try {
-      console.log("Fetching user role for:", userId);
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
-        .maybeSingle(); // Use maybeSingle instead of single
+        .maybeSingle();
 
       if (error) {
         console.error("Error fetching user role:", error);
         setUserRole('user');
       } else {
-        console.log("User role fetched:", data?.role);
         setUserRole(data?.role || 'user');
       }
     } catch (error) {
@@ -47,18 +45,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const updateUserActivity = useCallback(async (userId: string) => {
-    try {
-      console.log("Updating user activity for:", userId);
-      const { error } = await supabase.rpc('update_user_activity', {
-        user_uuid: userId
-      });
-
-      if (error) {
-        console.error("Error updating user activity:", error);
-      }
-    } catch (error) {
-      console.error("Error in updateUserActivity:", error);
-    }
+    // Skip activity update to reduce database load
+    // This can be done less frequently or only on important actions
+    return;
   }, []);
 
   const checkFirstTimeUser = useCallback(async (userId: string) => {
@@ -87,19 +76,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const getSession = async () => {
       try {
-        console.log("Getting initial session...");
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error("Error getting session:", error);
+          setUser(null);
+          setUserRole(null);
         } else if (session?.user) {
-          console.log("Session found, user:", session.user.id);
           setUser(session.user);
           await fetchUserRole(session.user.id);
-          await updateUserActivity(session.user.id);
           await checkFirstTimeUser(session.user.id);
         } else {
-          console.log("No session found");
           setUser(null);
           setUserRole(null);
         }
@@ -115,13 +102,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     getSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session?.user?.id);
-      
       if (session?.user) {
         setUser(session.user);
         await fetchUserRole(session.user.id);
-        await updateUserActivity(session.user.id);
-        // Only redirect to edit profile on SIGNED_IN event, not on initial load
         if (event === 'SIGNED_IN') {
           await checkFirstTimeUser(session.user.id);
         }
@@ -133,7 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return () => subscription.unsubscribe();
-  }, [fetchUserRole, updateUserActivity, checkFirstTimeUser]);
+  }, [fetchUserRole, checkFirstTimeUser]);
 
   const signUp = async (email: string, password: string, userData: any) => {
     try {
